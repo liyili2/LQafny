@@ -215,10 +215,16 @@ Inductive trans_pexp_rel  {dim chi rmax:nat} : aenv -> (var -> nat)
       @trans_exp_rel dim rmax env f e e' ->
       trans_pexp_rel env f T' (AppU l e) T' (e'', Some e''') ->
       trans_pexp_rel env f T (AppU l e) T' ((from_ucom e'), Some e''')
-  |  trans_pexp_pseq : forall env f T T' e1 e2 e1' e1'' e2' e2'',
+
+| trans_pexp_pseq_1 : forall env f T T' e1 e2 e1' e1'',
       trans_pexp_rel env f T e1 T' (e1', Some e1'') ->
+      trans_pexp_rel env f T (PSeq e1 e2) T' (e1', Some (PSeq e1'' e2))
+
+  | trans_pexp_pseq_2 : forall env f T T' e1 e2 e2' e2'',
+      trans_pexp_rel env f T e1 T' (skip, None) ->  (* e1 is fully compiled *)
       trans_pexp_rel env f T' e2 T' (e2', Some e2'') ->
-      trans_pexp_rel env f T (PSeq e1 e2) T' ((e1' ; e2'), Some (PSeq e1'' e2''))
+      trans_pexp_rel env f T (PSeq e1 e2) T' (e2', Some e2'')
+
 | trans_pexp_if_beq : forall env f T T' x y v n s ce e' e'',
       trans_pexp_rel env f T' s T' (e', Some e'') ->
       @trans_exp_rel dim rmax env f (rz_eq_circuit x (f x) y (Num v) n) ce ->
