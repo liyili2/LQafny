@@ -410,10 +410,10 @@ Definition trans_state (f : var -> nat) (s:qstate) (dim : nat) : option (Density
 
 Definition env_eq (aenv:aenv) (f: var -> nat):= forall x n env, AEnv.MapsTo x (QT n) env -> f x = n.
 
+
 Lemma trans_pexp_one_step_sem :
-  forall (dim chi rmax : nat) (t : mode) (aenv : aenv) (f : var -> nat) (tenv : type_map) 
+  forall (dim rmax : nat) (t : mode) (aenv : aenv) (f : var -> nat) (tenv : type_map) 
          (e : pexp) (tenv' : type_map) (phi : Density dim),
-    chi > 0 ->
     dim > 0 ->
     env_eq aenv f ->
     @locus_system rmax t aenv tenv e tenv' ->
@@ -425,8 +425,8 @@ Lemma trans_pexp_one_step_sem :
       trans_state f S' dim = Some phi' /\ r .* phi' = phi.
 
 Proof.
- intros . split.
-- inv H5. apply H7 . simpl in * . 
+ intros . 
+ destruct e . simpl in H5 .
 
 (* n is the length, f is the mapping from posi to nat, s is a locus, v is the virtual vector. *)
 
