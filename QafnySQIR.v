@@ -425,8 +425,10 @@ Lemma trans_pexp_one_step_sem :
       trans_state f S' dim = Some phi' /\ r .* phi' = phi.
 
 Proof.
- intros . 
- destruct e . simpl in H5 .
+ intros.  destruct e.
+- inv H3 .
+-inv H3 . split . 
+  * simpl in * . inv H4.
 
 (* n is the length, f is the mapping from posi to nat, s is a locus, v is the virtual vector. *)
 
