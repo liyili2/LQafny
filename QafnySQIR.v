@@ -410,21 +410,23 @@ Definition trans_state (f : var -> nat) (s:qstate) (dim : nat) : option (Density
 
 Definition env_eq (aenv:aenv) (f: var -> nat):= forall x n env, AEnv.MapsTo x (QT n) env -> f x = n.
 
-Lemma trans_pexp_sem :
-  forall dim chi rmax t aenv f tenv e tenv' phi,
+Lemma trans_pexp_one_step_sem :
+  forall (dim chi rmax : nat) (t : mode) (aenv : aenv) (f : var -> nat) (tenv : type_map) 
+         (e : pexp) (tenv' : type_map) (phi : Density dim),
     chi > 0 ->
     dim > 0 ->
     env_eq aenv f ->
     @locus_system rmax t aenv tenv e tenv' ->
-    forall (n : nat) (S S' : qstate) (e' : base_com dim) (r : R),
-    @steps rmax n aenv S e r S' ->
-    @trans_pexp_rel dim chi rmax aenv f tenv e e' ->
-    trans_state f S dim = Some phi ->
-    let phi' := c_eval e' phi in
-    trans_state f S' dim = Some phi' /\ r .* phi' = phi.
-     (*I wrote here = , because of the subset operator is not right.
-        You need to define it later the meaning of r .* phi' is subset to phi *)
+    forall (S S' : qstate) (e' : base_com dim) (r : R) (e'': pexp) (e''' : list pexpa),
+      @step rmax aenv S e r S' e'' ->
+      @trans_pexp_rel dim rmax t aenv f tenv e tenv' (e', Some e''') ->
+      trans_state f S dim = Some phi ->
+      let phi' := c_eval e' phi in
+      trans_state f S' dim = Some phi' /\ r .* phi' = phi.
+
 Proof.
+ intros . split.
+- inv H5. apply H7 . simpl in * . 
 
 (* n is the length, f is the mapping from posi to nat, s is a locus, v is the virtual vector. *)
 
