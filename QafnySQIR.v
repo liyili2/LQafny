@@ -411,18 +411,27 @@ Definition trans_state (f : var -> nat) (s:qstate) (dim : nat) : option (Density
 Definition env_eq (aenv:aenv) (f: var -> nat):= forall x n env, AEnv.MapsTo x (QT n) env -> f x = n.
 
 
+Lemma trans_pexp_one_step_sem :
+  forall (dim rmax : nat) (t : mode) (aenv : aenv) (f : var -> nat) (tenv : type_map) 
+         (e : pexp) (tenv' : type_map) (phi : Density dim) (phi' : Density dim),
+    dim > 0 ->
+    env_eq aenv f ->
+    @locus_system rmax t aenv tenv e tenv' ->
+    forall (S S' : qstate) e' (r : R) (e'': pexp), 
+      @step rmax aenv S e r S' e'' ->
+      @trans_pexp_rel dim rmax t aenv f tenv e tenv' e' ->
+      trans_state f S dim = Some phi ->
+      trans_state f S' dim = Some phi' /\ r .* phi' = c_eval (fst(e')) phi.
+
 Proof.
-intros dim rmax t aenv f tenv e tenv' phi Hdim Heq Hlocus S S' e' r e'' e''' Hstep Htrans Htrans_state.
-destruct e.
-- simpl in Hstep. inversion Hstep.
-- simpl in *. inversion Hstep.
-  + (* Let x n e *)
-    simpl in *.
-    destruct n.
-    * (* Case AE *)
-      
-      inversion H7; subst; clear H7.
-      unfold trans_state in *. inv Htrans_state.
+intros dim rmax t aenv f tenv e tenv' phi phi' Hdim 
+Heq Hlocus S S' e' r e'' Hstep Htrans Htrans_state.
+induction Htrans. inv Hstep. 
+- admit.
+- inv Hstep. admit.
+- inv Hstep. simpl in * .
+  * unfold trans_state in Htrans_state. simpl in Htrans_state.
+    remember (f x + i) as pos. unfold super. simpl in *.
 
 (* n is the length, f is the mapping from posi to nat, s is a locus, v is the virtual vector. *)
 
