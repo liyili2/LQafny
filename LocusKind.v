@@ -45,9 +45,9 @@ Inductive type_vari : aenv -> varia -> (ktype*locus) -> Prop :=
 
 
 Inductive type_cbexp : aenv -> cbexp -> ktype -> Prop :=
-  | ceq_type : forall env a b l1 l2, type_aexp env a (CT,l1) -> type_aexp env b (CT,l2) ->
+  | ceq_type : forall env a b, type_aexp env a (CT,nil) -> type_aexp env b (CT,nil) ->
                      type_cbexp env (CEq a b) CT
-  | clt_type : forall env a b l1 l2, type_aexp env a (CT,l1) -> type_aexp env b (CT,l2) ->
+  | clt_type : forall env a b, type_aexp env a (CT,nil) -> type_aexp env b (CT,nil) ->
                      type_cbexp env (CLt a b) CT.
 
 Inductive type_bexp : aenv -> bexp -> (ktype*locus) -> Prop :=
@@ -220,7 +220,7 @@ Proof.
   destruct H0; subst. inv H2. easy. inv H2; easy.
   inv Heqe. easy.
 Qed.
-
+*)
 
 Lemma simp_aexp_empty: forall a v, simp_aexp a = Some v -> freeVarsAExp a = [].
 Proof.
@@ -253,10 +253,8 @@ Proof.
   simpl in *. intros R. destruct R; subst.
   specialize (subst_aexp_not_eq n2 x v) as X1. rewrite eq2 in X1. easy.
   easy. simpl in *. easy.
-  simpl in *. easy. simpl in *.
   specialize (IHn2 x v). rewrite eq2 in IHn2. simpl in *. easy.
   specialize (IHn2 x v). rewrite eq2 in IHn2. simpl in *. easy.
-  simpl in *. apply IHn2.
   specialize (IHn1 x v). rewrite eq1 in IHn1. simpl in *.
   intros R. apply in_app_iff in R.
   destruct R. easy.
@@ -273,10 +271,8 @@ Proof.
   simpl in *. intros R. destruct R; subst.
   specialize (subst_aexp_not_eq n2 x v) as X1. rewrite eq2 in X1. easy.
   easy. simpl in *. easy.
-  simpl in *. easy. simpl in *.
   specialize (IHn2 x v). rewrite eq2 in IHn2. simpl in *. easy.
   specialize (IHn2 x v). rewrite eq2 in IHn2. simpl in *. easy.
-  simpl in *. apply IHn2.
   specialize (IHn1 x v). rewrite eq1 in IHn1. simpl in *.
   intros R. apply in_app_iff in R.
   destruct R. easy.
@@ -303,52 +299,12 @@ Lemma freeVarsAExp_subst: forall n y x v, In y (freeVarsAExp (subst_aexp n x v))
 Proof.
   induction n; intros; simpl in *; try easy.
   bdestruct (x0 =? x); subst; simpl in *; try easy.
-  destruct (subst_aexp n1 x v) eqn:eq1; simpl in *; try easy.
-  destruct H; subst.
-  specialize (IHn1 y x v). rewrite eq1 in IHn1. simpl in *.
-  apply in_app_iff. left. apply IHn1. left. easy.
+  apply in_app_iff in H. destruct H.
+  apply in_app_iff. left. apply IHn1 in H. easy.
   apply IHn2 in H. apply in_app_iff. right. easy.
-  destruct (subst_aexp n2 x v) eqn:eq2; simpl in *; try easy.
-  destruct H; subst.
-  specialize (IHn2 y x v). rewrite eq2 in IHn2. simpl in *.
-  apply in_app_iff. right. apply IHn2. left. easy. easy.
-  specialize (IHn2 y x v). rewrite eq2 in IHn2. simpl in *. apply IHn2 in H.
-  apply in_app_iff. right. easy.
-  specialize (IHn2 y x v). rewrite eq2 in IHn2. simpl in *. apply IHn2 in H.
-  apply in_app_iff. right. easy.
-  specialize (IHn2 y x v). apply IHn2 in H.
-  apply in_app_iff. right. easy.
   apply in_app_iff in H. destruct H.
-  specialize (IHn1 y x v). rewrite eq1 in IHn1. simpl in *.
-  apply IHn1 in H. apply in_app_iff. left. easy.
-  apply in_app_iff. right. eapply IHn2. apply H.
-  apply in_app_iff in H. destruct H.
-  specialize (IHn1 y x v). rewrite eq1 in IHn1. simpl in *.
-  apply IHn1 in H. apply in_app_iff. left. easy.
-  apply in_app_iff. right. eapply IHn2. apply H.
-  destruct (subst_aexp n1 x v) eqn:eq1; simpl in *; try easy.
-  destruct H; subst.
-  specialize (IHn1 y x v). rewrite eq1 in IHn1. simpl in *.
-  apply in_app_iff. left. apply IHn1. left. easy.
+  apply in_app_iff. left. apply IHn1 in H. easy.
   apply IHn2 in H. apply in_app_iff. right. easy.
-  destruct (subst_aexp n2 x v) eqn:eq2; simpl in *; try easy.
-  destruct H; subst.
-  specialize (IHn2 y x v). rewrite eq2 in IHn2. simpl in *.
-  apply in_app_iff. right. apply IHn2. left. easy. easy.
-  specialize (IHn2 y x v). rewrite eq2 in IHn2. simpl in *. apply IHn2 in H.
-  apply in_app_iff. right. easy.
-  specialize (IHn2 y x v). rewrite eq2 in IHn2. simpl in *. apply IHn2 in H.
-  apply in_app_iff. right. easy.
-  specialize (IHn2 y x v). apply IHn2 in H.
-  apply in_app_iff. right. easy.
-  apply in_app_iff in H. destruct H.
-  specialize (IHn1 y x v). rewrite eq1 in IHn1. simpl in *.
-  apply IHn1 in H. apply in_app_iff. left. easy.
-  apply in_app_iff. right. eapply IHn2. apply H.
-  apply in_app_iff in H. destruct H.
-  specialize (IHn1 y x v). rewrite eq1 in IHn1. simpl in *.
-  apply IHn1 in H. apply in_app_iff. left. easy.
-  apply in_app_iff. right. eapply IHn2. apply H.
 Qed.
 
 Lemma freeVarsMAExp_subst: forall n y x v, In y (freeVarsMAExp (subst_mexp n x v))
@@ -473,12 +429,13 @@ Proof.
   intros. unfold freeVarsNotCPExp in *; intros;simpl in *.
   apply simp_aexp_empty in H1 as X1. rewrite X1 in H0. simpl in *.
   bdestruct (x0 =? x); subst.
-  assert (AEnv.In x env). exists (Mo t). easy. easy.
+  assert (AEnv.In x env). exists t. easy. easy.
   apply H0 with (x0 := x0); try easy. simpl in *.
   apply list_sub_not_in. lia.
   apply freeVarsPExp_subst in H2. easy.
 Qed.
 
+(*
 Lemma kind_env_stack_exist_ct: forall env a, 
      freeVarsNotCAExp env a -> type_aexp env a (Mo CT, []) -> exists v, simp_aexp a = Some v.
 Proof.
