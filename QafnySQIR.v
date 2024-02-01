@@ -360,6 +360,7 @@ Check gstate_vectors.
 Check cfull_state.
 Check outer_product.
 
+(*
 Fixpoint perm_range (f: var -> nat) (v:rz_val) (x:var) (i:nat) (j:nat)  (n:nat) (acc:rz_val) :=
    match n with 0 => acc
               | S m => update (perm_range f v x i j m acc) ((f x) + (i+m)) (v (j+m))
@@ -390,21 +391,72 @@ Fixpoint gen_qfun {d} (f: var -> nat) (s:locus) (size:nat) (m:nat) (b : nat -> C
                          end
                         end
    end.
+*)
 
-Definition trans_qstate (f:var -> nat) (s:qstate) (dim:nat) : option (Vector dim):=
-    match s with (sa,Cval m b)::nil =>
-      match ses_len sa with None => None
-                            | Some na => 
-           match @gen_qfun (2^na) f sa na m b
-              with None => None
-                 | Some acc => Some (@vsum (2^na) m acc)
-           end
-      end
-              | _ => None
+Definition make_pair (rmax:nat) (n:nat) (s:state_elem) :=
+   match s with Nval p b => (1,fun x => if x =? 0 then (p,b) else (C0,allfalse))
+                          | Cval m b => (m,b)
+                          | Hval r => ((2^n), (sum_rotates n rmax r))
    end.
 
-Definition trans_state (f : var -> nat) (s:qstate) (dim : nat) : option (Density dim) :=
-  match trans_qstate f s dim with None => None 
+Fixpoint compose_state (rmax:nat) (s:qstate) :=
+   match s with nil => Some (0,nil,1,fun x => (C0,allfalse))
+              | (sa,st)::xs => 
+         match compose_state rmax xs
+                with None => None
+                   | Some (na',sal,size,st') =>
+         match ses_len sa with None => None
+                             | Some na => 
+               match make_pair rmax na st with (m,f) => 
+                Some (na+na',sa++sal,m*size, car_fun_fch na m size f st')
+               end
+         end
+        end
+   end.
+
+Fixpoint range_perm (start num cur:nat) (old:rz_val) (acc:rz_val) :=
+   match num with 0 => acc
+             | S m => update (range_perm start m cur old acc) (cur+m) (old (start + m))
+   end.
+
+Fixpoint locus_perm (l:list range) (f: var -> nat) (old:rz_val) (cur:nat) (acc:rz_val) :=
+   match l with nil => Some acc
+             | (x,BNum u, BNum v)::xs =>
+               match (locus_perm xs f old (cur + (v - u)) acc) with None => None
+                 | Some acca => 
+                    Some (range_perm ((f x) + u) (v - u) cur old acca)
+               end
+             | _ => None
+   end.
+
+Fixpoint perm_all (l:list range) (f:var -> nat) (st: (nat -> C * (nat -> bool))) (m:nat) :=
+   match m with 0 => Some (fun x => (C1, allfalse))
+            | S n =>
+            match perm_all l f st n with None => None
+                | Some acc => 
+              match locus_perm l f (snd (st n)) 0 (allfalse) with None => None
+                      | Some re => Some (update acc n (fst (st n), re))
+             end
+           end
+   end. 
+
+Fixpoint f_to_vecs (dim:nat) (m:nat) (f:nat -> C * (nat -> bool)) :=
+   match m with 0 => (fun x => I (2^dim))
+              | S n => update (f_to_vecs dim n f) n ((fst (f n)) .* (f_to_vec dim (snd (f n))))
+   end.
+
+Definition trans_qstate (rmax:nat) (f:var -> nat) (s:qstate) (dim:nat) : option (Vector (2^dim)):=
+    match compose_state rmax s with None => None
+           | Some (qlength, ranges, size, st) => 
+        if dim =? qlength then 
+          match perm_all ranges f st size with None => None
+                      | Some acc => Some (@vsum dim size (f_to_vecs dim size acc))
+          end
+        else None
+     end.
+
+Definition trans_state (rmax:nat) (f : var -> nat) (s:qstate) (dim : nat) : option (Density (2^dim)) :=
+  match trans_qstate rmax f s dim with None => None 
          | Some st => Some (st† × st)
   end.
 

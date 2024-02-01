@@ -811,51 +811,16 @@ Proof.
   split. apply for_step_s. easy. easy.
 Qed.
 
-Lemma simp_aexp_no_eval: forall s a v, eval_aexp s a v -> simp_aexp a = None.
-Proof.
- intros. induction H; simpl in *; try easy.
- rewrite IHeval_aexp. easy.
- rewrite H0. rewrite IHeval_aexp. easy.
- rewrite IHeval_aexp. easy.
- rewrite H0. rewrite IHeval_aexp. easy.
-Qed.
 
-Lemma type_aexp_mo_no_simp: forall env a, type_aexp env a (Mo MT,nil) -> simp_aexp a = None.
-Proof.
-  intros. remember (Mo MT, []) as t. induction H; subst;simpl in *; try easy.
-  inv H1; try easy.
-  rewrite IHtype_aexp2; try easy. destruct (simp_aexp e1); try easy.
-  rewrite IHtype_aexp1; try easy.
-  inv H1; try easy.
-  rewrite IHtype_aexp2; try easy. destruct (simp_aexp e1); try easy.
-  rewrite IHtype_aexp1; try easy.
-Qed.
 
-Lemma type_cbexp_no_qtype: forall env b n t, type_cbexp env b t -> t <> QT n.
-Proof.
-  intros. induction H; try easy.
-  unfold is_class_type in *. destruct t1; try easy.
-  destruct t2; try easy.
-  unfold is_class_type in *. destruct t1; try easy.
-  destruct t2; try easy.
-Qed.
 
-Lemma simp_bexp_no_qtype: forall env b n l, 
-        type_bexp env b (QT n,l) -> simp_bexp b = None.
-Proof.
- intros. remember (QT n, l) as t. induction H; simpl in *; try easy.
- apply type_cbexp_no_qtype with (n := n) in H. inv Heqt. easy.
- apply IHtype_bexp in Heqt. rewrite Heqt. easy.
-Qed.
-
-Lemma type_sem_local: forall e rmax q env T T' W s1 s2 s, simple_tenv T ->
+Lemma type_sem_local: forall e e' rmax q env T T' s1 s2 s r, simple_tenv T ->
    env_state_eq T s1 -> @locus_system rmax q env T e T' ->
-      @qfor_sem rmax env (W, s1 ++ s2) e s -> 
-            (exists s1', snd s = s1' ++ s2 /\ 
-           @qfor_sem rmax env (W, s1) e (fst s, s1') /\ env_state_eq T' s1').
+      @step rmax env (s1 ++ s2) e r s e' -> 
+            (exists s1', s = s1' ++ s2 /\ 
+           @step rmax env s1 e r s1' e').
 Proof.
   intros. generalize dependent s1. generalize dependent s2. generalize dependent s.
-  generalize dependent W.
   induction H1; intros;simpl in *; subst; try easy.
 - apply env_state_eq_app in H0 as X1; try easy.
   destruct X1 as [sa [sb [X1 [X2 X3]]]].
@@ -1000,6 +965,70 @@ Proof.
   replace ((l + na - l)) with na  in H17 by lia. easy.
   replace ((l + na + 1)) with (l + S na) in * by lia. easy.
 Qed.
+
+Lemma type_preserve: forall rmax q env T T' s s' r e e', @locus_system rmax q env T e T' 
+  -> env_state_eq T s -> freeVarsNotCPExp env e -> simple_tenv T
+      -> @step rmax env s e r s' e'
+       -> exists Ta , env_state_eq Ta s' /\ @locus_system rmax q env Ta e' T'.
+Proof.
+  intros. generalize dependent e'. generalize dependent s. generalize dependent s'.
+  induction H; intros;simpl in *; subst.
+ -
+  apply env_state_eq_app in H0 as X1; try easy.
+  destruct X1 as [s1 [s2 [X1 [X2 X3]]]].
+  subst. apply env_state_eq_same_length in X1; try easy.
+  destruct X1. apply simple_tenv_app_l in H2 as X1.
+  apply type_sem_local with (q := q) (env := env) (T := T) (T' := T') in H4; try easy.
+  destruct H4 as [sa [Y1 [Y2 Y3]]]; subst. destruct s'; simpl in *; subst.
+  apply IHlocus_system in Y2; try easy. destruct Y2 as [A1 [A2 A3]].
+  split. apply simple_tenv_app; try easy.
+  apply simple_tenv_app_r in H3; try easy. split. easy.
+  apply env_state_eq_app_join; try easy.
+ -
+  inv H4. easy.
+ -
+Admitted.
+
+
+
+Lemma simp_aexp_no_eval: forall s a v, eval_aexp s a v -> simp_aexp a = None.
+Proof.
+ intros. induction H; simpl in *; try easy.
+ rewrite IHeval_aexp. easy.
+ rewrite H0. rewrite IHeval_aexp. easy.
+ rewrite IHeval_aexp. easy.
+ rewrite H0. rewrite IHeval_aexp. easy.
+Qed.
+
+Lemma type_aexp_mo_no_simp: forall env a, type_aexp env a (Mo MT,nil) -> simp_aexp a = None.
+Proof.
+  intros. remember (Mo MT, []) as t. induction H; subst;simpl in *; try easy.
+  inv H1; try easy.
+  rewrite IHtype_aexp2; try easy. destruct (simp_aexp e1); try easy.
+  rewrite IHtype_aexp1; try easy.
+  inv H1; try easy.
+  rewrite IHtype_aexp2; try easy. destruct (simp_aexp e1); try easy.
+  rewrite IHtype_aexp1; try easy.
+Qed.
+
+Lemma type_cbexp_no_qtype: forall env b n t, type_cbexp env b t -> t <> QT n.
+Proof.
+  intros. induction H; try easy.
+  unfold is_class_type in *. destruct t1; try easy.
+  destruct t2; try easy.
+  unfold is_class_type in *. destruct t1; try easy.
+  destruct t2; try easy.
+Qed.
+
+Lemma simp_bexp_no_qtype: forall env b n l, 
+        type_bexp env b (QT n,l) -> simp_bexp b = None.
+Proof.
+ intros. remember (QT n, l) as t. induction H; simpl in *; try easy.
+ apply type_cbexp_no_qtype with (n := n) in H. inv Heqt. easy.
+ apply IHtype_bexp in Heqt. rewrite Heqt. easy.
+Qed.
+
+
 
 Lemma type_preserve: forall rmax q env T T' s s' e, @locus_system rmax q env T e T' 
   -> env_state_eq T (snd s) -> kind_env_stack env (fst s) -> freeVarsNotCPExp env e
