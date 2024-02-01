@@ -472,8 +472,8 @@ Lemma trans_pexp_one_step_sem :
     forall (S S' : qstate) e' (r : R) (e'': pexp), 
       @step rmax aenv S e r S' e'' ->
       @trans_pexp_rel dim rmax t aenv f tenv e tenv' e' ->
-      trans_state f S dim = Some phi ->
-      trans_state f S' dim = Some phi' /\ r .* phi' = c_eval (fst(e')) phi.
+      trans_state rmax f S dim = Some phi ->
+      trans_state rmax f S' dim = Some phi' /\ r .* phi' = c_eval (fst(e')) phi.
 
 Proof.
 intros dim rmax t aenv f tenv e tenv' phi phi' Hdim 
@@ -481,8 +481,9 @@ Heq Hlocus S S' e' r e'' Hstep Htrans Htrans_state.
 induction Htrans. inv Hstep. 
 - admit.
 - inv Hstep. admit.
-- inv Hstep. simpl in * .
-  * unfold trans_state in Htrans_state. simpl in Htrans_state.
+- inv Hstep. admit.
+- inv Hstep.
+  * inv H2. unfold trans_state in Htrans_state. simpl in Htrans_state.
     remember (f x + i) as pos. unfold super. simpl in *.
 
 (* n is the length, f is the mapping from posi to nat, s is a locus, v is the virtual vector. *)
