@@ -724,6 +724,8 @@ Qed.
 (*small step semantics. *)
 Inductive step {rmax:nat}
            : aenv -> qstate -> pexp -> R -> qstate -> pexp -> Prop :=
+  (*| eq_step : forall aenv s sa s' e r e1,
+  @state_equiv rmax s sa -> step aenv sa e r s' e1 -> step aenv s e r s' e1 *)
   | skip_step : forall aenv s, step aenv s PSKIP (1:R) s PSKIP
   | let_step : forall aenv s x a n e, simp_aexp a = Some n 
              -> step aenv s (Let x (AE a) e) (1:R) s (subst_pexp e x n)

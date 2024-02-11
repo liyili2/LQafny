@@ -197,7 +197,10 @@ Inductive mode := CM | QM.
 
 Inductive locus_system {rmax:nat}
            : mode -> aenv -> type_map -> pexp -> type_map -> Prop :=
-
+(*
+    | eq_ses : forall q env s T T' T1,
+        env_equiv T T1 -> locus_system q env T1 s T' -> locus_system q env T s T'
+*)
     | sub_ses: forall q env s T T' T1,
         locus_system q env T s T' -> locus_system q env (T++T1) s (T'++T1)
 

@@ -257,17 +257,22 @@ Inductive mut_type: nat -> nat -> nat -> se_type -> se_type -> Prop :=
 Inductive env_equiv : type_map -> type_map -> Prop :=
      | env_id : forall S, env_equiv S S
   (*   | env_empty : forall v S, env_equiv ((nil,v)::S) S *)
-     | env_comm :forall a1 a2, env_equiv (a1++a2) (a2++a1)
+   (*  | env_comm :forall a1 a2, env_equiv (a1++a2) (a2++a1) *)
      | env_subtype :forall s v v' S, subtype v v' -> env_equiv ((s,v)::S) ((s,v')::S)
-     | env_ses_assoc: forall s v S S', env_equiv S S' -> env_equiv ((s,v)::S) ((s,v)::S')
+  (*   | env_ses_assoc: forall s v S S', env_equiv S S' -> env_equiv ((s,v)::S) ((s,v)::S')
      | env_ses_eq: forall s s' v S, ses_eq s s' -> env_equiv ((s,v)::S) ((s',v)::S)
      | env_ses_split: forall s s' v S, split_type v v -> env_equiv ((s++s',v)::S) ((s,v)::(s',v)::S) 
-     | env_ses_merge: forall s s' a b c S, times_type a b c -> env_equiv ((s,a)::(s',b)::S) ((s++s',c)::S)
-     | env_mut: forall l1 l2 a b v S, env_equiv ((l1++(a::b::l2),v)::S) ((l1++(b::a::l2),v)::S).
+     | env_ses_merge: forall s s' a b c S, times_type a b c -> env_equiv ((s,a)::(s',b)::S) ((s++s',c)::S) *)
+     | env_mut: forall l1 l2 x y v S, x <> y -> env_equiv ((l1++x::y::l2,v)::S) ((l1++y::x::l2,v)::S)
+     | env_cong: forall x T1 T2, env_equiv T1 T2 -> env_equiv (x::T1) (x::T2).
 
-Axiom env_equiv_trans : forall T1 T2 T3, env_equiv T1 T2 -> env_equiv T2 T3 -> env_equiv T1 T3.
+Lemma subtype_trans: forall v1 v2 v3, subtype v1 v2 -> subtype v2 v3 -> subtype v1 v3.
+Proof.
+  intros. inv H. easy. inv H0. constructor. inv H0. constructor.
+Qed.
 
-Axiom env_equiv_cong : forall S1 S2 S3, @env_equiv S1 S2 -> @env_equiv (S1++S3) (S2++S3).
+Axiom env_trans: forall T1 T2 T3, env_equiv T1 T2 -> env_equiv T2 T3 -> env_equiv T1 T3.
+
 
 Inductive find_env {A:Type}: list (locus * A) -> locus -> option (locus * A) -> Prop :=
   | find_env_empty : forall l, find_env nil l None
@@ -329,9 +334,12 @@ Definition sum_rotates (n:nat) (rmax:nat) (r:nat -> rz_val) :=
         (get_amplitude rmax ((1/sqrt (2^n))%R) (sum_rotate n (nat2fb i) rmax r),nat2fb i) else (C0,allfalse).
 
 Inductive state_same {rmax:nat} : nat -> state_elem -> state_elem -> Prop :=
+   | refl_same: forall n r, state_same n r r
    | nor_ch_ssame: forall n r c, state_same n (Nval r c)
              (Cval 1 (fun i => if i =? 0 then (r,c) else (C0,allfalse)))
+(*
    | ch_nor_ssame: forall n r, state_same n (Cval 1 r) (Nval (fst (r 0)) (snd (r 0)))
+*)
    | had_ch_ssame : forall n r, state_same n (Hval r) (Cval (2^n) (sum_rotates n rmax r)).
 (*
    | ch_had_ssame: forall r a e1 e2, r 0 = (a,e1,nat2fb 0) -> 
@@ -403,6 +411,18 @@ Fixpoint car_fun_fch (size n m:nat) (r1 r2: nat -> C * rz_val) :=
                         else car_fun_fch size n' m r1 r2 x)
    end.
 
+Definition mut_nor_0 (n m: nat) (r : rz_val) :=
+    fun i => if i <? m then r (i+n)
+      else if (m <=? i) && (i <? m + n) then r (i-m)
+      else r i.
+
+Definition mut_had_state_0 (n m: nat) (r : (nat -> rz_val)) :=
+    fun i => if i <? m then r (i+n)
+      else if (m <=? i) && (i <? m+n) then r (i-m)
+      else r i.
+
+Definition mut_fch_state_0 (n m:nat) (r : nat -> C * rz_val) :=
+    fun i => (fst (r i), mut_nor_0 n m (snd (r i))).
 
 Inductive mut_state: nat -> nat -> nat -> state_elem -> state_elem -> Prop :=
   | nor_mut_state: forall pos n m r c,
@@ -434,25 +454,26 @@ Inductive split_state {rmax:nat}: nat -> state_elem -> state_elem * state_elem -
 
 Inductive state_equiv {rmax:nat} : qstate -> qstate -> Prop :=
      | state_id : forall S, state_equiv S S
-  (*   | state_empty : forall v S, state_equiv ((nil,v)::S) S *)
-     | state_comm :forall a1 a2, state_equiv (a1++a2) (a2++a1)
-     | state_ses_assoc: forall s v S S', state_equiv S S' -> state_equiv ((s,v)::S) ((s,v)::S')
-    (* | state_ses_eq: forall s s' v S, ses_eq s s' -> state_equiv ((s,v)::S) ((s',v)::S) 
+  (*   | state_empty : forall v S, state_equiv ((nil,v)::S) S 
+     | state_comm :forall a1 a2, state_equiv (a1++a2) (a2++a1) 
+     | state_ses_assoc: forall s v S S', state_equiv S S' -> state_equiv ((s,v)::S) ((s,v)::S') *)
+    (* | state_ses_eq: forall s s' v S, ses_eq s s' -> state_equiv ((s,v)::S) ((s',v)::S) *)
      | state_sub: forall x v n u a, ses_len x = Some n -> @state_same rmax n v u 
                        -> state_equiv ((x,v)::a) ((x,u)::a) 
      | state_mut: forall l1 l2 n a n1 b n2 v u S, ses_len l1 = Some n -> ses_len ([a]) = Some n1 -> ses_len ([b]) = Some n2 ->
-                     mut_state n n1 n2 v u ->
-                 state_equiv ((l1++(a::b::l2),v)::S) ((l1++(b::a::l2),u)::S) *)
+                     mut_state n n1 n2 v u -> a <> b ->
+                 state_equiv ((l1++(a::b::l2),v)::S) ((l1++(b::a::l2),u)::S)
+     | state_cong: forall S1 S2 x, @state_equiv rmax S1 S2 -> @state_equiv rmax (x::S1) (x::S2).
+(*
      | state_merge: forall x n v y u a vu, ses_len x = Some n -> 
                        @times_state rmax n v u vu -> state_equiv ((x,v)::((y,u)::a)) ((x++y,vu)::a)
      | state_split: forall x n y v v1 v2 a, ses_len x = Some n -> 
-                  @split_state rmax n v (v1,v2) -> state_equiv ((x++y,v)::a) ((x,v1)::(y,v2)::a).
+                  @split_state rmax n v (v1,v2) -> state_equiv ((x++y,v)::a) ((x,v1)::(y,v2)::a)
+*)
 
-Axiom state_equiv_trans : forall rmax S1 S2 S3, @state_equiv rmax S1 S2 -> @state_equiv rmax S2 S3 -> @state_equiv rmax S1 S3.
+Axiom state_trans : forall rmax S1 S2 S3, @state_equiv rmax S1 S2 -> @state_equiv rmax S2 S3 -> @state_equiv rmax S1 S3.
 
 Axiom state_equiv_sym : forall rmax S1 S2, @state_equiv rmax S1 S2 -> @state_equiv rmax S2 S1.
-
-Axiom state_equiv_cong : forall rmax S1 S2 S3, @state_equiv rmax S1 S2 -> @state_equiv rmax (S1++S3) (S2++S3).
 
 (* partial measurement list filter.  *)
 
