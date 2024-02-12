@@ -222,6 +222,81 @@ Proof.
   intros. induction H. inv H0. easy. inv H0. easy. inv H0. easy.
 Qed.
 
+Definition add_a (a:range) (T:type_map) :=
+   match T with nil => nil | (x,y)::l => (a::x,y)::l end.
+
+Lemma perm_envs_same_length: forall T T1, perm_envs T T1 ->  length T = length T1.
+Proof.
+  intros. induction H; try easy. inv H. simpl in *. easy.
+Qed.
+
+Definition is_cval_t (l: type_map) := match l with nil => True | ((x,CH)::l) => True | _ => False end.
+
+Lemma is_cval_t_subst: forall l x a, is_cval_t (subst_type_map l x a) -> forall v,is_cval_t (subst_type_map l x v).
+Proof.
+  intros. unfold is_cval_t in *.
+  destruct (subst_type_map l x a) eqn:eq1. destruct l. simpl in *. easy.
+  simpl in *. destruct p. inv eq1.
+  destruct (subst_type_map l x v) eqn:eq2. easy.
+  destruct p. destruct p0. simpl in *.
+  destruct l. simpl in *. easy.
+  simpl in *. destruct p. simpl in *. inv eq1. inv eq2. easy.
+Qed.
+
+Lemma length_subst: forall l x a, forall v, length (subst_type_map l x a) = length (subst_type_map l x v).
+Proof.
+  intros. induction l; try easy.
+  simpl in *. destruct a0. simpl in *. rewrite IHl. easy.
+Qed.
+
+Lemma perm_envs_cong: forall T T' a, perm_envs T T' -> perm_envs (add_a a T) (add_a a T').
+Proof.
+  intros. induction H. constructor.
+  unfold add_a in *. destruct T2.
+  inv H. apply perm_envs_same_length in H0 as X1. simpl in *. destruct T3; try easy.
+  apply perm_envs_same_length in H0 as X2. simpl in *. destruct T1; try easy.
+  destruct p. destruct p0. destruct p1.
+  apply perm_env_many with (T2 := ((a :: l, s) :: T2)); try easy.
+  inv H. rewrite app_comm_cons. rewrite app_comm_cons with (a := a).
+  constructor.
+Qed.
+
+Definition add_end a (T:type_map) :=
+   match T with nil => nil | (x,y)::l => (x++a,y)::l end.
+
+Lemma perm_envs_prog: forall T T' a, perm_envs T T' -> perm_envs (add_end a T) (add_end a T').
+Proof.
+  intros. induction H. constructor.
+  unfold add_end in *. destruct T2.
+  inv H. apply perm_envs_same_length in H0 as X1. simpl in *. destruct T3; try easy.
+  apply perm_envs_same_length in H0 as X2. simpl in *. destruct T1; try easy.
+  destruct p. destruct p0. destruct p1.
+  apply perm_env_many with (T2 := ((l++a, s) :: T2)); try easy.
+  inv H. repeat rewrite <- app_assoc. repeat rewrite <- app_comm_cons.
+  constructor.
+Qed.
+
+Lemma perm_envs_end: forall a l, perm_envs ([(a::l,CH)]) ([(l++[a],CH)]).
+Proof.
+  intros. induction l. simpl in *. constructor.
+  simpl in *.
+  apply perm_env_many with (T2 := [(a0 :: a :: l, CH)]).
+  replace ((a :: a0 :: l)) with ([]++a :: a0 :: l) by easy.
+  replace (a0 :: a :: l) with ([] ++ (a0 :: a :: l)) by easy.
+  apply perm_env_rule. apply perm_envs_cong with (a := a0) in IHl.
+  unfold add_a in *. easy.
+Qed.
+
+Lemma perm_envs_single_prog: forall T T', perm_envs T T' ->
+   is_cval_t T -> length T <= 1 -> is_cval_t T' /\ length T' = length T.
+Proof.
+  intros. induction H. easy.
+  assert (is_cval_t T2 /\ length T2 = length T1).
+  inv H. simpl in *. destruct v; try easy.
+  destruct H3. apply IHperm_envs in H3; try lia. destruct H3.
+  split; try easy. rewrite H5. easy.
+Qed.
+
 Inductive locus_system {rmax:nat}
            : mode -> aenv -> type_map -> pexp -> type_map -> Prop :=
 
