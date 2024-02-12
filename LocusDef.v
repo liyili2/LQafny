@@ -263,7 +263,7 @@ Inductive env_equiv : type_map -> type_map -> Prop :=
      | env_ses_eq: forall s s' v S, ses_eq s s' -> env_equiv ((s,v)::S) ((s',v)::S)
      | env_ses_split: forall s s' v S, split_type v v -> env_equiv ((s++s',v)::S) ((s,v)::(s',v)::S) 
      | env_ses_merge: forall s s' a b c S, times_type a b c -> env_equiv ((s,a)::(s',b)::S) ((s++s',c)::S) *)
-     | env_mut: forall l1 l2 x y v S, x <> y -> env_equiv ((l1++x::y::l2,v)::S) ((l1++y::x::l2,v)::S)
+     | env_mut: forall l1 l2 x y v S, env_equiv ((l1++x::y::l2,v)::S) ((l1++y::x::l2,v)::S)
      | env_cong: forall x T1 T2, env_equiv T1 T2 -> env_equiv (x::T1) (x::T2).
 
 Lemma subtype_trans: forall v1 v2 v3, subtype v1 v2 -> subtype v2 v3 -> subtype v1 v3.
@@ -461,7 +461,7 @@ Inductive state_equiv {rmax:nat} : qstate -> qstate -> Prop :=
      | state_sub: forall x v n u a, ses_len x = Some n -> @state_same rmax n v u 
                        -> state_equiv ((x,v)::a) ((x,u)::a) 
      | state_mut: forall l1 l2 n a n1 b n2 v u S, ses_len l1 = Some n -> ses_len ([a]) = Some n1 -> ses_len ([b]) = Some n2 ->
-                     mut_state n n1 n2 v u -> a <> b ->
+                     mut_state n n1 n2 v u ->
                  state_equiv ((l1++(a::b::l2),v)::S) ((l1++(b::a::l2),u)::S)
      | state_cong: forall S1 S2 x, @state_equiv rmax S1 S2 -> @state_equiv rmax (x::S1) (x::S2).
 (*

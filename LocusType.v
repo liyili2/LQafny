@@ -195,12 +195,39 @@ Fixpoint subst_type_map (l:type_map) (x:var) (n:nat) :=
 
 Inductive mode := CM | QM.
 
+Inductive perm_env: type_map -> type_map -> Prop :=
+  perm_env_rule: forall l1 l2 x y v S, perm_env ((l1++x::y::l2,v)::S) ((l1++y::x::l2,v)::S).
+
+Inductive perm_envs: type_map -> type_map -> Prop :=
+   perm_env_empty: forall T, perm_envs T T
+ | perm_env_many: forall T1 T2 T3, perm_env T1 T2 -> perm_envs T2 T3 -> perm_envs T1 T3.
+
+
+Lemma perm_env_is_equiv: forall T1 T2, perm_envs T1 T2 -> env_equiv T1 T2.
+Proof.
+  intros. induction H. constructor.
+  apply env_trans with (T2 := T2). inv H.
+  apply env_mut. easy.
+Qed.
+
+Lemma perm_envs_app: forall T1 T2 T, perm_envs T1 T2 -> perm_envs (T1++T) (T2++T).
+Proof.
+  intros. induction H. constructor.
+  inv H. apply perm_env_many with (T2 := (((l1 ++ y :: x :: l2, v) :: S) ++ T)); try easy.
+Qed.
+
+Lemma type_state_elem_same_unique: forall a t t', 
+  type_state_elem_same t a -> type_state_elem_same t' a -> t = t'.
+Proof.
+  intros. induction H. inv H0. easy. inv H0. easy. inv H0. easy.
+Qed.
+
 Inductive locus_system {rmax:nat}
            : mode -> aenv -> type_map -> pexp -> type_map -> Prop :=
-(*
+
     | eq_ses : forall q env s T T' T1,
-        env_equiv T T1 -> locus_system q env T1 s T' -> locus_system q env T s T'
-*)
+         locus_system q env T s T' -> perm_envs T' T1 -> locus_system q env T s T1
+
     | sub_ses: forall q env s T T' T1,
         locus_system q env T s T' -> locus_system q env (T++T1) s (T'++T1)
 
