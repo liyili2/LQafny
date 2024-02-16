@@ -692,6 +692,21 @@ Proof.
  inv H. easy.
 Qed.
 
+Lemma type_aexp_ses_len : forall b l env n, type_aexp env b (QT n, l) -> ses_len l = Some n.
+Proof.
+  intros.  unfold ses_len in *. remember (QT n, l) as t. induction H; subst; simpl in *; try easy.
+  inv Heqt. simpl in *.
+  replace (n - 0 + 0) with n by lia. easy.
+Admitted.
+
+Lemma type_vari_ses_len : forall b l env n, type_vari env b (QT n, l) -> ses_len l = Some n.
+Proof.
+  intros. inv H. 
+  apply type_aexp_ses_len in H0. easy.
+  unfold ses_len in *; simpl in *. destruct v. easy.
+  replace ((S v - v + 0)) with 1 by lia. easy.
+Qed.
+
 Lemma type_bexp_ses_len : forall b l env n, type_bexp env b (QT n, l) -> ses_len l = Some n.
 Proof.
   induction b;intros;simpl in *; try easy.

@@ -256,13 +256,7 @@ Inductive mut_type: nat -> nat -> nat -> se_type -> se_type -> Prop :=
 *)
 Inductive env_equiv : type_map -> type_map -> Prop :=
      | env_id : forall S, env_equiv S S
-  (*   | env_empty : forall v S, env_equiv ((nil,v)::S) S *)
-   (*  | env_comm :forall a1 a2, env_equiv (a1++a2) (a2++a1) *)
      | env_subtype :forall s v v' S, subtype v v' -> env_equiv ((s,v)::S) ((s,v')::S)
-  (*   | env_ses_assoc: forall s v S S', env_equiv S S' -> env_equiv ((s,v)::S) ((s,v)::S')
-     | env_ses_eq: forall s s' v S, ses_eq s s' -> env_equiv ((s,v)::S) ((s',v)::S)
-     | env_ses_split: forall s s' v S, split_type v v -> env_equiv ((s++s',v)::S) ((s,v)::(s',v)::S) 
-     | env_ses_merge: forall s s' a b c S, times_type a b c -> env_equiv ((s,a)::(s',b)::S) ((s++s',c)::S) *)
      | env_mut: forall l1 l2 x y v S, env_equiv ((l1++x::y::l2,v)::S) ((l1++y::x::l2,v)::S)
      | env_cong: forall x T1 T2, env_equiv T1 T2 -> env_equiv (x::T1) (x::T2).
 
@@ -273,7 +267,21 @@ Qed.
 
 Axiom env_trans: forall T1 T2 T3, env_equiv T1 T2 -> env_equiv T2 T3 -> env_equiv T1 T3.
 
+Lemma equiv_env_cong: forall T1 T2 T, env_equiv T1 T2 -> env_equiv (T1++T) (T2++T).
+Proof.
+  intros. induction H. constructor.
+  simpl in *. apply env_subtype. easy.
+  simpl in *. apply env_mut.
+  simpl in *. apply env_cong. easy.
+Qed.
 
+Lemma equiv_env_same_length: forall T T1, env_equiv T T1 ->  length T = length T1.
+Proof.
+  intros. induction H; try easy. simpl in *. rewrite IHenv_equiv. easy.
+Qed.
+
+
+(*
 Inductive find_env {A:Type}: list (locus * A) -> locus -> option (locus * A) -> Prop :=
   | find_env_empty : forall l, find_env nil l None
   | find_env_many_1 : forall S x y t, ses_sub x y -> find_env ((y,t)::S) x (Some (y,t))
@@ -286,7 +294,7 @@ Inductive update_env {A:Type}: list (locus * A) -> locus -> A -> list (locus * A
   | up_env_empty : forall l t, update_env nil l t ([(l,t)])
   | up_env_many_1 : forall S x x' t t', ses_sub x x' -> update_env ((x',t)::S) x t' ((x,t')::S)
   | up_env_many_2 : forall S S' x y t t', ~ ses_sub x y -> update_env S x t' S' -> update_env ((y,t)::S) x t' ((y,t)::S').
-
+*)
 (* Define semantic state equations. *)
 (* Below is the def for states .
    States include two parts: stacks mapping from variables to classical numbers,
@@ -695,16 +703,16 @@ Inductive up_types: type_map -> type_map -> type_map -> Prop :=
    | up_type_empty: forall T, up_types T [] T
    | up_type_many: forall T T1 T2 T3 s t, up_type T s t T1 -> up_types T1 T2 T3 -> up_types T ((s,t)::T2) T3.
 
-
+(*
 Inductive find_state {rmax} : state -> locus -> option (locus * state_elem) -> Prop :=
     | find_qstate_rule: forall M S S' x t, @state_equiv rmax S S' -> find_env S' x t -> find_state (M,S) x t.
-
+*)
 
 Inductive pick_mea : nat -> state_elem -> (R * nat) -> Prop :=
    pick_meas : forall n m b i r bl,
           0 <= i < m -> b i = (r,bl) -> pick_mea n (Cval m b) (Cmod r, a_nat2fb bl n).
 
-
+(*
 Definition update_cval (l:state) (a:var) (v: nat) := (AEnv.add a v (fst l),snd l).
 
 Inductive up_state {rmax:nat} : state -> locus -> state_elem -> state -> Prop :=
@@ -713,7 +721,7 @@ Inductive up_state {rmax:nat} : state -> locus -> state_elem -> state -> Prop :=
 Inductive mask_state {rmax:nat}: locus -> nat -> state -> state -> Prop :=
     mask_state_rule : forall l n m l1 t t' S Sa, @find_state rmax S l (Some (l++l1,t)) -> ses_len l = Some m ->
               build_state_ch m n t = Some t' -> @up_state rmax S l t' Sa -> mask_state l n S Sa.
-
+*)
 Inductive type_state_elem_same : se_type -> state_elem -> Prop :=
       nor_state_same: forall p r, type_state_elem_same TNor (Nval p r)
     | had_state_same: forall bl, type_state_elem_same THad (Hval bl)
