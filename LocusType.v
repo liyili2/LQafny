@@ -177,6 +177,58 @@ Proof.
   split; try easy. rewrite H5. easy.
 Qed.
 
+Lemma env_equiv_single_prog: forall T T', env_equiv T T' ->
+   is_cval_t T -> length T <= 1 -> is_cval_t T' /\ length T' = length T.
+Proof.
+  intros. induction H. easy.
+  unfold is_cval_t in *. simpl in *. destruct v; try easy. inv H. split. easy.
+  lia.
+  unfold is_cval_t in *. destruct v; try easy.
+  simpl in *. destruct x; try easy.
+  destruct s; try easy. split; try easy.
+  assert (length T1 = 0) by lia.
+  destruct T1; try easy. simpl in *.
+  assert (is_cval_t T2 /\ length T2 = 0). apply IHenv_equiv; try easy. lia.
+  destruct H3; try easy. rewrite H4. easy.
+Qed.
+
+Lemma env_equiv_add_a: forall T T' a, env_equiv T T' -> env_equiv (add_a a T) (add_a a T').
+Proof.
+  intros. induction H. constructor.
+  unfold add_a in *. 
+  apply env_subtype. easy.
+  unfold add_a in *.
+  rewrite app_comm_cons.
+  rewrite app_comm_cons.
+  apply env_mut.
+  unfold add_a in *. destruct x.
+  destruct T1; try easy. inv H. constructor.
+  destruct T2; try easy. destruct p. destruct p0.
+  apply env_cong. easy.
+Qed.
+
+Lemma env_equiv_add_end: forall T T' a, env_equiv T T' -> env_equiv (add_end a T) (add_end a T').
+Proof.
+  intros. induction H; simpl in *; try constructor.
+  easy.
+  repeat rewrite <- app_assoc.
+  repeat rewrite <- app_comm_cons.
+  apply env_mut.
+  destruct x. apply env_cong. easy.
+Qed.
+
+Lemma env_equiv_end: forall a l, env_equiv ([(a::l,CH)]) ([(l++[a],CH)]).
+Proof.
+  intros. induction l. simpl in *. constructor.
+  simpl in *.
+  assert (env_equiv ([(a0 :: a :: l, CH)]) ([(a0 :: l ++ [a], CH)])).
+  apply env_equiv_add_a with (a := a0) in IHl. easy.
+  apply env_trans with (T2 := [(a0 :: a :: l, CH)]); try easy.
+  replace ((a :: a0 :: l)) with ([]++a :: a0 :: l) by easy.
+  replace (a0 :: a :: l) with ([] ++ (a0 :: a :: l)) by easy.
+  apply env_mut.
+Qed.
+
 Inductive locus_system {rmax:nat}
            : mode -> aenv -> type_map -> pexp -> type_map -> Prop :=
 

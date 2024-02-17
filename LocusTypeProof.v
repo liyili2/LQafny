@@ -1455,27 +1455,28 @@ Proof.
   rewrite length_subst with (v := h). easy.
 Qed.
 
-(*
+
 Lemma locus_system_qm_single_same: forall rmax env e T Ta,
-   is_cval_t T -> length T <= 1 -> @locus_system rmax QM env T e Ta -> perm_envs Ta T.
+   is_cval_t T -> length T <= 1 -> @locus_system rmax QM env T e Ta -> env_equiv T Ta.
 Proof.
   intros. remember QM as a.
   induction H1; subst; intros; try easy.
-  destruct T'. simpl in *. inv H2; try easy.
-  apply locus_system_same_length in H1. destruct T; try easy. constructor.
-  apply locus_system_same_length in H1 as X1. destruct T; try easy.
-  apply perm_envs_same_length in H2 as X2. destruct T1; try easy.
-  simpl in *. destruct p0. destruct p1.
-  destruct s0; try easy.
-  simpl in *. 
-  rewrite IHlocus_system; try easy. lia.
-  simpl in *. destruct p. destruct T. simpl in *.
-  destruct s0; try easy. rewrite IHlocus_system; try easy.
-  simpl in *. lia.
-  rewrite IHlocus_system; try easy.
-  assert (QM = QM) by easy.
-  specialize (IHlocus_system1 H H0 H1); subst.
-  rewrite <- IHlocus_system2; try easy.
+  apply env_trans with (T2 := T'); try easy. apply IHlocus_system; try easy.
+  destruct T; try easy. simpl in *.
+  assert (env_equiv nil T'). apply IHlocus_system; try easy. lia.
+  inv H2. simpl in *. constructor.
+  simpl in *. destruct p.
+  assert (length (T ++ T1) = 0) by lia.
+  apply length_zero_iff_nil in H2.
+  apply app_eq_nil in H2. destruct H2; subst. simpl in *.
+  destruct s0;try easy. rewrite app_nil_r. apply IHlocus_system; try easy. constructor.
+  apply IHlocus_system; try easy.
+  1-4:constructor.
+  apply env_trans with (T2 := T1). apply IHlocus_system1; try easy.
+  assert (env_equiv T T1). apply IHlocus_system1; try easy.
+  apply env_equiv_single_prog in H1; try easy. destruct H1.
+  apply IHlocus_system2; try easy.
+  rewrite <- H2 in H0. easy. constructor.
   clear H3.
   assert (forall v,is_cval_t (subst_type_map T i v)).
   apply is_cval_t_subst with (a := l). easy.
@@ -1491,38 +1492,61 @@ Proof.
   assert (l <= l + S x < l + S (S x)) by lia.
   apply H4 in H; try easy.
   replace (l+ S x + 1) with (l + S (S x)) in H by lia.
-  rewrite H. rewrite IHx; try easy.
-  intros. rewrite H4; try easy. lia. lia.
+  apply env_trans with (T2 := (subst_type_map T i (l + S x))); try easy.
+  apply IHx; try easy.
+  intros. apply H4; try easy. lia. lia.
 Qed.
 
-Admitted.
-
-
 Lemma locus_system_prolong: forall rmax env l T Ta e, @locus_system rmax QM env T e Ta
-  -> @locus_system rmax QM env (add_end l T) e (add_end l Ta).
+    -> is_cval_t T -> length T <= 1 -> @locus_system rmax QM env (add_end l T) e (add_end l Ta).
 Proof.
   intros. remember QM as q. induction H; subst; try easy.
   apply eq_ses with (T'0 := add_end l T').
-  apply IHlocus_system. easy.
-  unfold add_end. destruct T'; try easy. destruct T1; try easy.
-  apply perm_envs_same_length in H0. simpl in *. easy.
-  destruct T1; try easy.
-  apply perm_envs_same_length in H0; try easy.
-  destruct p. destruct p0.
-  apply perm_envs_prog with (a := l) in H0; try easy.
-  destruct T. destruct T'. simpl in *.
-  replace (add_end l T1) with ([] ++ (add_end l T1)) by easy.
-  apply sub_ses. easy.
-  apply locus_system_same_length in H. easy.
-  destruct T'; try easy. apply locus_system_same_length in H. easy.
-  destruct p. destruct p0. simpl in *.
-  rewrite app_comm_cons. rewrite app_comm_cons.
-  apply sub_ses. apply IHlocus_system. easy.
-  unfold add_end in *. constructor.
-  apply assign_ses; try easy. apply IHlocus_system. easy.
-  
+  apply IHlocus_system; try easy.
+  apply locus_system_qm_single_same in H; try easy.
+  apply env_equiv_add_end. easy.
+  destruct T. simpl in *.
+  apply locus_system_qm_single_same in H as X1; try easy.
+  inv X1. simpl in *.
+  replace ((add_end l T1)) with ([] ++ (add_end l T1)) by easy.
+  apply sub_ses. apply IHlocus_system; try easy. lia. simpl;lia.
+  simpl in *. destruct p. destruct s0;try easy.
+  assert (length (T ++ T1) = 0) by lia.
+  apply length_zero_iff_nil in H2.
+  apply app_eq_nil in H2. destruct H2; subst; try easy. simpl in *.
+  apply locus_system_qm_single_same in H as X1; try easy.
+  apply env_equiv_single_prog in X1 as X2; try easy.
+  destruct X2. simpl in *. destruct T'. simpl in *. inv X1. simpl in *.
+  destruct p. destruct s0; try easy.
+  destruct T'; try easy. simpl in *.
+  apply IHlocus_system; try easy.
+  simpl in *. constructor.
+  apply assign_ses; try easy. apply IHlocus_system; try easy.
+  unfold add_end in *.
+  repeat rewrite <- app_assoc. apply appu_ses_ch with (n0 := n); try easy.
+  simpl in *. apply appu_ses_h_ch with (m0 := m); try easy.
+  apply qif_ses; try easy. apply IHlocus_system; try easy.
+  unfold add_end in *.
+  repeat rewrite <- app_assoc.
+  apply qif_ses_ch with (n0 := n); try easy.
+  apply IHlocus_system; try easy.
+  apply locus_system_qm_single_same in H as X1.
+  apply env_equiv_single_prog in X1 as X2; try easy. destruct X2.
+  apply pseq_ses_type with (T3 := (add_end l T1)); try easy.
+  apply IHlocus_system1; try easy.
+  rewrite <- H4 in H1.
+  apply IHlocus_system2; try easy.
+  easy. easy.
+  apply qfor_ses_no. easy.
 Admitted.
-*)
+
+Lemma locus_system_skip_equiv: 
+  forall rmax q env T T1, @locus_system rmax q env T PSKIP T1 -> env_equiv T T1.
+Proof.
+  intros. remember PSKIP as e. induction H; try easy.
+  apply env_trans with (T2 := T'); try easy. apply IHlocus_system;easy.
+  apply equiv_env_cong. apply IHlocus_system;easy. constructor.
+Qed.
 
 Lemma type_preserve: forall rmax q env T T' s s' r e e', @locus_system rmax q env T e T' 
   -> env_state_eq T s -> freeVarsNotCPExp env e -> simple_tenv T
@@ -1627,21 +1651,21 @@ Proof.
   apply IHlocus_system in H12 as X2; try easy.
   destruct X2 as [Ta [Tb [X2 [X3 X4]]]]. inv X2. inv H7.
   apply type_state_elem_same_unique with (t := t) in H17; try easy; subst.
-  apply perm_envs_single_prog in X3 as G1; try easy. destruct G1 as [G1 G2].
+  apply env_equiv_single_prog in X3 as G1; try easy. destruct G1 as [G1 G2].
   assert (exists l1, Tb = ([(l1,CH)])).
   destruct Tb; try easy. destruct Tb ; try lia. unfold is_cval_t in *. destruct p; try easy.
   destruct s; try easy. exists l. easy. simpl in *. lia.
   destruct H4 as [l1 G3]; subst.
   exists ([((i, BNum v, BNum (S v)) :: l0, CH)]), ([((i, BNum v, BNum (S v)) :: l1, CH)]).
   split. constructor. constructor. inv H13. inv H16. 1-3: constructor.
-  split. apply perm_envs_cong with (a := (i, BNum v, BNum (S v))) in X3. easy.
+  split. apply env_equiv_add_a with (a := (i, BNum v, BNum (S v))) in X3. easy.
   apply eq_ses with (T' := [((i, BNum v, BNum (S v)) :: l1, CH)]).
   replace ((i, BNum v, BNum (S v)) :: l1) with ([(i, BNum v, BNum (S v))]++l1) by easy.
   apply qif_ses_ch with (n := 1); try easy.
   apply btest_type with (n := n1); try easy.
   apply eq_ses with (T' := [(l0, CH)]); try easy.
-  apply perm_envs_sym in X3.
-  apply perm_envs_cong with (a := (i, BNum v, BNum (S v))) in X3. easy.
+  apply env_sym in X3.
+  apply env_equiv_add_a with (a := (i, BNum v, BNum (S v))) in X3. easy.
   inv H17. inv H9. constructor. 1-2: constructor.
   unfold simple_tenv in *. eapply H. simpl in *. left. easy.
   inv H9. constructor. 1-2:constructor.
@@ -1662,7 +1686,19 @@ Proof.
   exists ([((a, BNum 0, BNum u):: [(z, BNum v, BNum (S v))] ++ l2, CH)]),
         ([([(z, BNum v, BNum (S v))] ++ l2 ++ [(a, BNum 0, BNum u)], CH)]).
   split. simpl in *. constructor. 1-2: constructor.
-  split. apply perm_envs_end.
+  split.
+  assert (env_equiv ([((a, BNum 0, BNum u) :: [(z, BNum v, BNum (S v))] ++ l2, CH)])
+       ([((z, BNum v, BNum (S v)) :: [(a, BNum 0, BNum u)] ++ l2, CH)])). 
+  replace ([((a, BNum 0, BNum u) :: [(z, BNum v, BNum (S v))] ++ l2, CH)])
+   with ([([]++ (a, BNum 0, BNum u) :: (z, BNum v, BNum (S v)) :: l2, CH)]) by easy.
+  replace ([((z, BNum v, BNum (S v)) :: [(a, BNum 0, BNum u)] ++ l2, CH)])
+   with ([([]++ (z, BNum v, BNum (S v)) :: (a, BNum 0, BNum u) :: l2, CH)]) by easy.
+  apply env_mut. 
+  apply env_trans with (T2 := ([((z, BNum v, BNum (S v)) :: [(a, BNum 0, BNum u)] ++ l2, CH)])); try easy.
+  simpl.
+  assert (env_equiv ([((a, BNum 0, BNum u) :: l2, CH)]) ([(l2 ++ [(a, BNum 0, BNum u)], CH)])).
+  apply env_equiv_end.
+  apply env_equiv_add_a with (a := (z, BNum v, BNum (S v))) in H3. easy.
   apply eq_ses with (T' := [([(z, BNum v, BNum (S v))] ++ l2 ++ [(a, BNum 0, BNum u)], CH)]).
   apply qif_ses_ch with (n := 1).
   inv H10; try easy.
@@ -1670,380 +1706,23 @@ Proof.
   apply btest_type with (n := n); try easy.
   apply btest_type with (n := n); try easy.
   apply btest_type with (n := n); try easy.
-  apply locus_system_prolong. easy.
-  apply perm_envs_end.
-- inv H4. apply IHlocus_system1 in H12.
-  destruct H12 as [Ta [Tb [Tc [X1 [X2 [X3 X4]]]]]].
-Admitted.
-
-
-Lemma type_preserve: forall rmax q env T T' s s' e, @locus_system rmax q env T e T' 
-  -> env_state_eq T (snd s) -> kind_env_stack env (fst s) -> freeVarsNotCPExp env e
-  -> simple_tenv T 
-      -> @qfor_sem rmax env s e s' 
-        -> simple_tenv T' /\ AEnv.Equal (fst s) (fst s') /\ env_state_eq T' (snd s').
-Proof.
-  intros. generalize dependent s. generalize dependent s'.
-  induction H; intros;simpl in *; subst.
- -
-  destruct s0; simpl in *.
-  apply env_state_eq_app in H0 as X1; try easy.
-  destruct X1 as [s1 [s2 [X1 [X2 X3]]]].
-  subst. apply env_state_eq_same_length in X1; try easy.
-  destruct X1. apply simple_tenv_app_l in H3 as X1.
-  apply type_sem_local with (q := q) (env := env) (T := T) (T' := T') in H4; try easy.
-  destruct H4 as [sa [Y1 [Y2 Y3]]]; subst. destruct s'; simpl in *; subst.
-  apply IHlocus_system in Y2; try easy. destruct Y2 as [A1 [A2 A3]].
-  split. apply simple_tenv_app; try easy.
-  apply simple_tenv_app_r in H3; try easy. split. easy.
-  apply env_state_eq_app_join; try easy.
- -
-  inv H4. easy.
- -
-  inv H6.
-  rewrite H0 in H13. inv H13.
-  rewrite simple_env_subst in IHlocus_system; try easy.
-  apply freeVars_pexp_in with (v := n) in H2 as X1; try easy.
-  specialize (IHlocus_system X1 H3 s' s H4 H5 H14). easy.
-  apply simp_aexp_no_eval in H13. rewrite H0 in *. easy.
- -
-  inv H6. 
-  apply type_aexp_mo_no_simp in H. rewrite H in *. easy.
-  assert (freeVarsNotCPExp (AEnv.add x (Mo MT) env) e).
-  unfold freeVarsNotCPExp in *. 
-  intros.
-  bdestruct (x0 =? x); subst.
-  apply aenv_mapsto_add1 in H7. inv H7. easy.
-  apply AEnv.add_3 in H7; try lia.
-  apply H2 with (x0 := x0). simpl.
-  apply in_app_iff. right.
-  simpl in *.
-  apply list_sub_not_in; try easy. easy.
-  specialize (IHlocus_system H6 H3 (W, s'0) (update_cval s x n)).
-  simpl in *.
-  assert (kind_env_stack
-                     (AEnv.add x (Mo MT) env)
-                     (AEnv.add x n (fst s))).
-  unfold kind_env_stack. split. intros.
-  bdestruct (x0 =? x); subst.
-  exists n. apply AEnv.add_1. easy.
-  apply AEnv.add_3 in H7; try easy.
-  apply H5 in H7. destruct H7.
-  exists x1. apply AEnv.add_2. lia. easy. lia.
-  intros.
-  bdestruct (x0 =? x); subst.
-  apply AEnv.add_1. easy.
-  destruct H7.
-  apply AEnv.add_3 in H7; try easy.
-  assert (AEnv.In x0 (fst s)). exists x1. easy.
-  apply H5 in H9.
-  apply AEnv.add_2. lia. easy. lia.
-  destruct (IHlocus_system H4 H7 H14) as [Y1 [Y2 Y3]].
-  split. easy.
-  split; try easy.
- -
-  inv H6.
-  assert (freeVarsNotCPExp (AEnv.add x (Mo MT) env) e).
-  unfold freeVarsNotCPExp in *. 
-  intros.
-  bdestruct (x0 =? x); subst.
-  apply aenv_mapsto_add1 in H7. inv H7. easy.
-  apply AEnv.add_3 in H7; try lia.
-  apply H2 with (x0 := x0). simpl.
-  right.
-  simpl in *.
-  apply list_sub_not_in; try easy. easy.
-  assert (simple_tenv ((l, CH) :: T)).
-  unfold simple_tenv in *. intros. simpl in *.
-  destruct H7. inv H7.
-  specialize (H3 ((y, BNum 0, BNum n) :: a) CH).
-  assert (((y, BNum 0, BNum n) :: a, CH) = ((y, BNum 0, BNum n) :: a, CH) \/
-     In ((y, BNum 0, BNum n) :: a, CH) T). left. easy.
-  apply H3 in H7.
-  inv H7. easy. apply H3 with (b:= b). right. easy.
-  unfold build_state_ch in *. destruct va; try easy.
-  destruct (build_state_pars m n0 v (to_sum_c m n0 v b) b); try easy.
-  inv H15.
-  inv H4.
-  specialize (IHlocus_system H6 H7 (W', s'0) (AEnv.add x (r, v) W, (l0, Cval n1 p) :: s0)).
-  assert (env_state_eq ((l0, CH) :: T) ((l0, Cval n1 p) :: s0)).
-  constructor. easy. constructor.
-  assert (kind_env_stack (AEnv.add x (Mo MT) env) (AEnv.add x (r, v) W)).
-  unfold kind_env_stack in *. split; intros.
-  bdestruct (x0 =? x); subst.
-  exists (r, v). apply AEnv.add_1. easy.
-  apply AEnv.add_3 in H8; try lia.
-  apply H5 in H8. destruct H8.
-  exists x1. apply AEnv.add_2; try lia. easy. simpl in *.
-  bdestruct (x0 =? x); subst. apply AEnv.add_1. easy.
-  assert (AEnv.In (elt:=R * nat) x0 W).
-  destruct H8. exists x1. apply AEnv.add_3 in H8; try lia. easy.
-  apply H5 in H12. apply AEnv.add_2. lia. easy.
-  destruct (IHlocus_system H4 H8 H16) as [Y1 [Y2 Y3]]. split; try easy.
- -
-  inv H5; simpl in *. inv H1. inv H7. 
-  split. easy. split;try easy. constructor. constructor. constructor.
-  inv H1. inv H13.
- - 
-  inv H5. inv H1. inv H13.
-  inv H1. inv H7.
-  apply app_inv_head_iff in H9. subst.
-  split. easy. split. easy.
-  constructor. constructor. constructor.
- -
-  inv H5. inv H1. inv H8.
-  split.
-  unfold simple_tenv in *. intros.
-  simpl in *. destruct H1; try easy. inv H1. apply H3 with (b := TNor).
-  left. easy.
-  split; try easy.
-  constructor. constructor. constructor.
-  inv H1. inv H14.
- -
-  inv H5. inv H1. inv H14.
-  inv H1. inv H8. split.
-  unfold simple_tenv in *. intros.
-  simpl in *. destruct H1; try easy. inv H1. apply H3 with (b := THad).
-  left. easy.
-  split; try easy.
-  constructor. constructor. constructor.
- -
-  inv H6.
-  assert (freeVarsNotCPExp env e).
-  unfold freeVarsNotCPExp in *. intros.
-  simpl in *. apply H2 with (x := x); try easy.
-  apply in_app_iff. right. easy.
-  specialize (IHlocus_system H6 H3 s' s H4 H5 H13). split; easy.
-  rewrite H0 in H12. inv H12.
-  apply type_bexp_only with (t := (QT n, l)) in H; subst; try easy.
- - 
-  inv H5. rewrite H0 in H10. inv H10.
-  easy.
-  apply type_bexp_only with (t := (QT n, l)) in H; subst; try easy.
- -
-  inv H5. apply simp_bexp_no_qtype in H. rewrite H in *. easy.
-  apply simp_bexp_no_qtype in H. rewrite H in *. easy.
-  split. easy. inv H1. inv H7.
-  assert (freeVarsNotCPExp env e).
-  unfold freeVarsNotCPExp in *. intros.
-  simpl in *. apply H2 with (x := x); try easy.
-  apply in_app_iff. right. easy.
-  assert (simple_tenv ((l1, CH) :: nil)).
-  unfold simple_tenv in *. intros. simpl in *; try easy. destruct H5; try easy.
-  inv H5.
-  specialize (H3 (l ++ a) CH).
-  assert ((l ++ a, CH) = (l ++ a, CH) \/ False).
-  left. easy. apply H3 in H5.
-  apply simple_ses_app_r in H5. easy.
-  apply type_bexp_only with (t := (QT n0, l0)) in H; try easy.
-  inv H. apply app_inv_head_iff in H13; subst.
-  specialize (IHlocus_system H1 H5
-          (W', (l2, fc') :: s'0) (W, (l2, fc) :: nil)).
-  assert (env_state_eq ((l2, CH) :: nil)
-                     (snd (W, (l2, fc) :: nil))).
-  constructor; try easy. constructor.
-  inv H11. constructor.
-  simpl in *.
-  destruct (IHlocus_system H H4 H14) as [X1 X2].
-  inv X2. constructor; try easy.
-  inv H7. inv H15.
-  constructor. constructor.
-  inv H16; try constructor.
- -
-  inv H5.
-  assert (freeVarsNotCPExp env e1).
-  unfold freeVarsNotCPExp in *.
-  intros. apply H2 with (x := x); try easy.
-  simpl in *. apply in_app_iff. left. easy.
-  assert (freeVarsNotCPExp env e2).
-  unfold freeVarsNotCPExp in *.
-  intros. apply H2 with (x := x); try easy.
-  simpl in *. apply in_app_iff. right. easy.
-  destruct (IHlocus_system1 H5 H3 s1 s H1 H4 H10) as [X1 [X2 X3]].
-  apply kind_env_stack_equal with (env := env) in X2 as X4; try easy.
-  destruct (IHlocus_system2 H6 X1 s' s1 X3 X4 H12) as [Y1 [Y2 Y3]].
-  split; try easy. split; try easy.
-  apply AEnvFacts.Equal_trans with (m' := fst s1); try easy.
- -
-  inv H4. assert (h-l = 0) by lia. rewrite H4 in *. inv H13.
-  split; try easy.
- -
-  split. eapply simple_tenv_subst_right. apply H3.
-  inv H7.
-  remember (h-l) as na.
-  assert (h=l+na) by lia. rewrite H7 in *. clear H7. clear h.
-  assert (forall v, freeVarsNotCPExp env (If (subst_bexp b i v) (subst_pexp e i v))) as Y1.
-  intros.
-  unfold freeVarsNotCPExp in *.
-  intros;simpl in *. apply H2 with (x := x); try easy.
-  apply in_app_iff in H7. 
-  bdestruct (x =? i); subst.
-  assert (AEnv.In i env). exists (Mo t). easy. easy.
-  destruct H7.
-  apply in_app_iff. left.
-  apply list_sub_not_in; try easy.
-  apply freeVarsBExp_subst in H7. easy.
-  apply in_app_iff. right.
-  apply list_sub_not_in; try easy.
-  apply freeVarsPExp_subst in H7. easy.
-  clear H. clear H2. clear Heqna.
-  generalize dependent s'.
-  induction na;intros;simpl in *.
-  inv H16. split. easy.
-  replace (l+0) with l by lia. easy.
-  inv H16.
-  assert (forall v : nat,
-        l <= v < l + na ->
-        @locus_system rmax q env (subst_type_map T i v) (If (subst_bexp b i v) (subst_pexp e i v))
-          (subst_type_map T i (v + 1))).
-  intros. apply H1. lia.
-  assert ((forall v : nat,
-        l <= v < l + na ->
-        freeVarsNotCPExp env (If (subst_bexp b i v) (subst_pexp e i v)) ->
-        simple_tenv (subst_type_map T i v) ->
-        forall (s' : state) (s : stack * qstate),
-        env_state_eq (subst_type_map T i v) (snd s) ->
-        kind_env_stack env (fst s) ->
-        @qfor_sem rmax env s (If (subst_bexp b i v) (subst_pexp e i v)) s' ->
-        simple_tenv (subst_type_map T i (v + 1)) /\
-        AEnv.Equal (fst s) (fst s') /\
-        env_state_eq (subst_type_map T i (v + 1)) (snd s'))).
-  intros. apply H4; try lia; try easy.
-  destruct (IHna H H8 s'0 H2) as [X1 X2].
-  assert (l <= l+ na < l + S na) by lia.
-  apply simple_tenv_subst_right with (v := (l+na)) in H3 as Y2.
-  apply kind_env_stack_equal with (env := env) in X1 as X4; try easy.
-  destruct (H4 (l + na) H9 (Y1 (l+na)) Y2 s' s'0 X2 X4 H7) as [X7 [X8 X9]].
-  split.
-  apply AEnvFacts.Equal_trans with (m' := fst s'0); try easy.
-  replace ((l + na + 1)) with (l + S na) in * by lia. easy.
-Qed.
-
-Lemma type_preserves: forall na b e rmax q env i l T s s',
-  (forall v : nat, l <= v < l + na -> @locus_system rmax q env (subst_type_map T i v)
-       (If (subst_bexp b i v) (subst_pexp e i v)) (subst_type_map T i (v + 1)))
-  -> env_state_eq (subst_type_map T i l) (snd s) -> kind_env_stack env (fst s) 
-  -> (forall v, freeVarsNotCPExp env (If (subst_bexp b i v) (subst_pexp e i v)))
-  -> (forall v : nat, simple_tenv (subst_type_map T i v))
-  -> ForallA rmax (@qfor_sem) na env s l i b e s'
-  -> AEnv.Equal (fst s) (fst s') /\ env_state_eq (subst_type_map T i (l + na)) (snd s').
-Proof.
-  induction na; intros; simpl in *; try easy.
-  inv H4. split. easy.
-  replace (l+0) with l by lia.
-  easy.
-  inv H4. apply IHna with (q := q) (T := T) in H6; try easy.
-  destruct H6.
-  apply type_preserve with (q := q) (T := (subst_type_map T i (l + na)))
-    (T' := (subst_type_map T i (l + S na))) in H7; try easy.
-  destruct H7 as [X1 [X2 X3]].
-  split. apply AEnvFacts.Equal_trans with (m' := fst s'0); try easy.
-  easy.
-  specialize (H (l+na)).
-  replace (l+na + 1) with (l + S na) in H by lia.
-  apply H. lia.
-  apply kind_env_stack_equal with (s2 := (fst s'0)) in H1; try easy.
-  intros. apply H. lia.
-Qed.
-
-Lemma eval_aexp_twice_same: forall s a v v1, eval_aexp s a v
-  -> eval_aexp s a v1 -> v = v1.
-Proof.
-  intros. generalize dependent v1. induction H; intros; simpl in *; try easy.
-  inv H0; try easy.
-  apply aenv_mapsto_always_same with (v1 := (r0,n0)) in H; try easy.
-  inv H0. easy.
-  inv H1.
-  rewrite H0 in H7. inv H7.
-  apply IHeval_aexp in H5. inv H5. easy.
-  apply simp_aexp_no_eval in H5. rewrite H5 in *. easy.
-  inv H1. apply simp_aexp_no_eval in H5. rewrite H5 in *. easy.
-  rewrite H0 in H7. inv H7.
-  apply IHeval_aexp in H5. inv H5. easy.
-  inv H1.
-  rewrite H0 in H7. inv H7.
-  apply IHeval_aexp in H5. inv H5. easy.
-  apply simp_aexp_no_eval in H5. rewrite H5 in *. easy.
-  inv H1. apply simp_aexp_no_eval in H5. rewrite H5 in *. easy.
-  rewrite H0 in H7. inv H7.
-  apply IHeval_aexp in H5. inv H5. easy.
-Qed.
-
-(*
-Lemma qfor_sem_single_out: forall rmax env s e s1 s2,
-   @qfor_sem rmax env s e s1 -> @qfor_sem rmax env s e s2 -> s1 = s2.
-Proof.
-  intros. generalize dependent s2.
-  induction H; intros; simpl in *; try easy.
-  inv H0. easy.
-  inv H1. apply IHqfor_sem. rewrite H in H8. inv H8. easy.
-  apply simp_aexp_no_eval in H8. rewrite H8 in *. easy.
-  inv H1. apply simp_aexp_no_eval in H. rewrite H in *. easy.
-  apply eval_aexp_twice_same with (v := n0) in H; try easy; subst.
-  apply IHqfor_sem in H9. inv H9. easy.
-  inv H3. inv H0. inv H15.
-  inv H1.
-Qed.
-*)
-
-Lemma foralla_sub: forall v rmax na env s l i b e s',
-    v <= na ->
-    ForallA rmax (@qfor_sem) na env s l i b e s'
-   -> exists sa, ForallA rmax (@qfor_sem) v env s l i b e sa 
-    /\ ForallA rmax (@qfor_sem) (na-v) env sa (l+v) i b e s'.
-Proof.
-  induction na; intros; simpl in *; try easy.
-  assert (v = 0) by lia. subst.
-  exists s. split. constructor.
-  replace (l+0) with l by lia.
-  easy.
-  bdestruct (v =? S na); subst.
-  replace (na-na) with 0 by lia.
-  exists s'. split. easy. constructor.
-  inv H0.
-  apply IHna in H3; try lia.
-  destruct H3 as [sa [X1 X2]].
-  exists sa. split; try easy.
-  assert (match v with
-                         | 0 => S na
-                         | S l0 => na - l0
-                         end  = S (na -v)).
-  destruct v. lia.
+  apply locus_system_prolong with (l := ([(a, BNum 0, BNum u)])) in H0; try easy.
+  apply env_sym.
+  apply env_equiv_end.
+- inv H4. apply IHlocus_system1 in H12; try easy.
+  destruct H12 as [Ta [Tb [X1 [X2 X3]]]].
+  exists Ta,Tb. split; try easy. split; try easy.
+  apply pseq_ses_type with (T3 := T1); try easy.
+  unfold freeVarsNotCPExp in *. intros. simpl in *.
+  eapply H1. simpl. apply in_or_app. left. apply H4. easy.
+  apply locus_system_skip_equiv in H as X1.
+  apply env_equiv_simple in X1 as X3; try easy.
+  apply env_equiv_state_eq with (rmax := rmax) (s := s') in X1 as X4; try easy.
+  destruct X4 as [sa [X4 X5]].
+  exists T,T1. split; try easy.
+- inv H3. exists T,T. split; try easy. split. constructor.
+  replace T with (nil++T). apply sub_ses. constructor. easy.
   lia.
-  rewrite H0.
-  apply ForallA_cons with (s' := s'0); try easy.
-  replace ((l + v + (na - v))) with (l+na) by lia.
-  easy.
-Qed.
-
-Lemma set_inter_app:
- forall l l1 l2, ListSet.set_inter posi_eq_dec (l++l1) l2 = []
-           -> ListSet.set_inter posi_eq_dec l1 l2 = [].
-Proof.
-  induction l;intros;simpl in *. easy.
-  destruct (ListSet.set_mem posi_eq_dec a l2) eqn:eq1.
-  apply ListSet.set_mem_correct1 in eq1.
-  apply IHl. easy.
-  apply IHl in H. easy.
-Qed.
-
-Lemma gen_qubit_ses_app: forall l l1 A, gen_qubit_ses (l ++ l1) = Some A -> 
-     exists B, exists C, gen_qubit_ses l1 = Some C /\ A = B ++ C.
-Proof.
-  induction l; intros; simpl in *.
-  exists [], A. simpl in *. easy.
-  destruct (gen_qubit_ses (l ++ l1)) eqn:eq1; simpl in *; try easy.
-  destruct (gen_qubit_range a) eqn:eq2; simpl in *; try easy.
-  inv H.
-  destruct (IHl l1 l0 eq1) as [B [C [X1 X2]]].
-  exists (l2 ++ B), C. split. easy. rewrite X2.
-  rewrite app_ass. easy.
-Qed.
-
-Lemma subst_type_simple: forall T T1 i v, simple_tenv T1 ->
-        subst_type_map T i v ++ T1 = subst_type_map (T++T1) i v.
-Proof.
-  induction T; intros; simpl in *. rewrite simple_env_subst; try easy.
-  destruct a; try easy. simpl in *. rewrite IHT. easy. easy.
-Qed.
-
+-
+  inv H6. lia.
+Admitted.

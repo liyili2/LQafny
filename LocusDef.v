@@ -267,6 +267,8 @@ Qed.
 
 Axiom env_trans: forall T1 T2 T3, env_equiv T1 T2 -> env_equiv T2 T3 -> env_equiv T1 T3.
 
+Axiom env_sym: forall T1 T2, env_equiv T1 T2 -> env_equiv T2 T1.
+
 Lemma equiv_env_cong: forall T1 T2 T, env_equiv T1 T2 -> env_equiv (T1++T) (T2++T).
 Proof.
   intros. induction H. constructor.
