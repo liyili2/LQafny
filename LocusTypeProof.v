@@ -1497,8 +1497,31 @@ Proof.
   intros. apply H4; try easy. lia. lia.
 Qed.
 
+Lemma simple_ses_locus_subst: forall l i v, simple_ses l -> subst_locus l i v = l.
+Proof.
+  intros. induction l. simpl in *. easy.
+  simpl in *. inv H. rewrite IHl; try easy.
+  unfold subst_range in *.
+  unfold simple_bound in *. destruct x; try easy. destruct y; try easy.
+Qed.
+
+Lemma simple_ses_add_end_locus: forall l l1 i v, simple_ses l1 -> subst_locus (l ++ l1) i v = (subst_locus l i v) ++ l1.
+Proof.
+  intros. induction l. simpl in *.
+  rewrite simple_ses_locus_subst; try easy.
+  simpl in *. rewrite IHl. easy.
+Qed.
+
+Lemma simple_ses_add_end: forall l T i v, simple_ses l
+  -> (add_end l (subst_type_map T i v)) = subst_type_map (add_end l T) i v. 
+Proof.
+  intros. induction T; try easy.
+  simpl in *. destruct a. simpl in *.
+  rewrite simple_ses_add_end_locus; try easy.
+Qed.
+
 Lemma locus_system_prolong: forall rmax env l T Ta e, @locus_system rmax QM env T e Ta
-    -> is_cval_t T -> length T <= 1 -> @locus_system rmax QM env (add_end l T) e (add_end l Ta).
+    -> is_cval_t T -> length T <= 1 -> simple_ses l -> @locus_system rmax QM env (add_end l T) e (add_end l Ta).
 Proof.
   intros. remember QM as q. induction H; subst; try easy.
   apply eq_ses with (T'0 := add_end l T').
@@ -1512,8 +1535,8 @@ Proof.
   apply sub_ses. apply IHlocus_system; try easy. lia. simpl;lia.
   simpl in *. destruct p. destruct s0;try easy.
   assert (length (T ++ T1) = 0) by lia.
-  apply length_zero_iff_nil in H2.
-  apply app_eq_nil in H2. destruct H2; subst; try easy. simpl in *.
+  apply length_zero_iff_nil in H3.
+  apply app_eq_nil in H3. destruct H3; subst; try easy. simpl in *.
   apply locus_system_qm_single_same in H as X1; try easy.
   apply env_equiv_single_prog in X1 as X2; try easy.
   destruct X2. simpl in *. destruct T'. simpl in *. inv X1. simpl in *.
@@ -1534,11 +1557,20 @@ Proof.
   apply env_equiv_single_prog in X1 as X2; try easy. destruct X2.
   apply pseq_ses_type with (T3 := (add_end l T1)); try easy.
   apply IHlocus_system1; try easy.
-  rewrite <- H4 in H1.
+  rewrite <- H5 in H1.
   apply IHlocus_system2; try easy.
   easy. easy.
   apply qfor_ses_no. easy.
-Admitted.
+  repeat rewrite simple_ses_add_end; try easy.
+  apply qfor_ses_ch; try easy.
+  intros. specialize (H5 v H6).
+  rewrite simple_ses_add_end in H5; try easy.
+  assert ((add_end l (subst_type_map T i (v + 1))) = ((subst_type_map (add_end l T) i ((v + 1))))).
+  rewrite simple_ses_add_end; try easy.
+  rewrite H7 in H5. apply H5; try easy.
+  apply is_cval_t_subst with (a := l0); try easy.
+  rewrite length_subst with (v := l0). easy.
+Qed.
 
 Lemma locus_system_skip_equiv: 
   forall rmax q env T T1, @locus_system rmax q env T PSKIP T1 -> env_equiv T T1.
@@ -1707,6 +1739,7 @@ Proof.
   apply btest_type with (n := n); try easy.
   apply btest_type with (n := n); try easy.
   apply locus_system_prolong with (l := ([(a, BNum 0, BNum u)])) in H0; try easy.
+  constructor; try easy. constructor.
   apply env_sym.
   apply env_equiv_end.
 - inv H4. apply IHlocus_system1 in H12; try easy.
