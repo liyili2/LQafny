@@ -656,7 +656,8 @@ Inductive step {rmax:nat}
 
   | for_step_0 : forall aenv s x l h b p, h <= l -> step aenv s (For x (Num l) (Num h) b p) (1:R) s PSKIP
   | for_step_s : forall aenv s x l h b p, l < h -> 
-          step aenv s (For x (Num l) (Num h) b p) (1:R) s (PSeq (If b p) (For x (Num (S l)) (Num h) b p)).
+          step aenv s (For x (Num l) (Num h) b p) (1:R) s (PSeq (If (subst_bexp b x l) (subst_pexp p x l))
+                 (For x (Num (S l)) (Num h) b p)).
 
 
 Inductive steps {rmax:nat}

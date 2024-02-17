@@ -1184,7 +1184,7 @@ Proof.
 - apply env_equiv_state_eq with (rmax := rmax) (s := s) in H4 as X1; try easy.
   destruct X1 as [sa [X1 X2]].
   apply state_equiv_qstate_wt in X1 as X3; try easy.
-  exists sa,sa,R1,(PSeq (If b e) (For i (Num (S l)) (Num h) b e)).
+  exists sa,sa,R1,(PSeq (If (subst_bexp b i l) (subst_pexp e i l)) (For i (Num (S l)) (Num h) b e)).
   split. easy. split. easy.
   split. apply for_step_s. easy. easy.
 Qed.
