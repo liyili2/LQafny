@@ -677,6 +677,59 @@ Proof.
   apply IHlocus_system; try easy.
 Qed.
 
+Lemma locus_system_same_length: forall rmax a env e T Ta,
+   @locus_system rmax a env T e Ta -> length T = length Ta.
+Proof.
+  intros. induction H; try easy.
+  apply equiv_env_same_length in H0. rewrite IHlocus_system. easy.
+  repeat rewrite app_length.
+  rewrite IHlocus_system. easy.
+  rewrite IHlocus_system1. rewrite IHlocus_system2. easy.
+  rewrite length_subst with (v := h). easy.
+Qed.
+
+
+Lemma locus_system_qm_single_same: forall rmax env e T Ta,
+   is_cval_t T -> length T <= 1 -> @locus_system rmax QM env T e Ta -> env_equiv T Ta.
+Proof.
+  intros. remember QM as a.
+  induction H1; subst; intros; try easy.
+  apply env_trans with (T2 := T'); try easy. apply IHlocus_system; try easy.
+  destruct T; try easy. simpl in *.
+  assert (env_equiv nil T'). apply IHlocus_system; try easy. lia.
+  inv H2. simpl in *. constructor.
+  simpl in *. destruct p.
+  assert (length (T ++ T1) = 0) by lia.
+  apply length_zero_iff_nil in H2.
+  apply app_eq_nil in H2. destruct H2; subst. simpl in *.
+  destruct s0;try easy. rewrite app_nil_r. apply IHlocus_system; try easy. constructor.
+  apply IHlocus_system; try easy.
+  1-4:constructor.
+  apply env_trans with (T2 := T1). apply IHlocus_system1; try easy.
+  assert (env_equiv T T1). apply IHlocus_system1; try easy.
+  apply env_equiv_single_prog in H1; try easy. destruct H1.
+  apply IHlocus_system2; try easy.
+  rewrite <- H2 in H0. easy. constructor.
+  clear H3.
+  assert (forall v,is_cval_t (subst_type_map T i v)).
+  apply is_cval_t_subst with (a := l). easy.
+  assert (forall v, length (subst_type_map T i v) <= 1).
+  intros. rewrite <- length_subst with (a := l); try easy.
+  clear H H0 H2.
+  assert (exists v, h = l + v). exists (h-l). lia.
+  destruct H. subst.
+  induction x. lia.
+  destruct x. simpl in *.
+  assert (l <= l < l + 1) by lia.
+  apply H4 in H; try easy.
+  assert (l <= l + S x < l + S (S x)) by lia.
+  apply H4 in H; try easy.
+  replace (l+ S x + 1) with (l + S (S x)) in H by lia.
+  apply env_trans with (T2 := (subst_type_map T i (l + S x))); try easy.
+  apply IHx; try easy.
+  intros. apply H4; try easy. lia. lia.
+Qed.
+
 Lemma simple_env_same_state: forall rmax aenv l s r e s' e',
   simple_ses l -> @locus_system rmax QM aenv ([(l,CH)]) e ([(l,CH)]) -> @step rmax aenv s e r s' e'
    -> env_state_eq ([(l,CH)]) s -> env_state_eq ([(l,CH)]) s'.
@@ -1444,59 +1497,6 @@ Proof.
   apply appu_ses_nor with (n1 := n0); try easy.
 Admitted.
 
-Lemma locus_system_same_length: forall rmax a env e T Ta,
-   @locus_system rmax a env T e Ta -> length T = length Ta.
-Proof.
-  intros. induction H; try easy.
-  apply equiv_env_same_length in H0. rewrite IHlocus_system. easy.
-  repeat rewrite app_length.
-  rewrite IHlocus_system. easy.
-  rewrite IHlocus_system1. rewrite IHlocus_system2. easy.
-  rewrite length_subst with (v := h). easy.
-Qed.
-
-
-Lemma locus_system_qm_single_same: forall rmax env e T Ta,
-   is_cval_t T -> length T <= 1 -> @locus_system rmax QM env T e Ta -> env_equiv T Ta.
-Proof.
-  intros. remember QM as a.
-  induction H1; subst; intros; try easy.
-  apply env_trans with (T2 := T'); try easy. apply IHlocus_system; try easy.
-  destruct T; try easy. simpl in *.
-  assert (env_equiv nil T'). apply IHlocus_system; try easy. lia.
-  inv H2. simpl in *. constructor.
-  simpl in *. destruct p.
-  assert (length (T ++ T1) = 0) by lia.
-  apply length_zero_iff_nil in H2.
-  apply app_eq_nil in H2. destruct H2; subst. simpl in *.
-  destruct s0;try easy. rewrite app_nil_r. apply IHlocus_system; try easy. constructor.
-  apply IHlocus_system; try easy.
-  1-4:constructor.
-  apply env_trans with (T2 := T1). apply IHlocus_system1; try easy.
-  assert (env_equiv T T1). apply IHlocus_system1; try easy.
-  apply env_equiv_single_prog in H1; try easy. destruct H1.
-  apply IHlocus_system2; try easy.
-  rewrite <- H2 in H0. easy. constructor.
-  clear H3.
-  assert (forall v,is_cval_t (subst_type_map T i v)).
-  apply is_cval_t_subst with (a := l). easy.
-  assert (forall v, length (subst_type_map T i v) <= 1).
-  intros. rewrite <- length_subst with (a := l); try easy.
-  clear H H0 H2.
-  assert (exists v, h = l + v). exists (h-l). lia.
-  destruct H. subst.
-  induction x. lia.
-  destruct x. simpl in *.
-  assert (l <= l < l + 1) by lia.
-  apply H4 in H; try easy.
-  assert (l <= l + S x < l + S (S x)) by lia.
-  apply H4 in H; try easy.
-  replace (l+ S x + 1) with (l + S (S x)) in H by lia.
-  apply env_trans with (T2 := (subst_type_map T i (l + S x))); try easy.
-  apply IHx; try easy.
-  intros. apply H4; try easy. lia. lia.
-Qed.
-
 Lemma simple_ses_locus_subst: forall l i v, simple_ses l -> subst_locus l i v = l.
 Proof.
   intros. induction l. simpl in *. easy.
@@ -1758,4 +1758,17 @@ Proof.
   lia.
 -
   inv H6. lia.
-Admitted.
+  assert (exists m , h = l + m). exists (h -l). lia.
+  destruct H6 as [m H6]; subst. assert (0 < m) by lia. clear H. clear H17.
+  exists ((subst_type_map T i l)),((subst_type_map T i l)).
+  split; try easy. split. constructor.
+  assert (l <= l < l + m) by lia.
+  apply H3 in H.
+  apply pseq_ses_type with (T1 := (subst_type_map T i (l + 1))); try easy.
+  replace (l+1) with (S l) by lia.
+  destruct m; try easy. destruct m; try easy.
+  replace (l+1) with (S l) by lia. apply qfor_ses_no; try easy.
+  apply qfor_ses_ch; try easy. lia.
+  intros. bdestruct (v =? l); subst. easy.
+  apply H3. lia.
+Qed.
