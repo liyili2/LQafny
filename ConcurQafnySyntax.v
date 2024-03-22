@@ -96,12 +96,18 @@ Inductive cexp := CSKIP
              | CLet (x: var) (n: maexp) (e:cexp) 
              | CAppU (l: locus) (e: exp)
              | CSeq (s1: cexp) (s2: cexp)
-             | CIf (x: bexp) (e: cexp)
-             | Send (c: aexp) (a: aexp)
-             | Recv (c: aexp) (a: aexp)
-             | Paral (e1: cexp) (e2: cexp). 
+             | Send (c: nat) (a: aexp)
+             | Recv (c: nat) (x: var)
+             | CMeas (x: var) (n: maexp) (* looks like let expression? *)
+             | NewC (x: var) (n: nat).
 
-Fixpoint depth_cexp (e:cexp) : nat :=
+Inductive process := PNil
+                | AP (a: cexp) (p: process)
+                | PIf (b: bool) (p: process) (q: process)
+                | PFix (p: process).
+
+Definition memb := list process.
+(*Fixpoint depth_cexp (e:cexp) : nat :=
    match e with CSKIP => 0
               | CLet x n e => 1 + depth_cexp e
               | CAppU l e => 0
@@ -111,10 +117,9 @@ Fixpoint depth_cexp (e:cexp) : nat :=
               | Recv _ _ => 0
               | Paral e1 e2 => 1 + depth_cexp e1 + depth_cexp e2             
     end.
-
+*)
 
 Notation "p1 ; p2" := (CSeq p1 p2) (at level 50) : cexp_scope.
 
 Notation "p1 [<-] p2" := (CAppU p1 p2) (at level 50) : cexp_scope.
 
-Notation "p1 .||. p2" := (Paral p1 p2) (at level 50) : cexp_scope.
