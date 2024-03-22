@@ -13,7 +13,7 @@ Require Import LocusDef.
 Require Import LocusKind.
 Require Import LocusSem.
 Require Import LocusType.
-(*Require Import LocusTypeProof.*)
+Require Import LocusTypeProof.
 (**********************)
 (** Locus Definitions **)
 (**********************)

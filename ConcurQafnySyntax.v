@@ -21,12 +21,15 @@ Local Open Scope cexp_scope.
 Local Open Scope nat_scope.
 
 
-Inductive ktype := CT | QT (n:nat).
+Inductive ktype := CT | QT (l:var) (n:nat) | QC (l1:var) (l2:var) (n:nat).
 
+Inductive ktypeName := QTN | QCN.
+
+(*
 Definition meet_ktype (a1 a2: ktype) := 
        match a1 with CT => (match a2 with CT => CT | _ => a2 end)
                 | QT n => match a2 with QT m => QT (n+m) | _ => QT n end end.
-
+*)
 Inductive bound := BVar (v:var) (n:nat) | BNum (n:nat).
 
 Definition simple_bound (b:bound) :=
@@ -92,34 +95,26 @@ Inductive type := Phi (b:nat) | Nor.
 
 Inductive single_u := RH (p:varia) | SQFT (x:var) | SRQFT (x:var).
 
-Inductive cexp := CSKIP
-             | CLet (x: var) (n: maexp) (e:cexp) 
-             | CAppU (l: locus) (e: exp)
-             | CSeq (s1: cexp) (s2: cexp)
-             | Send (c: nat) (a: aexp)
-             | Recv (c: nat) (x: var)
-             | CMeas (x: var) (n: maexp) (* looks like let expression? *)
-             | NewC (x: var) (n: nat).
+Inductive ctype := Chan | QVar.
+
+Inductive cexp := CAppU (l: locus) (e: exp)
+             | Send (c: var) (a: aexp)
+             | Recv (c: var) (x: var)
+             | CMeas (x: var) (k: locus) (* looks like let expression? *)
+             | NewC (x: var) (t:ktypeName) (n: nat).
 
 Inductive process := PNil
                 | AP (a: cexp) (p: process)
-                | PIf (b: bool) (p: process) (q: process)
+                | PIf (b: cbexp) (p: process) (q: process)
                 | PFix (p: process).
 
-Definition memb := list process.
-(*Fixpoint depth_cexp (e:cexp) : nat :=
-   match e with CSKIP => 0
-              | CLet x n e => 1 + depth_cexp e
-              | CAppU l e => 0
-              | CSeq e1 e2 => 1 + depth_cexp e1 + depth_cexp e2
-              | CIf x e => 1 + depth_cexp e
-              | Send _ _ => 0
-              | Recv _ _ => 0
-              | Paral e1 e2 => 1 + depth_cexp e1 + depth_cexp e2             
-    end.
-*)
+Definition memb : Type := var * nat * list process. (*location and nat of processes and list of process *)
 
+Definition config : Type := list memb.
+
+(*
 Notation "p1 ; p2" := (CSeq p1 p2) (at level 50) : cexp_scope.
 
 Notation "p1 [<-] p2" := (CAppU p1 p2) (at level 50) : cexp_scope.
+*)
 
