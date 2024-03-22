@@ -106,7 +106,7 @@ Inductive cexp := CAppU (l: locus) (e: exp)
 Inductive process := PNil
                 | AP (a: cexp) (p: process)
                 | PIf (b: cbexp) (p: process) (q: process)
-                | PFix (p: process).
+                | PFix (f:var) (p: process).
 
 Definition memb : Type := var * nat * list process. (*location and nat of processes and list of process *)
 
