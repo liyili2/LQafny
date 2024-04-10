@@ -100,15 +100,19 @@ Inductive ctype := Chan | QVar.
 Inductive cexp := CAppU (l: locus) (e: exp)
              | Send (c: var) (a: aexp)
              | Recv (c: var) (x: var)
-             | CMeas (x: var) (k: locus) (* looks like let expression? *)
-             | NewC (x: var) (t:ktypeName) (n: nat).
+             | CMeas (x: var) (k: locus) 
+             (*| NewC (x: var) (t:ktypeName) (n: nat). *).
 
 Inductive process := PNil
                 | AP (a: cexp) (p: process)
                 | PIf (b: cbexp) (p: process) (q: process)
                 | PFix (f:var) (p: process).
 
-Definition memb : Type := var * nat * list process. (*location and nat of processes and list of process *)
+Inductive memb := Memb (l: var) (n: nat) (lp: list process)
+                 | PMemb (l: var) (n: nat) (r: process) (lp: list process)
+                 | NewC (x: var) (n: nat) (m: memb).
+
+(*Definition memb : Type := var * nat * list process. location and nat of processes and list of process *)
 
 Definition config : Type := list memb.
 

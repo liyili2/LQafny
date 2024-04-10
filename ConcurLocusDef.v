@@ -585,17 +585,14 @@ Definition subst_mexp (e:maexp) (x:var) (n:nat) :=
               | Meas y => Meas y
    end.
 
-Fixpoint subst_cexp (e:cexp) (x:var) (n:nat) {struct e} :=
-        match e with CSKIP => CSKIP
-                   | CLet y a e' => if y =? x then CLet y (subst_mexp a x n) e' else CLet y (subst_mexp a x n) (subst_cexp e' x n)
+Definition subst_cexp (e:cexp) (x:var) (n:nat) :=
+        match e with  CMeas y k => CMeas y k
                    | CAppU l e' => CAppU l (subst_exp e' x n)
-                   | CIf b s => CIf (subst_bexp b x n) (subst_cexp s x n)
-                   | CSeq s1 s2 => CSeq (subst_cexp s1 x n) (subst_cexp s2 x n)
-                   | Paral s1 s2 => Paral (subst_cexp s1 x n) (subst_cexp s2 x n)
-                   | Send c a => Send (subst_aexp c x n) (subst_aexp a x n)
-                   | Recv c a => Recv (subst_aexp c x n) (subst_aexp a x n)
+                   | Send c a => Send c (subst_aexp a x n)
+                   | Recv c y => Recv c y
         end.
 
+(*
 Lemma depth_subst_cexp_same: forall e x v, depth_cexp (subst_cexp e x v) = depth_cexp e.
 Proof.
  induction e;intros;simpl in *; try easy.
@@ -605,7 +602,7 @@ Proof.
  rewrite IHe. easy.
  rewrite IHe1. rewrite IHe2. easy. 
 Qed.
-
+*)
 (* Below is the kind checking system in Qanfy. It determines three kinds of variables:
    competely classical variables, classical variables as the result of quantum measurement,
    and quantum variables representing loci. 
@@ -636,7 +633,7 @@ Definition id_qenv : (var -> nat) := fun _ => 0.
 Fixpoint compile_ses_qenv (env:aenv) (l:locus) : ((var -> nat) * list var) :=
    match l with nil => (id_qenv,nil)
        | ((x,a,b)::xl) => match AEnv.find x env with
-              Some (QT n) =>
+              Some (QT loc n) =>
               match compile_ses_qenv env xl with (f,l) => 
                  if var_in_list l x then (f,l) else (fun y => if y =? x then n else f y,x::l)
                 end
