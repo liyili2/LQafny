@@ -2,6 +2,7 @@ package SyntaxJava.DisqDesign.Syntax.DisQ;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 // A simple generic Pair class for handling tuples
 class Pair<K, V> {
@@ -51,6 +52,7 @@ class EntangledState {
 // Primary class for managing the quantum state
 class QuantumState {
     private List<Pair<Locus, EntangledState>> statePairs;
+    private Random random = new Random();
 
     public QuantumState() {
         statePairs = new ArrayList<>();
@@ -60,13 +62,13 @@ class QuantumState {
         statePairs.add(new Pair<>(locus, state));
     }
 
-    // Implement methods to apply quantum gates and transformations
+   
     public void applyHadamard(int[] targetIndices) {
         for (Pair<Locus, EntangledState> pair : statePairs) {
             if (matchIndices(pair.getKey().getIndices(), targetIndices)) {
                 double amplitude = pair.getValue().getAmplitude();
                 double phase = pair.getValue().getPhase();
-                // Simplified example of a transformation, modify as necessary
+                
                 pair.getValue().setAmplitude(Math.sqrt(0.5) * (amplitude + phase));
                 pair.getValue().setPhase(Math.sqrt(0.5) * (amplitude - phase));
             }
@@ -81,6 +83,23 @@ class QuantumState {
         return true;
     }
 
-    // Additional methods for other quantum operations
+    public String measure(int[] targetIndices) {
+        StringBuilder result = new StringBuilder();
+        for (int index : targetIndices) {
+            for (Pair<Locus, EntangledState> pair : statePairs) {
+                if (pair.getKey().getIndices()[0] == index) {
+                    
+                    double probabilityOfOne = Math.pow(pair.getValue().getAmplitude(), 2);
+                    boolean isOne = random.nextDouble() < probabilityOfOne;
+                    result.append(isOne ? "1" : "0");
+                    break;
+                }
+            }
+        }
+        return result.toString();
+    }
 }
+
+    
+
 

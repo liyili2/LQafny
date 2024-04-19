@@ -3,7 +3,7 @@ package SyntaxJava.DisqDesign.Syntax.DisQ;
 import java.util.Arrays;
 
 public class ActionInterpreter implements ActionVisitor {
-    private QuantumState quantumState; // Assuming you have a QuantumState class managing the state
+    private QuantumState quantumState; 
 
     public ActionInterpreter(QuantumState quantumState) {
         this.quantumState = quantumState;
