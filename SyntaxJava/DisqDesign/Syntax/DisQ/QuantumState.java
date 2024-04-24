@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+
 // A simple generic Pair class for handling tuples
 class Pair<K, V> {
     private K key;
@@ -54,6 +55,12 @@ class QuantumState {
     private List<Pair<Locus, EntangledState>> statePairs;
     private Random random = new Random();
 
+    private List<QuantumValue> quantumValues; // Your quantum system's state representation
+
+    public QuantumState(List<QuantumValue> quantumValues) {
+        this.quantumValues = quantumValues;
+    }
+
     public QuantumState() {
         statePairs = new ArrayList<>();
     }
@@ -82,8 +89,8 @@ class QuantumState {
         }
         return true;
     }
-
-    public String measure(int[] targetIndices) {
+    /***
+     public String measure(int[] targetIndices) {
         StringBuilder result = new StringBuilder();
         for (int index : targetIndices) {
             for (Pair<Locus, EntangledState> pair : statePairs) {
@@ -97,8 +104,57 @@ class QuantumState {
             }
         }
         return result.toString();
+    }  ***/
+
+
+     // Conceptual implementation of the quantum measurement described
+    public int measure(int c, int N, int p) {
+        // Partitioning the basis-kets by the presence of c as prefix
+        List<QuantumValue> withPrefixC = new ArrayList<>();
+        List<QuantumValue> withoutPrefixC = new ArrayList<>();
+
+        for (QuantumValue qValue : quantumValues) {
+            if (qValue.hasPrefix(c)) {
+                withPrefixC.add(qValue);
+            } else {
+                withoutPrefixC.add(qValue);
+            }
+        }
+
+        // Normalize the amplitudes of the remaining basis-kets
+        double sumOfSquares = withPrefixC.stream().mapToDouble(QuantumValue::getMagnitudeSquared).sum();
+        double normalizationFactor = 1 / Math.sqrt(sumOfSquares);
+        withPrefixC.forEach(qv -> qv.normalizeAmplitude(normalizationFactor));
+
+        // Calculate the sum of the amplitudes of the basis-kets (post-normalization)
+        double amplitudeSum = withPrefixC.stream().mapToDouble(QuantumValue::getAmplitude).sum();
+        
+        // Probability of picking a basis value 'a mod N' as a measurement result
+        int result = pickRandomBasedOnProbability(withPrefixC, amplitudeSum, N);
+        
+        // The number r of remaining basis-kets in range y[0,n) is computed by rounding 2^n/p
+        int remainingBasisKets = (int)Math.round(Math.pow(2, N) / p);
+        
+        // Collapse the quantum state based on the result
+        quantumValues.forEach(qv -> qv.collapse(result));
+        
+        return result;
+    }
+
+    private int pickRandomBasedOnProbability(List<QuantumValue> withPrefixC, double amplitudeSum, int N) {
+        double rand = Math.random() * amplitudeSum;
+        double cumulativeProbability = 0.0;
+
+        for (QuantumValue qv : withPrefixC) {
+            cumulativeProbability += qv.getAmplitude();
+            if (cumulativeProbability >= rand) {
+                return qv.getBasisValue() % N;
+            }
+        }
+        return -1; // This means something went wrong with the probability calculations
     }
 }
+
 
     
 
