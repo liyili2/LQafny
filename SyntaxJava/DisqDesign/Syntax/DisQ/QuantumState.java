@@ -106,7 +106,7 @@ public class QuantumState {
             .sum();
     
         // Probability of picking a basis value 'a mod N' as a measurement result
-        int result = pickRandomBasedOnProbability(withPrefixC, totalProbability, N,int c);
+        int result = pickRandomBasedOnProbability(withPrefixC, totalProbability, N,c);
     
         // Collapse the quantum state based on the result
         quantumValues.forEach(qv -> qv.collapse(result));
