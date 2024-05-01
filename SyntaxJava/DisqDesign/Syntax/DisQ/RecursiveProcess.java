@@ -1,3 +1,5 @@
+package SyntaxJava.DisqDesign.Syntax.DisQ;
+
 import java.util.function.Function;
 class RecursiveProcess implements Process {
     private Function<Process, Process> recursiveDefinition;

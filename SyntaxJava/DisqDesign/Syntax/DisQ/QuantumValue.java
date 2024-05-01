@@ -1,3 +1,5 @@
+package SyntaxJava.DisqDesign.Syntax.DisQ;
+
 class QuantumValue {
     private Complex[] amplitudes; // Array of complex amplitudes for basis states |0>, |1>, |2>, ...
 

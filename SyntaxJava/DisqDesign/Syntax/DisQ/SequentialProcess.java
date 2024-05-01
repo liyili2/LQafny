@@ -1,4 +1,6 @@
-import SyntaxJava.DisqDesign.Syntax.DisQ.Action;
+package SyntaxJava.DisqDesign.Syntax.DisQ;
+
+//import SyntaxJava.DisqDesign.Syntax.DisQ.Action;
 
 class SequentialProcess implements Process {
     private Action action;

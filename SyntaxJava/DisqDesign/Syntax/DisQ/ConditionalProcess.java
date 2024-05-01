@@ -1,4 +1,5 @@
 
+package SyntaxJava.DisqDesign.Syntax.DisQ;
 
 import java.util.function.BooleanSupplier;
 class ConditionalProcess implements Process {

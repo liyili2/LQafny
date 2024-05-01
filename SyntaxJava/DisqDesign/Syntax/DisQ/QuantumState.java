@@ -51,7 +51,7 @@ class EntangledState {
 }
 
 // Primary class for managing the quantum state
-class QuantumState {
+public class QuantumState {
     private List<Pair<Locus, EntangledState>> statePairs;
     private Random random = new Random();
 
@@ -89,6 +89,47 @@ class QuantumState {
         }
         return true;
     }
+    public int measure(int c, int N, int p) {
+        List<QuantumValue> withPrefixC = new ArrayList<>();
+        for (QuantumValue qValue : quantumValues) {
+            if (qValue.hasPrefix(c)) {
+                withPrefixC.add(qValue);
+            }
+        }
+    
+        // Normalize the amplitudes of the remaining basis-kets
+        withPrefixC.forEach(QuantumValue::normalize);
+    
+        // Calculate the sum of the squares of the magnitudes of the amplitudes (total probability)
+        double totalProbability = withPrefixC.stream()
+            .mapToDouble(qv -> qv.getMagnitudeSquared(c))
+            .sum();
+    
+        // Probability of picking a basis value 'a mod N' as a measurement result
+        int result = pickRandomBasedOnProbability(withPrefixC, totalProbability, N,int c);
+    
+        // Collapse the quantum state based on the result
+        quantumValues.forEach(qv -> qv.collapse(result));
+    
+        return result;
+    }
+    
+    private int pickRandomBasedOnProbability(List<QuantumValue> withPrefixC, double totalProbability, int N,int c) {
+        double rand = Math.random() * totalProbability;
+        double cumulativeProbability = 0.0;
+    
+        for (QuantumValue qv : withPrefixC) {
+            double probability = qv.getMagnitudeSquared(c); // Assuming getMagnitudeSquared returns a double
+            cumulativeProbability += probability;
+            if (cumulativeProbability >= rand) {
+                return qv.getBasisValue() % N;
+            }
+        }
+        return -1;  // This means something went wrong with the probability calculations
+    }
+    
+
+
     /***
      public String measure(int[] targetIndices) {
         StringBuilder result = new StringBuilder();
@@ -108,7 +149,7 @@ class QuantumState {
 
 
      // Conceptual implementation of the quantum measurement described
-    public int measure(int c, int N, int p) {
+   /** * public int measure(int c, int N, int p) {
         // Partitioning the basis-kets by the presence of c as prefix
         List<QuantumValue> withPrefixC = new ArrayList<>();
         List<QuantumValue> withoutPrefixC = new ArrayList<>();
@@ -122,15 +163,21 @@ class QuantumState {
         }
 
         // Normalize the amplitudes of the remaining basis-kets
-        double sumOfSquares = withPrefixC.stream().mapToDouble(QuantumValue::getMagnitudeSquared).sum();
-        double normalizationFactor = 1 / Math.sqrt(sumOfSquares);
-        withPrefixC.forEach(qv -> qv.normalizeAmplitude(normalizationFactor));
+       // double sumOfSquares = withPrefixC.stream().mapToDouble(QuantumValue::getMagnitudeSquared).sum();
+       // double sumOfSquares = quantumValues.stream()
+    //.mapToDouble(qv -> qv.getMagnitudeSquared(c)) // Make sure to pass an index if needed
+   // .sum();
+
+        //double normalizationFactor = 1 / Math.sqrt(sumOfSquares);
+        withPrefixC.forEach(qv -> qv.normalize());
+        
 
         // Calculate the sum of the amplitudes of the basis-kets (post-normalization)
-        double amplitudeSum = withPrefixC.stream().mapToDouble(QuantumValue::getAmplitude).sum();
+        Complex amplitudeSum = ((QuantumValue) quantumValues).getAmplitude(c);
+       // double amplitudeSum = withPrefixC.stream().mapToDouble(QuantumValue::getAmplitude).sum();
         
         // Probability of picking a basis value 'a mod N' as a measurement result
-        int result = pickRandomBasedOnProbability(withPrefixC, amplitudeSum, N);
+        int result = pickRandomBasedOnProbability(withPrefixC, amplitudeSum, N,c);
         
         // The number r of remaining basis-kets in range y[0,n) is computed by rounding 2^n/p
         int remainingBasisKets = (int)Math.round(Math.pow(2, N) / p);
@@ -141,18 +188,19 @@ class QuantumState {
         return result;
     }
 
-    private int pickRandomBasedOnProbability(List<QuantumValue> withPrefixC, double amplitudeSum, int N) {
+    private int pickRandomBasedOnProbability(List<QuantumValue> withPrefixC, Complex amplitudeSum, int N,int c) {
         double rand = Math.random() * amplitudeSum;
         double cumulativeProbability = 0.0;
 
         for (QuantumValue qv : withPrefixC) {
-            cumulativeProbability += qv.getAmplitude();
+            cumulativeProbability += qv.getAmplitude(c);
             if (cumulativeProbability >= rand) {
                 return qv.getBasisValue() % N;
             }
         }
         return -1; // This means something went wrong with the probability calculations
-    }
+    }***/
+
 }
 
 

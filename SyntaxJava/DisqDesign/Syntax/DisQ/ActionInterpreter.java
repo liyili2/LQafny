@@ -49,8 +49,10 @@ public class ActionInterpreter implements ActionVisitor {
 
     @Override
     public void visit(QuantumMeasurementAction action) {
-        String result = quantumState.measure(action.getTargetQubits());
-        System.out.println("Measurement of qubits " + Arrays.toString(action.getTargetQubits()) + " resulted in: " + result);
+       // String result = quantumState.measure(action.getTargetQubits());
+       // System.out.println("Measurement of qubits " + Arrays.toString(action.getTargetQubits()) + " resulted in: " + result);
+       int result = quantumState.measure(0, 0, 0);
+       System.out.println("Measurement"+result);
         
     }
 }

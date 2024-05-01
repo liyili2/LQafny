@@ -1,3 +1,5 @@
+package SyntaxJava.DisqDesign.Syntax.DisQ;
+
 interface Process {
-    void accept(ProcessVisitor visitor);
+   abstract void accept(ProcessVisitor visitor);
 }
