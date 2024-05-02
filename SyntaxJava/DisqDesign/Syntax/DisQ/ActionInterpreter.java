@@ -13,7 +13,7 @@ public class ActionInterpreter implements ActionVisitor {
     public void visit(QuantumOperationAction action) {
         UnitaryExpr operation = action.getOperation();
         int[] targetQubits = action.getTargetQubits();
-
+        
         // Apply the unitary operation to the quantum state
         if (operation instanceof Hadamard) {
             quantumState.applyHadamard(targetQubits);

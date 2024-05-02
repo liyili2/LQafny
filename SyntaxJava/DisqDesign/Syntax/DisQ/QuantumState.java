@@ -53,7 +53,7 @@ class EntangledState {
 // Primary class for managing the quantum state
 public class QuantumState {
     private List<Pair<Locus, EntangledState>> statePairs;
-    private Random random = new Random();
+    //private Random random = new Random();
 
     private List<QuantumValue> quantumValues; // Your quantum system's state representation
 
@@ -72,9 +72,11 @@ public class QuantumState {
    
     public void applyHadamard(int[] targetIndices) {
         for (Pair<Locus, EntangledState> pair : statePairs) {
-            if (matchIndices(pair.getKey().getIndices(), targetIndices)) {
+           // if (matchIndices(pair.getKey().getIndices(), targetIndices)) 
+            {
                 double amplitude = pair.getValue().getAmplitude();
                 double phase = pair.getValue().getPhase();
+              //  System.err.println("Hello testing\n");
                 
                 pair.getValue().setAmplitude(Math.sqrt(0.5) * (amplitude + phase));
                 pair.getValue().setPhase(Math.sqrt(0.5) * (amplitude - phase));
