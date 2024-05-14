@@ -14,9 +14,11 @@ public class DisQInterpreter implements UnitaryExprVisitor{
 
     @Override
     public void visit(Hadamard hadamard) {
-        int[] targetQubits = hadamard.getTargetQubits();
-        quantumState.applyHadamard(targetQubits);
-        System.out.println("Hadamard gate applied to qubits: " + Arrays.toString(targetQubits));
+      // int[] targetQubits = hadamard.getTargetQubits();
+        //int qubitIndex ;
+       // QuantumValue quantumValue;
+       // quantumState.applyHadamard( qubitIndex, quantumValue);
+        //System.out.println("Hadamard gate applied to qubits: " + Arrays.toString(targetQubits));
     }
 
     @Override

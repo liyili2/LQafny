@@ -12,11 +12,14 @@ public class ActionInterpreter implements ActionVisitor {
     @Override
     public void visit(QuantumOperationAction action) {
         UnitaryExpr operation = action.getOperation();
-        int[] targetQubits = action.getTargetQubits();
+        //int[] targetQubits = action.getTargetQubits();
+        int qubitIndex =action.qubitIndex;
+        QuantumValue qv = action.qv; 
+
         
         // Apply the unitary operation to the quantum state
         if (operation instanceof Hadamard) {
-            quantumState.applyHadamard(targetQubits);
+            quantumState.applyHadamard(qubitIndex,qv);
         } else if (operation instanceof PauliX) {
             //quantumState.applyPauliX(targetQubits);
         } else if (operation instanceof QuantumFourierTransform) {
@@ -32,7 +35,8 @@ public class ActionInterpreter implements ActionVisitor {
            // quantumState.applyControlledU(cu.getControlQubit(), cu.getInternalUnitary());
         }
 
-        System.out.println("Applied " + operation.getClass().getSimpleName() + " to qubits " + Arrays.toString(targetQubits));
+        //System.out.println("Applied " + operation.getClass().getSimpleName() + " to qubits " + Arrays.toString(targetQubits));
+        quantumState.printState();
     }
 
     @Override
@@ -51,8 +55,8 @@ public class ActionInterpreter implements ActionVisitor {
     public void visit(QuantumMeasurementAction action) {
        // String result = quantumState.measure(action.getTargetQubits());
        // System.out.println("Measurement of qubits " + Arrays.toString(action.getTargetQubits()) + " resulted in: " + result);
-       int result = quantumState.measure(0, 0, 0);
-       System.out.println("Measurement"+result);
+      // complex result = quantumState.measure(0);
+      // System.out.println("Measurement"+result);
         
     }
 }

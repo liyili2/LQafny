@@ -21,6 +21,12 @@ public class Complex {
         return new Complex(this.r + b.r, this.i + b.i);
     }
 
+    // Addition of two complex numbers
+    public Complex sub(Complex b) {
+        return new Complex(this.r - b.r, this.i - b.i);
+    }
+
+
     // Multiplication of two complex numbers
     public Complex mul(Complex b) {
         return new Complex(
@@ -29,6 +35,9 @@ public class Complex {
         );
     }
 
+    public Complex scale(double alpha) {
+        return new Complex(this.r * alpha, this.i * alpha);
+    }
     // Scalar multiplication
     public Complex mul(double b) {
         return new Complex(this.r * b, this.i * b);
@@ -36,7 +45,13 @@ public class Complex {
 
     // Method to calculate the magnitude squared of the complex number
     public double abssqr() {
+        //System.out.println(this.r * this.r + this.i * this.i);
         return this.r * this.r + this.i * this.i;
+    }
+    public Complex div(double divisor) {
+        //System.out.println("R:"+r+"div:"+divisor);
+       // System.out.println(r / divisor+" "+i / divisor);
+        return new Complex(r / divisor, i / divisor);
     }
 
     // Utility method to generate a string representation of the complex number

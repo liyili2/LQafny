@@ -1,6 +1,47 @@
 package SyntaxJava.DisqDesign.Syntax.DisQ;
 
-class QuantumValue {
+public class QuantumValue {
+    Complex[] amplitudes;
+
+    // Constructor for initializing a multi-qubit system with zero amplitudes
+    public QuantumValue(int numQubits) {
+        this.amplitudes = new Complex[1 << numQubits];  // 2^numQubits states
+        for (int i = 0; i < amplitudes.length; i++) {
+            amplitudes[i] = Complex.ZERO;
+        }
+    }
+
+    // Constructor to directly initialize amplitudes
+    public QuantumValue(Complex[] amplitudes) {
+        this.amplitudes = amplitudes;
+    }
+
+    public Complex[] getAmplitudes() {
+        return amplitudes;
+    }
+
+    public Complex getAmplitude(int index) {
+        return amplitudes[index];
+    }
+
+    public void setAmplitude(int index, Complex amplitude) {
+        amplitudes[index] = amplitude;
+    }
+
+    public void normalize() {
+        double sum = 0.0;
+        for (Complex amp : amplitudes) {
+            sum += amp.abssqr();
+        }
+        double normalizationFactor = 1 / Math.sqrt(sum);
+        for (int i = 0; i < amplitudes.length; i++) {
+            amplitudes[i] = amplitudes[i].mul(normalizationFactor);
+        }
+    }
+}
+
+
+/**class QuantumValue {
     private Complex[] amplitudes; // Array of complex amplitudes for basis states |0>, |1>, |2>, ...
 
     // Constructor for a multi-state system
@@ -68,4 +109,5 @@ class QuantumValue {
     }
 
     // Additional methods would go here
-}
+} **/
+
