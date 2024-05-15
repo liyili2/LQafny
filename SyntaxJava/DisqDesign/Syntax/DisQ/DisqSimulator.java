@@ -10,20 +10,23 @@ public class DisqSimulator {
         QuantumState quantumState = new QuantumState();
         quantumState.addQubit(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0))); // Add first qubit
         quantumState.addQubit(new Locus(1), new Qubit(new Complex(1, 0), new Complex(0, 0))); // Add second qubit
-        quantumState.addQubit(new Locus(2), new Qubit(new Complex(1, 0), new Complex(0, 0))); // Add second qubit
+        quantumState.addQubit(new Locus(2), new Qubit(new Complex(1, 0), new Complex(0, 0))); // Add THIRD qubit
+        quantumState.addQubit(new Locus(3), new Qubit(new Complex(0, 0), new Complex(1, 0))); // Add FOURTH qubit
 
         // Print states of all qubits
         quantumState.printQubits();
         
         
-        // Normalize and apply Hadamard gate to the first qubit
+        // Normalize 
         quantumState.qubits.get(0).getValue().normalize();
         quantumState.qubits.get(1).getValue().normalize();
         quantumState.qubits.get(2).getValue().normalize();
+        quantumState.qubits.get(3).getValue().normalize();
 
         //quantumState.applyHadamardToQubit(0);
         quantumState.applyHadamardToQubit(1);
         quantumState.applyXgate(0);
+        quantumState.applyRzToQubit(3,Math.PI / 4);
 
         // Print states of all qubits
         //quantumState.printQubits();

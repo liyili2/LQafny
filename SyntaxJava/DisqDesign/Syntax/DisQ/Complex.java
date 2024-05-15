@@ -53,6 +53,9 @@ public class Complex {
        // System.out.println(r / divisor+" "+i / divisor);
         return new Complex(r / divisor, i / divisor);
     }
+    public static Complex fromPolar(double magnitude, double angle) {
+        return new Complex(magnitude * Math.cos(angle), magnitude * Math.sin(angle));
+    }
 
     // Utility method to generate a string representation of the complex number
     @Override

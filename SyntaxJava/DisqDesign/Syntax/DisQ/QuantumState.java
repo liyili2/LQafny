@@ -362,6 +362,23 @@ public class QuantumState {
         qubit.oneAmplitude = temp;
 
     }
+
+    public void applyRzToQubit(int qubitIndex, double theta) {
+        if (qubitIndex < 0 || qubitIndex >= qubits.size()) {
+            System.out.println("Invalid qubit index.");
+            return;
+        }
+        Pair<Locus, Qubit> pair = qubits.get(qubitIndex);
+        Qubit qubit = pair.getValue();
+    
+        // Apply phase shift to the |1> amplitude
+        Complex phaseFactor = Complex.fromPolar(1, theta); // Creating a complex number with magnitude 1 and phase theta
+        Complex newOneAmplitude = qubit.getOneAmplitude().mul(phaseFactor);
+    
+        // Set the new amplitude for |1>
+        qubit.setOneAmplitude(newOneAmplitude);
+    }
+    
     
 
 }
