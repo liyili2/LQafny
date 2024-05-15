@@ -348,6 +348,20 @@ public class QuantumState {
         qubit.setZeroAmplitude(newZeroAmplitude);
         qubit.setOneAmplitude(newOneAmplitude);
     }
+
+    public void applyXgate (int qubitIndex)
+    {
+        if (qubitIndex < 0 || qubitIndex >= qubits.size()) {
+            System.out.println("Invalid qubit index.");
+            return;
+        }
+        Pair<Locus, Qubit> pair = qubits.get(qubitIndex);
+        Qubit qubit = pair.getValue();
+        Complex temp = qubit.zeroAmplitude;
+        qubit.zeroAmplitude = qubit.oneAmplitude;
+        qubit.oneAmplitude = temp;
+
+    }
     
 
 }

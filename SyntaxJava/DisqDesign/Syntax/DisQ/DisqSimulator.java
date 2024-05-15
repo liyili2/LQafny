@@ -23,6 +23,7 @@ public class DisqSimulator {
 
         //quantumState.applyHadamardToQubit(0);
         quantumState.applyHadamardToQubit(1);
+        quantumState.applyXgate(0);
 
         // Print states of all qubits
         //quantumState.printQubits();

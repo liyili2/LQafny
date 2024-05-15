@@ -4,8 +4,8 @@ public class Qubit {
     
 
     
-        private Complex zeroAmplitude; // Amplitude for |0>
-        private Complex oneAmplitude;  // Amplitude for |1>
+        public Complex zeroAmplitude; // Amplitude for |0>
+        public Complex oneAmplitude;  // Amplitude for |1>
     
         public Qubit(Complex zeroAmplitude, Complex oneAmplitude) {
             this.zeroAmplitude = zeroAmplitude;
