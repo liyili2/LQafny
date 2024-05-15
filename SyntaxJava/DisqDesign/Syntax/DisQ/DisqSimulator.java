@@ -13,54 +13,64 @@ public class DisqSimulator {
         quantumState.addQubit(new Locus(2), new Qubit(new Complex(1, 0), new Complex(0, 0))); // Add THIRD qubit
         quantumState.addQubit(new Locus(3), new Qubit(new Complex(0, 0), new Complex(1, 0))); // Add FOURTH qubit
 
+
         // Print states of all qubits
-        quantumState.printQubits();
+       quantumState.printQubits();
         
-        
+        /***** 
         // Normalize 
         quantumState.qubits.get(0).getValue().normalize();
         quantumState.qubits.get(1).getValue().normalize();
         quantumState.qubits.get(2).getValue().normalize();
         quantumState.qubits.get(3).getValue().normalize();
 
-        //quantumState.applyHadamardToQubit(0);
+        //Applying Gates to qubit for that locus
         quantumState.applyHadamardToQubit(1);
         quantumState.applyXgate(0);
         quantumState.applyRzToQubit(3,Math.PI / 4);
+        quantumState.applyControlXgate(3,0);
 
-        // Print states of all qubits
-        //quantumState.printQubits();
-
-        // Print states of all qubits
-        System.out.println("\n");
+        //Printing qubit states
         quantumState.printQubits();
+        ***/
 
 
         
 
 
-        QuantumState qs = new QuantumState();
-        qs.initializeQubits(3); // Initialize a 3-qubit system
-        QuantumValue qv = qs.quantumValues.get(3);
+        //QuantumState qs = new QuantumState();
+        //qs.initializeQubits(3); // Initialize a 3-qubit system
+        //QuantumValue qv = qs.quantumValues.get(3);
       //  qs.initializeQubits(3); // Initialize a 3-qubit system
         // Create actions
-        Hadamard hadamard = new Hadamard(3, qv);  // Assuming target qubit index 0
-        QuantumOperationAction hadamardAction = new QuantumOperationAction(hadamard , 3, qv);
+        Hadamard hadamard = new Hadamard(1);  // Assuming target qubit index 0
+        PauliX xgate = new PauliX(0);
+        RotationZ RZGate = new RotationZ(3, Math.PI/4);
+        ControlledNot Cnot = new ControlledNot(3, 0);
+        QuantumOperationAction CNOToperation = new QuantumOperationAction(Cnot, 3,0);
+        QuantumOperationAction rotationzgate = new QuantumOperationAction(RZGate, 3 , Math.PI/4);
+        QuantumOperationAction xgateoperation = new QuantumOperationAction(xgate, 0) ;
+        QuantumOperationAction hadamardAction = new QuantumOperationAction(hadamard , 1);
 
          // Initialize the interpreter
-         ActionInterpreter interpreter = new ActionInterpreter(qs);
+         ActionInterpreter interpreter = new ActionInterpreter(quantumState);
         
          // Execute actions
          interpreter.visit(hadamardAction);
+         interpreter.visit(xgateoperation);
+        interpreter.visit(rotationzgate);
+        interpreter.visit(CNOToperation);
         
+         // Print states of all qubits
+       quantumState.printQubits();
     
 
-        qs.printState();
+       // qs.printState();
 
         // Apply a CNOT gate where the first qubit is the control and the second is the target
-        qs.applyCNOT(0, 1);
+        //qs.applyCNOT(0, 1);
     
-        qs.printState();
+       // qs.printState();
 
 
 
@@ -96,7 +106,7 @@ public class DisqSimulator {
     for (int i = 0; i < (1 << numQubits); i++) {  // Loop through all possible states
         System.out.println("State |" + Integer.toBinaryString(i) + "> Amplitude: " + finalState.getAmplitude(i));
     }**/
-    int numQubits = 3;  // For a 3-qubit system
+    //int numQubits = 3;  // For a 3-qubit system
        // QuantumState qs = new QuantumState();  // Initialize with zero amplitudes
         //Random rand = new Random();
        // qs.initializeQubits(numQubits);

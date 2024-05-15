@@ -242,7 +242,7 @@ public class QuantumState {
                 pair.getValue().setPhase(phase + Math.PI / 2);  // Example phase manipulation
             });
     }**/
-    public void applyHadamard(int qubitIndex, QuantumValue quantumValue) {
+   /**  public void applyHadamard(int qubitIndex) {
         int numStates = quantumValue.getAmplitudes().length;
         Complex[] newAmplitudes = new Complex[numStates];
     
@@ -268,7 +268,7 @@ public class QuantumState {
         for (int i = 0; i < numStates; i++) {
             quantumValue.setAmplitude(i, newAmplitudes[i]);
         }
-    }
+    } **/
     
 
     private boolean matchIndices(int[] indices1, int[] indices2) {
@@ -333,7 +333,9 @@ public class QuantumState {
     public void printQubits() {
         for (Pair<Locus, Qubit> pair : qubits) {
             System.out.println("Locus: " + pair.getKey() + " Qubit states: |0> " + pair.getValue().getZeroAmplitude() + ", |1> " + pair.getValue().getOneAmplitude());
+            //System.out.println("\n");
         }
+        System.out.println("\n");
     }
 
     public void applyHadamardToQubit(int qubitIndex) {
@@ -360,6 +362,27 @@ public class QuantumState {
         Complex temp = qubit.zeroAmplitude;
         qubit.zeroAmplitude = qubit.oneAmplitude;
         qubit.oneAmplitude = temp;
+
+    }
+
+    public void applyControlXgate (int control, int target)
+    {
+        if ((control < 0 && target < 0)|| (control >= qubits.size() && target >= qubits.size())) {
+            System.out.println("Invalid qubit index.");
+            return;
+        }
+        Pair<Locus, Qubit> cqubit = qubits.get(control);
+        Pair<Locus,Qubit> tqubit = qubits.get(target);
+
+        Qubit controlqubit = cqubit.getValue();
+        Qubit targetqubit = tqubit.getValue();
+
+        if (controlqubit.oneAmplitude.r> 0)
+        {
+        Complex temp = targetqubit.zeroAmplitude;
+        targetqubit.zeroAmplitude = targetqubit.oneAmplitude;
+        targetqubit.oneAmplitude = temp;
+        }
 
     }
 

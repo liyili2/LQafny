@@ -9,6 +9,10 @@ class Hadamard extends UnitaryExpr {
         this.qubitIndex = qubitIndex;
         this.quantumValue=quantumValue;
     }
+    public Hadamard(int qubitIndex) {
+        this.qubitIndex = qubitIndex;
+       // this.quantumValue=quantumValue;
+    }
 
     public int getqubitIndex() {
         return qubitIndex;

@@ -14,29 +14,34 @@ public class ActionInterpreter implements ActionVisitor {
         UnitaryExpr operation = action.getOperation();
         //int[] targetQubits = action.getTargetQubits();
         int qubitIndex =action.qubitIndex;
-        QuantumValue qv = action.qv; 
+        double theta = action.theta;
+        int control = action.control;
+        int target = action.target;
+        
+        //QuantumValue qv = action.qv; 
 
         
         // Apply the unitary operation to the quantum state
         if (operation instanceof Hadamard) {
-            quantumState.applyHadamard(qubitIndex,qv);
+            //quantumState.applyHadamard(qubitIndex);
+            quantumState.applyHadamardToQubit(qubitIndex);
         } else if (operation instanceof PauliX) {
-            //quantumState.applyPauliX(targetQubits);
+            quantumState.applyXgate(qubitIndex);
         } else if (operation instanceof QuantumFourierTransform) {
             //quantumState.applyQuantumFourierTransform(targetQubits);
         } else if (operation instanceof RotationZ) {
-            RotationZ rz = (RotationZ) operation;
-           // quantumState.applyRotationZ(targetQubits, rz.getAngle());
+           // RotationZ rz = (RotationZ) operation;
+            quantumState.applyRzToQubit(qubitIndex,theta);
         } else if (operation instanceof ControlledNot) {
-            ControlledNot cn = (ControlledNot) operation;
-           // quantumState.applyControlledNot(cn.getControlQubit(), cn.getTargetQubit());
+            //ControlledNot cn = (ControlledNot) operation;
+            quantumState.applyControlXgate(control,target);
         } else if (operation instanceof ControlledU) {
-            ControlledU cu = (ControlledU) operation;
+            //ControlledU cu = (ControlledU) operation;
            // quantumState.applyControlledU(cu.getControlQubit(), cu.getInternalUnitary());
         }
 
         //System.out.println("Applied " + operation.getClass().getSimpleName() + " to qubits " + Arrays.toString(targetQubits));
-        quantumState.printState();
+       // quantumState.printQubits();
     }
 
     @Override
