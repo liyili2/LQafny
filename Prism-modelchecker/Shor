@@ -1,0 +1,45 @@
+// Constants
+const int N; // The composite number to be factored, defined by the user
+const double p_success; // Placeholder for simplified probability calculation
+const int max_retries =20; // Maximum allowed retries, we can give some constant value
+const double pi2=9.86;
+const double p_coprime = 6/pi2; // Probability that two numbers are coprime
+const int r; // Order found by the quantum algorithm , 
+
+// Adjusted probability for quantum order-finding success based on r
+const double p_qof = 4/(pi2 * r);
+
+// State variables
+global s : [0..5] init 0; // State of the algorithm, 
+global retries : [0..max_retries] init 0; // Counter for the number of retries
+
+module shor
+
+    // Initial state, pick a random 'a'
+    [pick_a] s=0 & retries < max_retries -> (s'=1);
+
+    // Check if 'a' and 'N' are coprime, abstracted as a probabilistic process
+    [check_coprime] s=1 -> p_coprime : (s'=2) + (1-p_coprime) : (s'=0);
+
+    // Quantum order-finding, adjusted probability based on r
+    [quantum_order_finding] s=2 -> p_qof : (s'=3) + (1-p_qof) : (s'=0);
+
+    // Check if order r is even
+    [check_order] s=3 -> 0.5 : (s'=4) + 0.5 : (s'=0); // Assuming a 50% chance of r being even
+
+    // Factorization successful, found non-trivial factors
+    [factorization_success] s=4 -> (s'=4);
+
+    // Direct factorization success if GCD(a, N) > 1
+    [gcd_success] s=5 -> (s'=4);
+
+    // Retry if factorization was not successful or order r was not even
+    [retry] s=0 & retries < max_retries -> (retries'=retries+1) & (s'=1);
+    
+    // Failed to factor after max_retries
+    [fail] s=0 & retries >= max_retries -> (s'=5);
+
+endmodule
+
+label "success" = s=4;
+label "failure" = s=5;
