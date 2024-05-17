@@ -8,14 +8,20 @@ public class DisqSimulator {
 
 
         QuantumState quantumState = new QuantumState();
-        quantumState.addQubit(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0))); // Add first qubit
-        quantumState.addQubit(new Locus(1), new Qubit(new Complex(1, 0), new Complex(0, 0))); // Add second qubit
-        quantumState.addQubit(new Locus(2), new Qubit(new Complex(1, 0), new Complex(0, 0))); // Add THIRD qubit
-        quantumState.addQubit(new Locus(3), new Qubit(new Complex(0, 0), new Complex(1, 0))); // Add FOURTH qubit
+        quantumState.addQubit(new Locus(0), new Qubit(new Complex(0.50, 0), new Complex(0.5, 0))); // Add first qubit
+        quantumState.addQubit(new Locus(1), new Qubit(new Complex(0.70, 0), new Complex(0.8, 0))); // Add second qubit
+        quantumState.addQubit(new Locus(2), new Qubit(new Complex(0.8, 0), new Complex(0.6, 0))); // Add THIRD qubit
+        quantumState.addQubit(new Locus(3), new Qubit(new Complex(0.5, 0), new Complex(0.5, 0))); // Add FOURTH qubit
+        quantumState.qubits.get(0).getValue().normalize();
+        quantumState.qubits.get(1).getValue().normalize();
+        quantumState.qubits.get(2).getValue().normalize();
+        quantumState.qubits.get(3).getValue().normalize();
 
 
         // Print states of all qubits
        quantumState.printQubits();
+       quantumState.printTensorProduct();
+       quantumState.tensornorm();
         
         /***** 
         // Normalize 
@@ -43,6 +49,7 @@ public class DisqSimulator {
         //QuantumValue qv = qs.quantumValues.get(3);
       //  qs.initializeQubits(3); // Initialize a 3-qubit system
         // Create actions
+        /** 
         Hadamard hadamard = new Hadamard(1);  // Assuming target qubit index 0
         PauliX xgate = new PauliX(0);
         RotationZ RZGate = new RotationZ(3, Math.PI/4);
@@ -60,12 +67,13 @@ public class DisqSimulator {
          interpreter.visit(xgateoperation);
         interpreter.visit(rotationzgate);
         interpreter.visit(CNOToperation);
-        
+        **/
+
          // Print states of all qubits
-       quantumState.printQubits();
+      // quantumState.printQubits();
     
 
-       // qs.printState();
+       // qs.printState);
 
         // Apply a CNOT gate where the first qubit is the control and the second is the target
         //qs.applyCNOT(0, 1);

@@ -50,161 +50,6 @@ class EntangledState {
     public void setPhase(double phase) { this.phase = phase; }
 }
 
-// Primary class for managing the quantum state
-/**public class QuantumState {
-    private List<Pair<Locus, EntangledState>> statePairs;
-    //private Random random = new Random();
-
-    private List<QuantumValue> quantumValues; // Your quantum system's state representation
-
-    public QuantumState(List<QuantumValue> quantumValues) {
-        this.quantumValues = quantumValues;
-    }
-
-    public QuantumState() {
-        statePairs = new ArrayList<>();
-    }
-
-    public void addStatePair(Locus locus, EntangledState state) {
-        statePairs.add(new Pair<>(locus, state));
-    }
-
-   
-    public void applyHadamard(int[] targetIndices) {
-        for (Pair<Locus, EntangledState> pair : statePairs) {
-           // if (matchIndices(pair.getKey().getIndices(), targetIndices)) 
-            {
-                double amplitude = pair.getValue().getAmplitude();
-                double phase = pair.getValue().getPhase();
-              //  System.err.println("Hello testing\n");
-                
-                pair.getValue().setAmplitude(Math.sqrt(0.5) * (amplitude + phase));
-                pair.getValue().setPhase(Math.sqrt(0.5) * (amplitude - phase));
-            }
-        }
-    }
-
-    private boolean matchIndices(int[] indices, int[] targetIndices) {
-        if (indices.length != targetIndices.length) return false;
-        for (int i = 0; i < indices.length; i++) {
-            if (indices[i] != targetIndices[i]) return false;
-        }
-        return true;
-    }
-    /**public int measure(int c, int N, int p) {
-        List<QuantumValue> withPrefixC = new ArrayList<>();
-        for (QuantumValue qValue : quantumValues) {
-            if (qValue.hasPrefix(c)) {
-                withPrefixC.add(qValue);
-            }
-        }
-    
-        // Normalize the amplitudes of the remaining basis-kets
-        withPrefixC.forEach(QuantumValue::normalize);
-    
-        // Calculate the sum of the squares of the magnitudes of the amplitudes (total probability)
-        double totalProbability = withPrefixC.stream()
-            .mapToDouble(qv -> qv.getMagnitudeSquared(c))
-            .sum();
-    
-        // Probability of picking a basis value 'a mod N' as a measurement result
-        int result = pickRandomBasedOnProbability(withPrefixC, totalProbability, N,c);
-    
-        // Collapse the quantum state based on the result
-        quantumValues.forEach(qv -> qv.collapse(result));
-    
-        return result;
-    }
-
-    
-    private int pickRandomBasedOnProbability(List<QuantumValue> withPrefixC, double totalProbability, int N,int c) {
-        double rand = Math.random() * totalProbability;
-        double cumulativeProbability = 0.0;
-    
-        for (QuantumValue qv : withPrefixC) {
-            double probability = qv.getMagnitudeSquared(c); // Assuming getMagnitudeSquared returns a double
-            cumulativeProbability += probability;
-            if (cumulativeProbability >= rand) {
-                return qv.getBasisValue() % N;
-            }
-        }
-        return -1;  // This means something went wrong with the probability calculations
-    }
-    
-
-
-    /***
-     public String measure(int[] targetIndices) {
-        StringBuilder result = new StringBuilder();
-        for (int index : targetIndices) {
-            for (Pair<Locus, EntangledState> pair : statePairs) {
-                if (pair.getKey().getIndices()[0] == index) {
-                    
-                    double probabilityOfOne = Math.pow(pair.getValue().getAmplitude(), 2);
-                    boolean isOne = random.nextDouble() < probabilityOfOne;
-                    result.append(isOne ? "1" : "0");
-                    break;
-                }
-            }
-        }
-        return result.toString();
-    }  ***/
-
-
-     // Conceptual implementation of the quantum measurement described
-   /** * public int measure(int c, int N, int p) {
-        // Partitioning the basis-kets by the presence of c as prefix
-        List<QuantumValue> withPrefixC = new ArrayList<>();
-        List<QuantumValue> withoutPrefixC = new ArrayList<>();
-
-        for (QuantumValue qValue : quantumValues) {
-            if (qValue.hasPrefix(c)) {
-                withPrefixC.add(qValue);
-            } else {
-                withoutPrefixC.add(qValue);
-            }
-        }
-
-        // Normalize the amplitudes of the remaining basis-kets
-       // double sumOfSquares = withPrefixC.stream().mapToDouble(QuantumValue::getMagnitudeSquared).sum();
-       // double sumOfSquares = quantumValues.stream()
-    //.mapToDouble(qv -> qv.getMagnitudeSquared(c)) // Make sure to pass an index if needed
-   // .sum();
-
-        //double normalizationFactor = 1 / Math.sqrt(sumOfSquares);
-        withPrefixC.forEach(qv -> qv.normalize());
-        
-
-        // Calculate the sum of the amplitudes of the basis-kets (post-normalization)
-        Complex amplitudeSum = ((QuantumValue) quantumValues).getAmplitude(c);
-       // double amplitudeSum = withPrefixC.stream().mapToDouble(QuantumValue::getAmplitude).sum();
-        
-        // Probability of picking a basis value 'a mod N' as a measurement result
-        int result = pickRandomBasedOnProbability(withPrefixC, amplitudeSum, N,c);
-        
-        // The number r of remaining basis-kets in range y[0,n) is computed by rounding 2^n/p
-        int remainingBasisKets = (int)Math.round(Math.pow(2, N) / p);
-        
-        // Collapse the quantum state based on the result
-        quantumValues.forEach(qv -> qv.collapse(result));
-        
-        return result;
-    }
-
-    private int pickRandomBasedOnProbability(List<QuantumValue> withPrefixC, Complex amplitudeSum, int N,int c) {
-        double rand = Math.random() * amplitudeSum;
-        double cumulativeProbability = 0.0;
-
-        for (QuantumValue qv : withPrefixC) {
-            cumulativeProbability += qv.getAmplitude(c);
-            if (cumulativeProbability >= rand) {
-                return qv.getBasisValue() % N;
-            }
-        }
-        return -1; // something went wrong with the probability calculations
-    }***/
-
-//} 
 
 public class QuantumState {
     private List<Pair<Locus, EntangledState>> entangledStates;
@@ -232,44 +77,6 @@ public class QuantumState {
         entangledStates.add(new Pair<>(locus, state));
     }
 
-   /**  public void applyHadamard(int[] targetIndices) {
-        entangledStates.stream()
-            .filter(pair -> matchIndices(pair.getKey().getIndices(), targetIndices))
-            .forEach(pair -> {
-                Complex amplitude = pair.getValue().getAmplitude();
-                double phase = pair.getValue().getPhase();
-                pair.getValue().setAmplitude(amplitude.mul(new Complex(Math.sqrt(0.5), Math.sqrt(0.5))));
-                pair.getValue().setPhase(phase + Math.PI / 2);  // Example phase manipulation
-            });
-    }**/
-   /**  public void applyHadamard(int qubitIndex) {
-        int numStates = quantumValue.getAmplitudes().length;
-        Complex[] newAmplitudes = new Complex[numStates];
-    
-        // Initialize new amplitude array
-        for (int i = 0; i < numStates; i++) {
-            newAmplitudes[i] = new Complex(0, 0);
-        }
-    
-        // Apply the Hadamard transformation
-        for (int i = 0; i < numStates; i++) {
-            int indexWithFlippedQubit = i ^ (1 << qubitIndex); // Flip the qubit at qubitIndex
-    
-            // Calculate new amplitudes
-            Complex currentAmplitude = quantumValue.getAmplitude(i);
-            Complex currentAmplitudeFlipped = quantumValue.getAmplitude(indexWithFlippedQubit);
-    
-            // Superposition: |0> + |1> and |0> - |1>
-            newAmplitudes[i] = currentAmplitude.add(currentAmplitudeFlipped).mul(1/Math.sqrt(2));
-            newAmplitudes[indexWithFlippedQubit] = currentAmplitude.sub(currentAmplitudeFlipped).mul(1/Math.sqrt(2));
-        }
-    
-        // Set the new amplitudes back to the quantum value
-        for (int i = 0; i < numStates; i++) {
-            quantumValue.setAmplitude(i, newAmplitudes[i]);
-        }
-    } **/
-    
 
     private boolean matchIndices(int[] indices1, int[] indices2) {
         if (indices1.length != indices2.length) return false;
@@ -401,6 +208,69 @@ public class QuantumState {
         // Set the new amplitude for |1>
         qubit.setOneAmplitude(newOneAmplitude);
     }
+
+    public Complex[] tensorProduct() {
+        if (qubits.isEmpty()) {
+            return new Complex[] {};  // Return an empty array if no qubits are present
+        }
+
+        // Start with the first qubit's state vector
+        Complex[] result = { qubits.get(0).getValue().getZeroAmplitude(), qubits.get(0).getValue().getOneAmplitude() };
+
+        // Apply the tensor product iteratively
+        for (int i = 1; i < qubits.size(); i++) {
+            Qubit qubit = qubits.get(i).getValue();
+            Complex[] tempResult = new Complex[result.length * 2]; // Each new qubit doubles the state vector size
+
+            // Compute the tensor product of result with the current qubit's state vector
+            for (int j = 0; j < result.length; j++) {
+                tempResult[2 * j] = result[j].mul(qubit.getZeroAmplitude());
+                tempResult[2 * j + 1] = result[j].mul(qubit.getOneAmplitude());
+            }
+
+            result = tempResult; // Update the result to the newly computed tensor product
+        }
+
+        return result;
+    }
+
+    public void tensornorm()
+    {
+        Complex[] tensor = tensorProduct();
+        double square=0.0, normsq=0.0;
+        for (int i =0 ; i < tensor.length;i++)
+        {
+            square += tensor[i].abssqr();
+            System.out.println(tensor[i].abssqr());
+            
+        }
+        System.out.println("\nNomr:\n"+square);
+        for (int i =0 ; i < tensor.length;i++)
+        {
+           tensor[i] = tensor[i].div(square);
+            
+        }
+        for (int i =0 ; i < tensor.length;i++)
+        {
+            normsq += tensor[i].abssqr();
+            
+        }
+        System.out.println("\nnormsq:\n"+normsq);
+        
+    }
+
+    public void printTensorProduct() {
+        Complex[] tensorProduct = tensorProduct();
+        System.out.println("Combined Quantum State (Tensor Product):");
+        for (int i = 0; i < tensorProduct.length; i++) {
+            System.out.println("|" + Integer.toBinaryString(i) + "> = " + tensorProduct[i]);
+        }
+    }
+
+
+
+
+    
     
     
 
