@@ -6,22 +6,22 @@ public class DisqSimulator {
     public static void main(String[] args) {
 
 
-
+        //Checking.....
         QuantumState quantumState = new QuantumState();
-        quantumState.addQubit(new Locus(0), new Qubit(new Complex(0.50, 0), new Complex(0.5, 0))); // Add first qubit
-        quantumState.addQubit(new Locus(1), new Qubit(new Complex(0.70, 0), new Complex(0.8, 0))); // Add second qubit
-        quantumState.addQubit(new Locus(2), new Qubit(new Complex(0.8, 0), new Complex(0.6, 0))); // Add THIRD qubit
-        quantumState.addQubit(new Locus(3), new Qubit(new Complex(0.5, 0), new Complex(0.5, 0))); // Add FOURTH qubit
+        quantumState.addQubit(new Locus(0), new Qubit(new Complex(0, 0), new Complex(1, 0))); // Add first qubit
+        quantumState.addQubit(new Locus(1), new Qubit(new Complex(0, 0), new Complex(1, 0))); // Add second qubit
+        quantumState.addQubit(new Locus(2), new Qubit(new Complex(0, 0), new Complex(1, 0))); // Add THIRD qubit
+        quantumState.addQubit(new Locus(3), new Qubit(new Complex(0, 0), new Complex(1, 0))); // Add FOURTH qubit
         quantumState.qubits.get(0).getValue().normalize();
         quantumState.qubits.get(1).getValue().normalize();
         quantumState.qubits.get(2).getValue().normalize();
         quantumState.qubits.get(3).getValue().normalize();
-
+        quantumState.printQubits();
 
         // Print states of all qubits
-       quantumState.printQubits();
-       quantumState.printTensorProduct();
-       quantumState.tensornorm();
+       //quantumState.printQubits();
+       //quantumState.printTensorProduct();
+      // quantumState.tensornorm();
         
         /***** 
         // Normalize 
@@ -49,7 +49,7 @@ public class DisqSimulator {
         //QuantumValue qv = qs.quantumValues.get(3);
       //  qs.initializeQubits(3); // Initialize a 3-qubit system
         // Create actions
-        /** 
+        
         Hadamard hadamard = new Hadamard(1);  // Assuming target qubit index 0
         PauliX xgate = new PauliX(0);
         RotationZ RZGate = new RotationZ(3, Math.PI/4);
@@ -63,11 +63,16 @@ public class DisqSimulator {
          ActionInterpreter interpreter = new ActionInterpreter(quantumState);
         
          // Execute actions
-         interpreter.visit(hadamardAction);
-         interpreter.visit(xgateoperation);
-        interpreter.visit(rotationzgate);
-        interpreter.visit(CNOToperation);
-        **/
+        // interpreter.visit(hadamardAction);
+         //interpreter.visit(xgateoperation);
+        //interpreter.visit(rotationzgate);
+        //interpreter.visit(CNOToperation);
+        
+        ProcessExecutor executor = new ProcessExecutor(quantumState);
+        Process NoOpera = new NoOp ();
+        Process SeqPro = new SequentialProcess ( CNOToperation , NoOpera );
+
+        SeqPro.accept(executor);
 
          // Print states of all qubits
       // quantumState.printQubits();

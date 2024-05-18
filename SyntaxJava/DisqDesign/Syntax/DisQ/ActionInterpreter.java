@@ -24,16 +24,21 @@ public class ActionInterpreter implements ActionVisitor {
         // Apply the unitary operation to the quantum state
         if (operation instanceof Hadamard) {
             //quantumState.applyHadamard(qubitIndex);
+            System.out.println("\nHadamardGate: \n");
             quantumState.applyHadamardToQubit(qubitIndex);
         } else if (operation instanceof PauliX) {
+            System.out.println("\nX Gate: \n");
             quantumState.applyXgate(qubitIndex);
         } else if (operation instanceof QuantumFourierTransform) {
             //quantumState.applyQuantumFourierTransform(targetQubits);
+            System.out.println("\nQFT Gate: \n");
         } else if (operation instanceof RotationZ) {
            // RotationZ rz = (RotationZ) operation;
+           System.out.println("\nRZ Gate: \n");
             quantumState.applyRzToQubit(qubitIndex,theta);
         } else if (operation instanceof ControlledNot) {
             //ControlledNot cn = (ControlledNot) operation;
+            System.out.println("\nCNOT Gate: \n");
             quantumState.applyControlXgate(control,target);
         } else if (operation instanceof ControlledU) {
             //ControlledU cu = (ControlledU) operation;
@@ -41,7 +46,7 @@ public class ActionInterpreter implements ActionVisitor {
         }
 
         //System.out.println("Applied " + operation.getClass().getSimpleName() + " to qubits " + Arrays.toString(targetQubits));
-       // quantumState.printQubits();
+        quantumState.printQubits();
     }
 
     @Override

@@ -12,6 +12,7 @@ public class ProcessExecutor implements ProcessVisitor {
 
     public ProcessExecutor(QuantumState state) {
         this.state = state;
+        this.actionVisitor = new ActionInterpreter(state); 
     }
 
     @Override
