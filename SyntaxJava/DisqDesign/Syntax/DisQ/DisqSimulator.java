@@ -70,9 +70,11 @@ public class DisqSimulator {
         
         ProcessExecutor executor = new ProcessExecutor(quantumState);
         Process NoOpera = new NoOp ();
-        Process SeqPro = new SequentialProcess ( CNOToperation , NoOpera );
+        Process SecPro = new SequentialProcess ( CNOToperation , NoOpera );
+        Process OnePro = new SequentialProcess ( hadamardAction , SecPro ) ;
+        
 
-        SeqPro.accept(executor);
+        OnePro.accept(executor);
 
          // Print states of all qubits
       // quantumState.printQubits();
