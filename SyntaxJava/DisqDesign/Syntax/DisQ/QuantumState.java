@@ -33,26 +33,11 @@ class Locus {
     public int[] getIndices() { return indices; }
 }
 
-// Class to represent an entangled quantum state
-class EntangledState {
-    private Complex amplitude;
-    private double phase;
 
-    public EntangledState(Complex amplitude, double phase) {
-        this.amplitude = amplitude;
-        this.phase = phase;
-    }
-
-    public Complex getAmplitude() { return amplitude; }
-    public void setAmplitude(Complex amplitude) { this.amplitude = amplitude; }
-
-    public double getPhase() { return phase; }
-    public void setPhase(double phase) { this.phase = phase; }
-}
 
 
 public class QuantumState {
-    private List<Pair<Locus, EntangledState>> entangledStates;
+   // private List<Pair<Locus, EntangledState>> entangledStates;
     public List<QuantumValue> quantumValues;  // To hold all quantum states
     List<Pair<Locus, Qubit>> qubits;
 
@@ -64,38 +49,41 @@ public class QuantumState {
         qubits.add(new Pair<>(locus, qubit));
     }
 
-    /**public QuantumState() {
-        this.quantumValues = new ArrayList<>();
-    }**/
+   
 
-    
-    /**ublic QuantumState() {
-        entangledStates = new ArrayList<>();
-    }**/
+    // Method to determine the NOR type based on the states of all qubits
+    public String NorType() {
+        StringBuilder result = new StringBuilder();
+        result.append("|");
+        for (Pair<Locus, Qubit> pair : qubits) {
+            Qubit qubit = pair.getValue();
+            double zeroProb = qubit.getZeroAmplitude().abssqr();
+            double oneProb = qubit.getOneAmplitude().abssqr();
 
-    public void addEntangledState(Locus locus, EntangledState state) {
-        entangledStates.add(new Pair<>(locus, state));
-    }
-
-
-    private boolean matchIndices(int[] indices1, int[] indices2) {
-        if (indices1.length != indices2.length) return false;
-        for (int i = 0; i < indices1.length; i++) {
-            if (indices1[i] != indices2[i]) return false;
+            if (zeroProb > oneProb) {
+                result.append("0");  // More likely in state |0>
+            } else {
+                result.append("1");  // More likely in state |1>
+            }
         }
-        return true;
+        result.append(">");
+        return result.toString();
+    }
+    //Initializing the entangle bits.
+    public void ENType ()
+    {
+        for (Pair<Locus, Qubit> pair : qubits)
+        {
+            pair.getValue().setOneAmplitude(new Complex(0.707, 0));
+            pair.getValue().setZeroAmplitude(new Complex(0.707, 0));
+      
+        }
     }
 
-    public Complex measure(Locus locus) {
-        // Measurement collapses the quantum state to one of the eigenstates
-        // Assuming a simple measurement that just returns the amplitude without collapse for demonstration
-        return entangledStates.stream()
-                .filter(pair -> matchIndices(pair.getKey().getIndices(), locus.getIndices()))
-                .findFirst()
-                .map(pair -> pair.getValue().getAmplitude())
-                .orElse(Complex.ZERO);
-    }
 
+   
+
+   
     public void applyCNOT(int controlIndex, int targetIndex) {
         // Iterate over all possible states (amplitudes)
         for (int i = 0; i < quantumValues.size(); i++) {

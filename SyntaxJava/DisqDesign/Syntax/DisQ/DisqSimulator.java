@@ -18,6 +18,12 @@ public class DisqSimulator {
         quantumState.qubits.get(3).getValue().normalize();
         quantumState.printQubits();
 
+         // Determine the NOR type
+         String norType = quantumState.NorType();
+        
+         // Print the NOR type
+         System.out.println("NOR Type: " + norType);
+
         // Print states of all qubits
        //quantumState.printQubits();
        //quantumState.printTensorProduct();
@@ -49,7 +55,7 @@ public class DisqSimulator {
         //QuantumValue qv = qs.quantumValues.get(3);
       //  qs.initializeQubits(3); // Initialize a 3-qubit system
         // Create actions
-        
+        /** 
         Hadamard hadamard = new Hadamard(1);  // Assuming target qubit index 0
         PauliX xgate = new PauliX(0);
         RotationZ RZGate = new RotationZ(3, Math.PI/4);
@@ -74,8 +80,11 @@ public class DisqSimulator {
         Process OnePro = new SequentialProcess ( hadamardAction , SecPro ) ;
         
 
-        OnePro.accept(executor);
+       // OnePro.accept(executor);
 
+        ConditionalProcess condProc = new ConditionalProcess (()->false,SecPro,NoOpera);
+        condProc.accept(executor);
+            **/
          // Print states of all qubits
       // quantumState.printQubits();
     

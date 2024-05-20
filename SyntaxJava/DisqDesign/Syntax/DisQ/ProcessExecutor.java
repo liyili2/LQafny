@@ -18,7 +18,7 @@ public class ProcessExecutor implements ProcessVisitor {
     @Override
     public void visit(NoOp noOp) {
         // Do nothing
-        System.out.println("nothing");
+        System.out.println("No operation performed");
     }
 
     @Override
