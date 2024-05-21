@@ -6,6 +6,8 @@ public class Qubit {
     
         public Complex zeroAmplitude; // Amplitude for |0>
         public Complex oneAmplitude;  // Amplitude for |1>
+        boolean IsEntangled =false ;
+        int EnQubitindex;
     
         public Qubit(Complex zeroAmplitude, Complex oneAmplitude) {
             this.zeroAmplitude = zeroAmplitude;
@@ -35,6 +37,21 @@ public class Qubit {
 
     public void setOneAmplitude(Complex amplitude) {
         this.oneAmplitude = amplitude;
+    }
+     
+    public boolean  getEN()
+    {
+        return IsEntangled ;
+    }
+    public int getEntqubitindex()
+    {
+        return EnQubitindex;
+    }
+
+    public  void setEN(boolean IsEntangled,int EnQubitindex)
+    {
+       this.IsEntangled=IsEntangled ;
+       this.EnQubitindex=EnQubitindex;
     }
     
         // Additional methods as needed

@@ -70,37 +70,22 @@ public class QuantumState {
         return result.toString();
     }
     //Initializing the entangle bits.
-    public void ENType ()
+    public void ENType (int qubitindex1,int qubitindex2)
+
     {
-        for (Pair<Locus, Qubit> pair : qubits)
-        {
-            pair.getValue().setOneAmplitude(new Complex(0.707, 0));
-            pair.getValue().setZeroAmplitude(new Complex(0.707, 0));
-      
-        }
-    }
+        Pair<Locus, Qubit> qubit1 = qubits.get(qubitindex1);
+        Pair<Locus, Qubit> qubit2 = qubits.get(qubitindex2);
+        //qubit1 
+	    qubit1.getValue().setOneAmplitude(new Complex(0.707, 0));
+        qubit1.getValue().setZeroAmplitude(new Complex(0.707, 0));
+        qubit1.getValue().setEN(true, qubitindex2);
+        //qubit2 
+        qubit2.getValue().setOneAmplitude(new Complex(0.707, 0));
+        qubit2.getValue().setZeroAmplitude(new Complex(0.707, 0));
+        qubit2.getValue().setEN(true, qubitindex1);
 
 
-   
-
-   
-    public void applyCNOT(int controlIndex, int targetIndex) {
-        // Iterate over all possible states (amplitudes)
-        for (int i = 0; i < quantumValues.size(); i++) {
-            QuantumValue qv = quantumValues.get(i);
-            Complex[] newAmplitudes = new Complex[qv.amplitudes.length];
-            System.arraycopy(qv.amplitudes, 0, newAmplitudes, 0, qv.amplitudes.length);
-    
-            // Perform the CNOT operation
-            for (int state = 0; state < newAmplitudes.length; state++) {
-                if ((state & (1 << controlIndex)) != 0) { // Control qubit is |1>
-                    int targetState = state ^ (1 << targetIndex); // Flip the target qubit
-                    newAmplitudes[targetState] = qv.getAmplitude(state);
-                    newAmplitudes[state] = qv.getAmplitude(targetState);
-                }
-            }
-            qv.amplitudes = newAmplitudes; // Update the state with new amplitudes
-        }
+        
     }
     
 
