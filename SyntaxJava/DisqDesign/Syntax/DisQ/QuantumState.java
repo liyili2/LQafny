@@ -232,13 +232,45 @@ public class QuantumState {
         
     }
 
-    public void printTensorProduct() {
+    public void lprintTensorProduct() {
         Complex[] tensorProduct = tensorProduct();
         System.out.println("Combined Quantum State (Tensor Product):");
         for (int i = 0; i < tensorProduct.length; i++) {
             System.out.println("|" + Integer.toBinaryString(i) + "> = " + tensorProduct[i]);
         }
     }
+
+    public void printTensorProduct() {
+        if (qubits.isEmpty()) {
+            System.out.println("No qubits available.");
+            return;
+        }
+    
+        // Initialize the combined state with the state of the first qubit
+        Complex[] combinedState = new Complex[1 << qubits.size()]; // 2^number_of_qubits positions
+        combinedState[0] = qubits.get(0).getValue().getZeroAmplitude();
+        combinedState[1] = qubits.get(0).getValue().getOneAmplitude();
+    
+        // Apply the tensor product iteratively for each additional qubit
+        for (int i = 1; i < qubits.size(); i++) {
+            Qubit currentQubit = qubits.get(i).getValue();
+            Complex[] newCombinedState = new Complex[1 << (i + 1)]; // Double the size for the next qubit
+    
+            for (int j = 0; j < (1 << i); j++) {
+                newCombinedState[2 * j] = combinedState[j].mul(currentQubit.getZeroAmplitude());
+                newCombinedState[2 * j + 1] = combinedState[j].mul(currentQubit.getOneAmplitude());
+            }
+    
+            combinedState = newCombinedState; // Update the combined state
+        }
+    
+        // Print the resulting combined quantum state
+        System.out.println("Combined Quantum State (Tensor Product):");
+        for (int i = 0; i < combinedState.length; i++) {
+            System.out.printf("|%s> = %s\n", Integer.toBinaryString(i), combinedState[i]);
+        }
+    }
+    
 
 
 

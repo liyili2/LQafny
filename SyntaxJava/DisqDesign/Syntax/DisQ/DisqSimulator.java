@@ -9,26 +9,26 @@ public class DisqSimulator {
         //Checking.....
         QuantumState quantumState = new QuantumState();
         quantumState.addQubit(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0))); // Add first qubit
-        quantumState.addQubit(new Locus(1), new Qubit(new Complex(1, 0), new Complex(0, 0))); // Add second qubit
-       // quantumState.addQubit(new Locus(2), new Qubit(new Complex(0, 0), new Complex(1, 0))); // Add THIRD qubit
-       // quantumState.addQubit(new Locus(3), new Qubit(new Complex(0, 0), new Complex(1, 0))); // Add FOURTH qubit
+        quantumState.addQubit(new Locus(1), new Qubit(new Complex(0, 0), new Complex(1, 0))); // Add second qubit
+        quantumState.addQubit(new Locus(2), new Qubit(new Complex(0, 0), new Complex(1, 0))); // Add THIRD qubit
+        quantumState.addQubit(new Locus(3), new Qubit(new Complex(0, 0), new Complex(1, 0))); // Add FOURTH qubit
         quantumState.qubits.get(0).getValue().normalize();
         quantumState.qubits.get(1).getValue().normalize();
-       // quantumState.qubits.get(2).getValue().normalize();
-       // quantumState.qubits.get(3).getValue().normalize();
-        quantumState.printQubits();
+        quantumState.qubits.get(2).getValue().normalize();
+        quantumState.qubits.get(3).getValue().normalize();
+       // quantumState.printQubits();
 
          // Determine the NOR type
-         String norType = quantumState.NorType();
+        // String norType = quantumState.NorType();
         
          // Print the NOR type
-         System.out.println("NOR Type: " + norType);
+        // System.out.println("NOR Type: " + norType);
 
 
-         quantumState.applyHadamardToQubit(0);
-         quantumState.applyControlXgate(0, 1);
-         quantumState.printQubits();
-        quantumState.printTensorProduct();
+        // quantumState.applyHadamardToQubit(0);
+        // quantumState.applyControlXgate(0, 1);
+        // quantumState.printQubits();
+       // quantumState.lprintTensorProduct();
       //   quantumState.printQubits();
 
           //  quantumState.ENType(0,1);
@@ -73,7 +73,7 @@ public class DisqSimulator {
         //QuantumValue qv = qs.quantumValues.get(3);
       //  qs.initializeQubits(3); // Initialize a 3-qubit system
         // Create actions
-        /** 
+        
         Hadamard hadamard = new Hadamard(1);  // Assuming target qubit index 0
         PauliX xgate = new PauliX(0);
         RotationZ RZGate = new RotationZ(3, Math.PI/4);
@@ -100,9 +100,19 @@ public class DisqSimulator {
 
        // OnePro.accept(executor);
 
-        ConditionalProcess condProc = new ConditionalProcess (()->false,SecPro,NoOpera);
-        condProc.accept(executor);
-            **/
+       // ConditionalProcess condProc = new ConditionalProcess (()->false,SecPro,NoOpera);
+       // condProc.accept(executor);
+        //Membrane
+        Membraneprocess membrane = new Membraneprocess("membran1");
+        membrane.addProcess(OnePro); // Assuming QuantumOperationAction implements Process
+        membrane.airlockProcess(NoOpera); // Assuming ClassicalSendAction implements Process
+
+        ProcessVisitor processVisitor = new ProcessExecutor(quantumState); // Assuming ProcessExecutor implements ProcessVisitor
+        MembraneVisitor membraneVisitor = new MembraneExecutor(processVisitor);
+
+        membrane.accept(membraneVisitor); // Execute visitor on the membrane
+    
+            
          // Print states of all qubits
       // quantumState.printQubits();
     
