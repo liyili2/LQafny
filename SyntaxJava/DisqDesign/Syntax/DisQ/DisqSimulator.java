@@ -1,9 +1,36 @@
 package SyntaxJava.DisqDesign.Syntax.DisQ;
 
+import java.util.Arrays;
+
 //import java.util.Random;
 
 public class DisqSimulator {
     public static void main(String[] args) {
+
+
+
+
+
+
+      // Initialize the quantum state with 4 qubits for example
+        QuantumState quantumState = new QuantumState();
+        quantumState.addQubit(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0)));
+        quantumState.addQubit(new Locus(1), new Qubit(new Complex(0, 0), new Complex(1, 0)));
+        quantumState.addQubit(new Locus(2), new Qubit(new Complex(1, 0), new Complex(0, 0)));
+        quantumState.addQubit(new Locus(3), new Qubit(new Complex(0, 0), new Complex(1, 0)));
+        quantumState.printQubits();
+        // Initialize the function handler
+        FunctionHandler functionHandler = new FunctionHandler();
+
+        // Example: Apply a Hadamard gate to the first qubit
+        functionHandler.callFunction("hadamard", quantumState, Arrays.asList(0));
+
+        // Example: Apply a CNOT gate between the first and second qubits
+        functionHandler.callFunction("cnot", quantumState, Arrays.asList(0, 1));
+
+        // Print the state of the qubits to verify the operations
+        quantumState.printQubits();
+
 
 
         //Checking.....
@@ -133,8 +160,8 @@ public class DisqSimulator {
         MembraneVisitor membraneVisitor = new MembraneExecutor(processVisitor);
         MembraneVisitor membraneVisitor2 = new MembraneExecutor(processVisitor2);
 
-       membrane.accept(membraneVisitor); // Execute visitor on the membrane
-       membrane2.accept(membraneVisitor2); // Execute visitor on the membrane
+      // membrane.accept(membraneVisitor); // Execute visitor on the membrane
+      // membrane2.accept(membraneVisitor2); // Execute visitor on the membrane
       
        QuantumChannelcreation channel = new QuantumChannelcreation(membrane, membrane2, 1);
        channel.sendsignals("Hello");
