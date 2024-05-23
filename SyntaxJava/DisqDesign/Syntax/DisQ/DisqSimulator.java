@@ -7,15 +7,15 @@ public class DisqSimulator {
 
 
         //Checking.....
-        QuantumState quantumState = new QuantumState();
-        quantumState.addQubit(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0))); // Add first qubit
-        quantumState.addQubit(new Locus(1), new Qubit(new Complex(0, 0), new Complex(1, 0))); // Add second qubit
-        quantumState.addQubit(new Locus(2), new Qubit(new Complex(0, 0), new Complex(1, 0))); // Add THIRD qubit
-        quantumState.addQubit(new Locus(3), new Qubit(new Complex(0, 0), new Complex(1, 0))); // Add FOURTH qubit
-        quantumState.qubits.get(0).getValue().normalize();
-        quantumState.qubits.get(1).getValue().normalize();
-        quantumState.qubits.get(2).getValue().normalize();
-        quantumState.qubits.get(3).getValue().normalize();
+        //QuantumState quantumState = new QuantumState();
+        //quantumState.addQubit(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0))); // Add first qubit
+       // quantumState.addQubit(new Locus(1), new Qubit(new Complex(0, 0), new Complex(1, 0))); // Add second qubit
+       // quantumState.addQubit(new Locus(2), new Qubit(new Complex(0, 0), new Complex(1, 0))); // Add THIRD qubit
+       // quantumState.addQubit(new Locus(3), new Qubit(new Complex(0, 0), new Complex(1, 0))); // Add FOURTH qubit
+       // quantumState.qubits.get(0).getValue().normalize();
+       // quantumState.qubits.get(1).getValue().normalize();
+       // quantumState.qubits.get(2).getValue().normalize();
+       // quantumState.qubits.get(3).getValue().normalize();
        // quantumState.printQubits();
 
          // Determine the NOR type
@@ -84,7 +84,7 @@ public class DisqSimulator {
         QuantumOperationAction hadamardAction = new QuantumOperationAction(hadamard , 1);
 
          // Initialize the interpreter
-         ActionInterpreter interpreter = new ActionInterpreter(quantumState);
+       //  ActionInterpreter interpreter = new ActionInterpreter(quantumState);
         
          // Execute actions
         // interpreter.visit(hadamardAction);
@@ -92,10 +92,10 @@ public class DisqSimulator {
         //interpreter.visit(rotationzgate);
         //interpreter.visit(CNOToperation);
         
-        ProcessExecutor executor = new ProcessExecutor(quantumState);
-        Process NoOpera = new NoOp ();
-        Process SecPro = new SequentialProcess ( CNOToperation , NoOpera );
-        Process OnePro = new SequentialProcess ( hadamardAction , SecPro ) ;
+       // ProcessExecutor executor = new ProcessExecutor(quantumState);
+       // Process NoOpera = new NoOp ();
+       // Process SecPro = new SequentialProcess ( CNOToperation , NoOpera );
+       // Process OnePro = new SequentialProcess ( hadamardAction , SecPro ) ;
         
 
        // OnePro.accept(executor);
@@ -104,13 +104,43 @@ public class DisqSimulator {
        // condProc.accept(executor);
         //Membrane
         Membraneprocess membrane = new Membraneprocess("membran1");
+       // Locus loci = new Locus(1);
+        membrane.Addqubits(new Locus(0), new Qubit(new Complex(0, 0), new Complex(1, 0)));
+        membrane.Addqubits(new Locus(1), new Qubit(new Complex(1, 0), new Complex(0, 0)));
+        membrane.Addqubits(new Locus(2), new Qubit(new Complex(1, 0), new Complex(0, 0)));
+        membrane.Addqubits(new Locus(3), new Qubit(new Complex(0, 0), new Complex(1, 0)));
+       
+        Membraneprocess membrane2 = new Membraneprocess("membrane2");
+        // Locus loci = new Locus(1);
+         membrane2.Addqubits(new Locus(0), new Qubit(new Complex(0, 0), new Complex(1, 0)));
+         membrane2.Addqubits(new Locus(1), new Qubit(new Complex(1, 0), new Complex(0, 0)));
+         membrane2.Addqubits(new Locus(2), new Qubit(new Complex(1, 0), new Complex(0, 0)));
+         membrane2.Addqubits(new Locus(3), new Qubit(new Complex(0, 0), new Complex(1, 0)));
+        
+        ProcessExecutor executor = new ProcessExecutor(membrane.getQuantumState());
+        Process NoOpera = new NoOp ();
+        Process SecPro = new SequentialProcess ( CNOToperation , NoOpera );
+        Process OnePro = new SequentialProcess ( hadamardAction , SecPro ) ;
         membrane.addProcess(OnePro); // Assuming QuantumOperationAction implements Process
         membrane.airlockProcess(NoOpera); // Assuming ClassicalSendAction implements Process
+        membrane2.addProcess(OnePro); // Assuming QuantumOperationAction implements Process
+        membrane2.airlockProcess(NoOpera); // Assuming ClassicalSendAction implements Process
 
-        ProcessVisitor processVisitor = new ProcessExecutor(quantumState); // Assuming ProcessExecutor implements ProcessVisitor
+
+        ProcessVisitor processVisitor = new ProcessExecutor(membrane.getQuantumState()); // Assuming ProcessExecutor implements ProcessVisitor
+        ProcessVisitor processVisitor2 = new ProcessExecutor(membrane2.getQuantumState()); // Assuming ProcessExecutor implements ProcessVisitor
+       
         MembraneVisitor membraneVisitor = new MembraneExecutor(processVisitor);
+        MembraneVisitor membraneVisitor2 = new MembraneExecutor(processVisitor2);
 
-        membrane.accept(membraneVisitor); // Execute visitor on the membrane
+       membrane.accept(membraneVisitor); // Execute visitor on the membrane
+       membrane2.accept(membraneVisitor2); // Execute visitor on the membrane
+      
+       QuantumChannelcreation channel = new QuantumChannelcreation(membrane, membrane2, 1);
+       channel.sendsignals("Hello");
+
+
+       // System.out.println("\nSize of qubits:"+membrane.getnumberofqubits());
     
             
          // Print states of all qubits

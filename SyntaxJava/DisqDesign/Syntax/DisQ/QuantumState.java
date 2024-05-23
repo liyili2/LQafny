@@ -49,6 +49,11 @@ public class QuantumState {
         qubits.add(new Pair<>(locus, qubit));
     }
 
+    public int getnumberofqubits()
+    {
+        return qubits.size();
+    }
+
    
 
     // Method to determine the NOR type based on the states of all qubits
