@@ -14,22 +14,48 @@ public class DisqSimulator {
 
       // Initialize the quantum state with 4 qubits for example
         QuantumState quantumState = new QuantumState();
-        quantumState.addQubit(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0)));
-        quantumState.addQubit(new Locus(1), new Qubit(new Complex(0, 0), new Complex(1, 0)));
-        quantumState.addQubit(new Locus(2), new Qubit(new Complex(1, 0), new Complex(0, 0)));
-        quantumState.addQubit(new Locus(3), new Qubit(new Complex(0, 0), new Complex(1, 0)));
-        quantumState.printQubits();
+        quantumState.SaddQubit(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0)));
+        quantumState.SaddQubit(new Locus(0), new Qubit(new Complex(0, 0), new Complex(1, 0)));
+       
+        // quantumState.printStateVector();
+        quantumState.normalizeStateVector();
+        quantumState.printStateVector();
+        // quantumState.SaddQubit(new Locus(1), new Qubit(new Complex(0.3, 0), new Complex(0.4, 0)));
+        // quantumState.SaddQubit(new Locus(2), new Qubit(new Complex(0.3, 0), new Complex(0.7, 0)));
+        // quantumState.SaddQubit(new Locus(3), new Qubit(new Complex(0.7, 0), new Complex(0.3, 0)));
+        quantumState.applyHadamardToQubit(new Locus(1));
+        System.out.println("\n");
+
+         //quantumState.applyHadamardToQubit(1);
+         // Print the current state of the quantum system
+         quantumState.printStateVector();
+      //  quantumState.qubits.get(0).getValue().normalize();
+       // quantumState.printStateVector();
+      //  quantumState.qubits.get(1).getValue().normalize();
+      //  quantumState.qubits.get(2).getValue().normalize();
+      //  quantumState.qubits.get(3).getValue().normalize();
+        
+        //print qubits
+        // System.out.println("check\n");
+        // quantumState.printQubits();
+
+        // quantumState.measureAndNormalize(new int[] {0});
+
+        //  //print qubits
+        //  System.out.println("check_measure\n");
+        //  quantumState.printQubits();
+
         // Initialize the function handler
-        FunctionHandler functionHandler = new FunctionHandler();
+        //FunctionHandler functionHandler = new FunctionHandler();
 
         // Example: Apply a Hadamard gate to the first qubit
-        functionHandler.callFunction("hadamard", quantumState, Arrays.asList(0));
+        //functionHandler.callFunction("hadamard", quantumState, Arrays.asList(0));
 
         // Example: Apply a CNOT gate between the first and second qubits
-        functionHandler.callFunction("cnot", quantumState, Arrays.asList(0, 1));
+        //functionHandler.callFunction("cnot", quantumState, Arrays.asList(0, 1));
 
         // Print the state of the qubits to verify the operations
-        quantumState.printQubits();
+        //quantumState.printQubits();
 
 
 

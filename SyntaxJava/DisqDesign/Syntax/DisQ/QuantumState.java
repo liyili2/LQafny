@@ -1,8 +1,11 @@
 package SyntaxJava.DisqDesign.Syntax.DisQ;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.HashMap;
+import java.util.Map;
 
 
 // A simple generic Pair class for handling tuples
@@ -40,13 +43,66 @@ public class QuantumState {
    // private List<Pair<Locus, EntangledState>> entangledStates;
     public List<QuantumValue> quantumValues;  // To hold all quantum states
     List<Pair<Locus, Qubit>> qubits;
+    double norms;
+    
 
     public QuantumState() {
         this.qubits = new ArrayList<>();
     }
+    private Map<String, Complex> stateVector = new HashMap<>();
+
+    public void SaddQubit(Locus locus, Qubit qubit) {
+        if (stateVector.isEmpty()) {
+            stateVector.put("0", qubit.getZeroAmplitude());
+            stateVector.put("1", qubit.getOneAmplitude());
+        } else {
+            Map<String, Complex> newStateVector = new HashMap<>();
+            // Tensor each existing state with the new qubit state
+            stateVector.forEach((key, value) -> {
+                newStateVector.put(key + "0", value.mul(qubit.getZeroAmplitude()));
+                newStateVector.put(key + "1", value.mul(qubit.getOneAmplitude()));
+            });
+            stateVector = newStateVector;
+        }
+    }
+
+    public void normalizeStateVector() {
+          norms = stateVector.values().stream()
+                         .mapToDouble(Complex::abssqr)
+                         .sum();
+        norms = Math.sqrt(norms);
+        stateVector.forEach((key, value) -> stateVector.put(key, value.div(norms)));
+    }
+
+    public void printStateVector() {
+        stateVector.forEach((key, value) -> 
+            System.out.println("|" + key + "> = " + value));
+    }
+
+    public void applyHadamardToQubit(Locus locus) {
+        // This is a conceptual method. Actual implementation will depend on quantum gate mathematics.
+        // Typically, it would iterate through the stateVector and adjust amplitudes according to the Hadamard gate's effect.
+        Map<String, Complex> newStateVector = new HashMap<>();
+        stateVector.forEach((state, amplitude) -> {
+            int index = locus.getIndices()[0];  // Assuming Locus holds indices of qubits
+            String newState = state.substring(0, index) + 
+                              (state.charAt(index) == '0' ? "1" : "0") + 
+                              state.substring(index + 1);
+            // Calculate new amplitudes based on Hadamard transformation rules
+            Complex newAmplitude = amplitude.mul(new Complex(1 / Math.sqrt(2), 0)); // Simplified example
+            newStateVector.put(state, newAmplitude);
+            newStateVector.put(newState, newAmplitude);
+        });
+        stateVector = newStateVector;
+        normalizeStateVector(); // Normalize after modification
+    }
+    
+
 
     public void addQubit(Locus locus, Qubit qubit) {
+        qubit.normalize();
         qubits.add(new Pair<>(locus, qubit));
+        //NEED TO NORMALIZE WHEN ADDING THE QUBIT
     }
 
     public int getnumberofqubits()
@@ -124,6 +180,39 @@ public class QuantumState {
     }
 
     public void applyHadamardToQubit(int qubitIndex) {
+        if (qubitIndex < 0 || qubitIndex >= qubits.size()) {
+            System.out.println("Invalid qubit index.");
+            return;
+        }
+    
+        // Calculate the new states
+        int totalQubits = qubits.size();
+        int numStates = 1 << totalQubits; // 2^totalQubits, total possible states
+        Complex[] newStates = new Complex[numStates];
+    
+        // Initialize new states array
+        Arrays.fill(newStates, new Complex(0, 0));
+    
+        // Update the state vector considering the Hadamard on the specified qubit
+        for (int i = 0; i < numStates; i++) {
+            // Calculate the index that flips the bit at the qubitIndex
+            int indexWithFlip = i ^ (1 << qubitIndex);
+    
+            // Get the current amplitude
+            Complex currentAmplitude = quantumValues[i];
+    
+            // Superpose the current and flipped state
+            newStates[i] = newStates[i].add(currentAmplitude.mul(new Complex(1/Math.sqrt(2), 0)));
+            newStates[indexWithFlip] = newStates[indexWithFlip].add(currentAmplitude.mul(new Complex(1/Math.sqrt(2), 0)));
+        }
+    
+        // Replace old state vector with the new one
+        for (int i = 0; i < numStates; i++) {
+            quantumValues[i] = newStates[i];
+        }
+    }
+    
+    public void CapplyHadamardToQubit(int qubitIndex) {
         if (qubitIndex < 0 || qubitIndex >= qubits.size()) {
             System.out.println("Invalid qubit index.");
             return;
@@ -275,16 +364,65 @@ public class QuantumState {
             System.out.printf("|%s> = %s\n", Integer.toBinaryString(i), combinedState[i]);
         }
     }
-    
 
+    /**
+     * Measures a subset of qubits and normalizes the remaining qubits.
+     * @param qubitIndices the indices of qubits to be measured
+     */
+    public void measureAndNormalize(int[] qubitIndices) {
+        Random random = new Random();
+        double norm = 0;
 
+        // Assume a simple measurement that collapses each qubit to |0> or |1> with equal probability
+        for (int index : qubitIndices) {
+            if (index < 0 || index >= qubits.size()) {
+                System.out.println("Invalid qubit index: " + index);
+                continue;
+            }
 
+            Qubit qubit = qubits.get(index).getValue();
+            boolean collapseToOne = random.nextBoolean();
 
-    
-    
-    
+            if (collapseToOne) {
+                qubit.setZeroAmplitude(new Complex(0, 0));
+                qubit.setOneAmplitude(new Complex(1, 0)); // Collapses to |1>
+            } else {
+                qubit.setZeroAmplitude(new Complex(1, 0)); // Collapses to |0>
+                qubit.setOneAmplitude(new Complex(0, 0));
+            }
+        }
 
+        // Recompute the norm of the state vector excluding measured qubits
+        for (Pair<Locus, Qubit> pair : qubits) {
+            if (!contains(qubitIndices, pair.getKey().getIndices()[0])) {
+                Qubit qubit = pair.getValue();
+                norm += qubit.getZeroAmplitude().abssqr() + qubit.getOneAmplitude().abssqr();
+            }
+        }
+
+        // Normalize the remaining qubits
+        for (Pair<Locus, Qubit> pair : qubits) {
+            if (!contains(qubitIndices, pair.getKey().getIndices()[0])) {
+                Qubit qubit = pair.getValue();
+                qubit.setZeroAmplitude(qubit.getZeroAmplitude().div(Math.sqrt(norm)));
+                qubit.setOneAmplitude(qubit.getOneAmplitude().div(Math.sqrt(norm)));
+            }
+        }
+    }
+
+    /**
+     * Helper method to check if an array contains a value
+     */
+    private boolean contains(int[] array, int value) {
+        for (int item : array) {
+            if (item == value) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
+    
 
 
 
