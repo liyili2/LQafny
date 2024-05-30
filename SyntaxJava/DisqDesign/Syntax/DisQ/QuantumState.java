@@ -265,40 +265,77 @@ public class QuantumState {
         qubit.setOneAmplitude(newOneAmplitude);
     }
 
-    public void applyXgate (int qubitIndex)
-    {
-        if (qubitIndex < 0 || qubitIndex >= qubits.size()) {
-            System.out.println("Invalid qubit index.");
-            return;
-        }
-        Pair<Locus, Qubit> pair = qubits.get(qubitIndex);
-        Qubit qubit = pair.getValue();
-        Complex temp = qubit.zeroAmplitude;
-        qubit.zeroAmplitude = qubit.oneAmplitude;
-        qubit.oneAmplitude = temp;
+    // public void applyXgate (int qubitIndex)
+    // {
+    //     if (qubitIndex < 0 || qubitIndex >= qubits.size()) {
+    //         System.out.println("Invalid qubit index.");
+    //         return;
+    //     }
+    //     Pair<Locus, Qubit> pair = qubits.get(qubitIndex);
+    //     Qubit qubit = pair.getValue();
+    //     Complex temp = qubit.zeroAmplitude;
+    //     qubit.zeroAmplitude = qubit.oneAmplitude;
+    //     qubit.oneAmplitude = temp;
 
+    // }
+    public void applyXgate(int qubitIndex) {
+        Map<String, Complex> newStateVector = new HashMap<>();
+    
+        // Iterate over each state in the existing state vector
+        stateVector.forEach((state, amplitude) -> {
+            // Determine the new state by flipping the specified qubit
+            char[] stateChars = state.toCharArray();
+            stateChars[qubitIndex] = stateChars[qubitIndex] == '0' ? '1' : '0';
+            String newState = new String(stateChars);
+    
+            // Place the amplitude under the flipped state
+            newStateVector.put(newState, amplitude);
+        });
+    
+        // Replace the old state vector with the new state vector
+        stateVector = newStateVector;
     }
+    // public void applyControlXgate (int control, int target)
+    // {
+    //     if ((control < 0 && target < 0)|| (control >= qubits.size() && target >= qubits.size())) {
+    //         System.out.println("Invalid qubit index.");
+    //         return;
+    //     }
+    //     Pair<Locus, Qubit> cqubit = qubits.get(control);
+    //     Pair<Locus,Qubit> tqubit = qubits.get(target);
 
-    public void applyControlXgate (int control, int target)
-    {
-        if ((control < 0 && target < 0)|| (control >= qubits.size() && target >= qubits.size())) {
-            System.out.println("Invalid qubit index.");
-            return;
-        }
-        Pair<Locus, Qubit> cqubit = qubits.get(control);
-        Pair<Locus,Qubit> tqubit = qubits.get(target);
+    //     Qubit controlqubit = cqubit.getValue();
+    //     Qubit targetqubit = tqubit.getValue();
 
-        Qubit controlqubit = cqubit.getValue();
-        Qubit targetqubit = tqubit.getValue();
+    //     if (controlqubit.oneAmplitude.r> 0)
+    //     {
+    //     Complex temp = targetqubit.zeroAmplitude;
+    //     targetqubit.zeroAmplitude = targetqubit.oneAmplitude;
+    //     targetqubit.oneAmplitude = temp;
+    //     }
 
-        if (controlqubit.oneAmplitude.r> 0)
-        {
-        Complex temp = targetqubit.zeroAmplitude;
-        targetqubit.zeroAmplitude = targetqubit.oneAmplitude;
-        targetqubit.oneAmplitude = temp;
-        }
-
+    // }
+    public void applyControlXgate(int control, int target) {
+        Map<String, Complex> newStateVector = new HashMap<>();
+    
+        // Iterate over each state in the existing state vector
+        stateVector.forEach((state, amplitude) -> {
+            char[] stateChars = state.toCharArray();
+            
+            // Only flip the target qubit if the control qubit is in the |1> state
+            if (stateChars[control] == '1') {
+                stateChars[target] = stateChars[target] == '0' ? '1' : '0';
+            }
+            String newState = new String(stateChars);
+    
+            // Assign the amplitude to the possibly modified state
+            newStateVector.put(newState, amplitude);
+        });
+    
+        // Replace the old state vector with the new state vector
+        stateVector = newStateVector;
     }
+    
 
     public void applyRzToQubit(int qubitIndex, double theta) {
         if (qubitIndex < 0 || qubitIndex >= qubits.size()) {
