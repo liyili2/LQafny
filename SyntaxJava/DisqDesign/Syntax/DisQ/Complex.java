@@ -26,6 +26,10 @@ public class Complex {
         return new Complex(this.r - b.r, this.i - b.i);
     }
 
+    public Complex negate() {
+        return new Complex(-r, -i);
+    }
+
 
     // Multiplication of two complex numbers
     public Complex mul(Complex b) {
@@ -65,6 +69,14 @@ public class Complex {
         float displayImag = Math.abs(this.i) < 1e-7 ? 0 : this.i;
 
         return "(" + displayReal + ", " + displayImag + ")";
+    }
+
+    public double getReal() {
+        return r;
+    }
+
+    public double getImag() {
+        return i;
     }
 
     

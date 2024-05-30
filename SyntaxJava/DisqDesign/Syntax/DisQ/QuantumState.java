@@ -180,37 +180,77 @@ public class QuantumState {
     }
 
     public void applyHadamardToQubit(int qubitIndex) {
-        if (qubitIndex < 0 || qubitIndex >= qubits.size()) {
-            System.out.println("Invalid qubit index.");
-            return;
-        }
+        Map<String, Complex> newStateVector = new HashMap<>();
     
-        // Calculate the new states
-        int totalQubits = qubits.size();
-        int numStates = 1 << totalQubits; // 2^totalQubits, total possible states
-        Complex[] newStates = new Complex[numStates];
+        // Update each state in the superposition
+        stateVector.forEach((state, amplitude) -> {
+            // Create states for the superposition
+            String baseState0 = state.substring(0, qubitIndex) + "0" + state.substring(qubitIndex + 1);
+            String baseState1 = state.substring(0, qubitIndex) + "1" + state.substring(qubitIndex + 1);
     
-        // Initialize new states array
-        Arrays.fill(newStates, new Complex(0, 0));
+            // Hadamard on |0>
+            Complex additionAmplitude = amplitude.mul(new Complex(0.7071067811865475, 0)); // 1/√2
+            newStateVector.put(baseState0, newStateVector.getOrDefault(baseState0, new Complex(0, 0)).add(additionAmplitude));
+            newStateVector.put(baseState1, newStateVector.getOrDefault(baseState1, new Complex(0, 0)).add(additionAmplitude));
     
-        // Update the state vector considering the Hadamard on the specified qubit
-        for (int i = 0; i < numStates; i++) {
-            // Calculate the index that flips the bit at the qubitIndex
-            int indexWithFlip = i ^ (1 << qubitIndex);
+            // Hadamard on |1>
+            System.out.println("state.charAt(qubitIndex)=="+state.charAt(qubitIndex));
+            if (state.charAt(qubitIndex) == '1') {
+                newStateVector.put(baseState0, newStateVector.getOrDefault(baseState0, new Complex(0, 0)).add(additionAmplitude));
+                newStateVector.put(baseState1, newStateVector.getOrDefault(baseState1, new Complex(0, 0)).add(additionAmplitude));
+            }
+        });
     
-            // Get the current amplitude
-            Complex currentAmplitude = quantumValues[i];
-    
-            // Superpose the current and flipped state
-            newStates[i] = newStates[i].add(currentAmplitude.mul(new Complex(1/Math.sqrt(2), 0)));
-            newStates[indexWithFlip] = newStates[indexWithFlip].add(currentAmplitude.mul(new Complex(1/Math.sqrt(2), 0)));
-        }
-    
-        // Replace old state vector with the new one
-        for (int i = 0; i < numStates; i++) {
-            quantumValues[i] = newStates[i];
-        }
+        stateVector = newStateVector;
+        TnormalizeStateVector();
     }
+    
+    public void TnormalizeStateVector() {
+        norms = stateVector.values().stream()
+                        .mapToDouble(Complex::abssqr)
+                        .sum();
+    
+        if (norms == 0) {
+            System.out.println("Normalization error: Norm is zero.");
+            return; // Avoid division by zero
+        }
+    
+        norms = Math.sqrt(norms);
+        stateVector.forEach((key, value) -> stateVector.put(key, value.div(norms)));
+    }
+    
+    // public void applyHadamardToQubit(int qubitIndex) {
+    //     if (qubitIndex < 0 || qubitIndex >= qubits.size()) {
+    //         System.out.println("Invalid qubit index.");
+    //         return;
+    //     }
+    
+    //     // Calculate the new states
+    //     int totalQubits = qubits.size();
+    //     int numStates = 1 << totalQubits; // 2^totalQubits, total possible states
+    //     Complex[] newStates = new Complex[numStates];
+    
+    //     // Initialize new states array
+    //     Arrays.fill(newStates, new Complex(0, 0));
+    
+    //     // Update the state vector considering the Hadamard on the specified qubit
+    //     for (int i = 0; i < numStates; i++) {
+    //         // Calculate the index that flips the bit at the qubitIndex
+    //         int indexWithFlip = i ^ (1 << qubitIndex);
+    
+    //         // Get the current amplitude
+    //         Complex currentAmplitude = quantumValues[i];
+    
+    //         // Superpose the current and flipped state
+    //         newStates[i] = newStates[i].add(currentAmplitude.mul(new Complex(1/Math.sqrt(2), 0)));
+    //         newStates[indexWithFlip] = newStates[indexWithFlip].add(currentAmplitude.mul(new Complex(1/Math.sqrt(2), 0)));
+    //     }
+    
+    //     // Replace old state vector with the new one
+    //     for (int i = 0; i < numStates; i++) {
+    //         quantumValues[i] = newStates[i];
+    //     }
+    // }
     
     public void CapplyHadamardToQubit(int qubitIndex) {
         if (qubitIndex < 0 || qubitIndex >= qubits.size()) {
@@ -421,6 +461,78 @@ public class QuantumState {
         }
         return false;
     }
+
+
+    public void applyHadamardToQubit3(int qubitIndex) {
+        Map<String, Complex> newStateVector = new HashMap<>();
+    
+        // Go through each state in the existing state vector
+        stateVector.forEach((state, amplitude) -> {
+            char bit = state.charAt(qubitIndex);
+            String flippedBit = bit == '0' ? "1" : "0"; // Flip the bit for the Hadamard operation
+    
+            String baseState0 = state.substring(0, qubitIndex) + "0" + state.substring(qubitIndex + 1);
+            String baseState1 = state.substring(0, qubitIndex) + "1" + state.substring(qubitIndex + 1);
+    
+            // Hadamard transformation coefficients
+            Complex coeff = new Complex(0.7071067811865475, 0); // 1/√2
+    
+            // Apply Hadamard transformation: |0> becomes (|0> + |1>)/√2 and |1> becomes (|0> - |1>)/√2
+            newStateVector.merge(baseState0, amplitude.mul(coeff), Complex::add); // Add to |0>
+            if (bit == '0') {
+                newStateVector.merge(baseState1, amplitude.mul(coeff), Complex::add); // Add to |1>
+            } else {
+                newStateVector.merge(baseState1, amplitude.mul(coeff).negate(), Complex::add); // Subtract from |1>
+            }
+        });
+    
+        stateVector = newStateVector;
+        normalizeStateVector3();
+    }
+    
+    public void normalizeStateVector3() {
+         norms = stateVector.values().stream()
+                        .mapToDouble(Complex::abssqr)
+                        .sum();
+    
+        if (Math.abs(norms) < 1e-10) { // Check for very small norm, which indicates numerical stability issues
+            System.out.println("Normalization error: Norm is zero or too close to zero.");
+            return;
+        }
+    
+        norms = Math.sqrt(norms);
+        stateVector.replaceAll((key, value) -> value.div(norms));
+    }
+    
+    public void printStateVector3() {
+        stateVector.forEach((key, value) -> {
+            if (value.getReal() != 0 || value.getImag() != 0) {  // Check if amplitude is not zero
+                System.out.println("|" + key + "> = " + value);
+            }
+        });
+    }
+    
+
+    // public void applyHadamardToQubitcla(int qubitIndex) {
+    //     Map<String, Complex[]> newStateVector = new HashMap<>();
+    
+    //     stateVector.forEach((state, amplitudes) -> {
+    //         Complex amplitudeZero = amplitudes[0]; // Amplitude for |0>
+    //         Complex amplitudeOne = amplitudes[1]; // Amplitude for |1>
+    //         Complex coeff = new Complex(0.7071067811865475, 0); // 1/√2
+    
+    //         Complex[] newAmplitudeZero = { amplitudeZero.mul(coeff), amplitudeOne.mul(coeff) };
+    //         Complex[] newAmplitudeOne = { amplitudeZero.mul(coeff), amplitudeOne.mul(coeff).negate() };
+    
+    //         newStateVector.put(state, newAmplitudeZero);
+    //         newStateVector.put(flipBit(state, qubitIndex), newAmplitudeOne);
+    //     });
+    
+    //     stateVector = newStateVector;
+    //     normalizeStateVector();
+    // }
+    
+    
 }
     
 

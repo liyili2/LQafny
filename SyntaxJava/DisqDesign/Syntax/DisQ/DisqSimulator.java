@@ -14,23 +14,26 @@ public class DisqSimulator {
 
       // Initialize the quantum state with 4 qubits for example
         QuantumState quantumState = new QuantumState();
-        quantumState.SaddQubit(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0)));
         quantumState.SaddQubit(new Locus(0), new Qubit(new Complex(0, 0), new Complex(1, 0)));
+        quantumState.SaddQubit(new Locus(1), new Qubit(new Complex(1, 0), new Complex(0, 0)));
+        quantumState.SaddQubit(new Locus(2), new Qubit(new Complex(0, 0), new Complex(1, 0)));
+        quantumState.SaddQubit(new Locus(3), new Qubit(new Complex(1, 0), new Complex(0, 0)));
+       
        
         // quantumState.printStateVector();
-        quantumState.normalizeStateVector();
-        quantumState.printStateVector();
+        quantumState.normalizeStateVector3();
+        quantumState.printStateVector3();
         // quantumState.SaddQubit(new Locus(1), new Qubit(new Complex(0.3, 0), new Complex(0.4, 0)));
         // quantumState.SaddQubit(new Locus(2), new Qubit(new Complex(0.3, 0), new Complex(0.7, 0)));
         // quantumState.SaddQubit(new Locus(3), new Qubit(new Complex(0.7, 0), new Complex(0.3, 0)));
-        quantumState.applyHadamardToQubit(new Locus(1));
+        //quantumState.applyHadamardToQubit(new Locus(1));
+        quantumState.applyHadamardToQubit3(0);
         System.out.println("\n");
 
          //quantumState.applyHadamardToQubit(1);
          // Print the current state of the quantum system
-         quantumState.printStateVector();
-      //  quantumState.qubits.get(0).getValue().normalize();
-       // quantumState.printStateVector();
+         quantumState.printStateVector3();
+      //  quantumState.qubits.get(0).getValue().normalize();       // quantumState.printStateVector();
       //  quantumState.qubits.get(1).getValue().normalize();
       //  quantumState.qubits.get(2).getValue().normalize();
       //  quantumState.qubits.get(3).getValue().normalize();
