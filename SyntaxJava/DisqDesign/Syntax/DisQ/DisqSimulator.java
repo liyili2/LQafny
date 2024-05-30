@@ -14,7 +14,7 @@ public class DisqSimulator {
 
       // Initialize the quantum state with 4 qubits for example
         QuantumState quantumState = new QuantumState();
-        quantumState.SaddQubit(new Locus(0), new Qubit(new Complex(0.8, 0), new Complex(0.6, 0)));
+        quantumState.SaddQubit(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0)));
         quantumState.SaddQubit(new Locus(1), new Qubit(new Complex(0, 0), new Complex(1, 0)));
         quantumState.SaddQubit(new Locus(2), new Qubit(new Complex(0, 0), new Complex(1, 0)));
         // quantumState.SaddQubit(new Locus(3), new Qubit(new Complex(1, 0), new Complex(0, 0)));
@@ -35,9 +35,17 @@ public class DisqSimulator {
        //   System.out.println("Xgate ::::\n");
       // quantumState.applyXgate(1);
        // quantumState.printStateVector3();
-      System.out.println("Control X \n");
-       quantumState.applyControlXgate(1,2);
-       quantumState.printStateVector3();
+      // System.out.println("Control X \n");
+      //  quantumState.applyControlXgate(1,2);
+      //  quantumState.printStateVector3();
+      // System.out.println("RZ Gate\n");
+      // quantumState.applyRzToQubit(1,Math.PI);
+      // quantumState.printStateVector3();
+
+      System.out.println("QFT Gate\n");
+      quantumState.applyQFT(3);
+      quantumState.printStateVector3();
+      
 
       //  quantumState.qubits.get(0).getValue().normalize();       // quantumState.printStateVector();
       //  quantumState.qubits.get(1).getValue().normalize();

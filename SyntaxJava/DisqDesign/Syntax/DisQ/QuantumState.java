@@ -337,20 +337,69 @@ public class QuantumState {
     }
     
 
+    // public void applyRzToQubit(int qubitIndex, double theta) {
+    //     if (qubitIndex < 0 || qubitIndex >= qubits.size()) {
+    //         System.out.println("Invalid qubit index.");
+    //         return;
+    //     }
+    //     Pair<Locus, Qubit> pair = qubits.get(qubitIndex);
+    //     Qubit qubit = pair.getValue();
+    
+    //     // Apply phase shift to the |1> amplitude
+    //     Complex phaseFactor = Complex.fromPolar(1, theta); // Creating a complex number with magnitude 1 and phase theta
+    //     Complex newOneAmplitude = qubit.getOneAmplitude().mul(phaseFactor);
+    
+    //     // Set the new amplitude for |1>
+    //     qubit.setOneAmplitude(newOneAmplitude);
+    // }
+
     public void applyRzToQubit(int qubitIndex, double theta) {
-        if (qubitIndex < 0 || qubitIndex >= qubits.size()) {
-            System.out.println("Invalid qubit index.");
-            return;
-        }
-        Pair<Locus, Qubit> pair = qubits.get(qubitIndex);
-        Qubit qubit = pair.getValue();
-    
-        // Apply phase shift to the |1> amplitude
         Complex phaseFactor = Complex.fromPolar(1, theta); // Creating a complex number with magnitude 1 and phase theta
-        Complex newOneAmplitude = qubit.getOneAmplitude().mul(phaseFactor);
     
-        // Set the new amplitude for |1>
-        qubit.setOneAmplitude(newOneAmplitude);
+        // Update state vector for each computational basis state where the qubit is in the |1> state
+        Map<String, Complex> newStateVector = new HashMap<>();
+        stateVector.forEach((key, value) -> {
+            // Only apply the phase shift if the qubit at qubitIndex is in the |1> state
+            if (key.charAt(qubitIndex) == '1') {
+                newStateVector.put(key, value.mul(phaseFactor));
+            } else {
+                newStateVector.put(key, value);
+            }
+        });
+    
+        stateVector = newStateVector;
+        TnormalizeStateVector(); // It's a good practice to normalize the state vector if needed
+    }
+
+     // Method to apply the Quantum Fourier Transform
+     public void applyQFT(int n) {
+        for (int i = 0; i < n; i++) {
+            applyHadamardToQubit3(i);
+            for (int j = 1; j < n - i; j++) {
+                applyControlledRotation(i, i + j, Math.PI / Math.pow(2, j));
+            }
+        }
+        reverseQubits(n);
+    }
+    // Applying a controlled rotation gate
+    private void applyControlledRotation(int control, int target, double theta) {
+        stateVector.forEach((key, value) -> {
+            if (key.charAt(control) == '1') {
+                String newKey = key.substring(0, target) + "1" + key.substring(target + 1);
+                Complex rotation = Complex.fromPolar(1, theta);
+                stateVector.put(newKey, stateVector.get(newKey).mul(rotation));
+            }
+        });
+    }
+
+    // Method to reverse qubits after QFT
+    private void reverseQubits(int n) {
+        Map<String, Complex> newStateVector = new HashMap<>();
+        stateVector.forEach((key, value) -> {
+            String newKey = new StringBuilder(key).reverse().toString();
+            newStateVector.put(newKey, value);
+        });
+        stateVector = newStateVector;
     }
 
     public Complex[] tensorProduct() {
