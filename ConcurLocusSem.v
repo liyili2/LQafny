@@ -112,12 +112,12 @@ Axiom eval_nor_switch_same : forall rmax env l l1 n r b b1 e v, ses_len (l++l1) 
         exists v', (eval_nor rmax env l r b1 e = Some v'
            /\ match_value n (turn_pair_nor v) (turn_pair_nor v')).
 
-Axiom compile_exp_WF : forall e ea l aenv qenv vl x v n, compile_ses_qenv aenv l = (qenv, vl)
-      -> compile_exp_to_oqasm e = Some ea -> type_exp aenv e (QT n, l) -> v >= qenv x 
+Axiom compile_exp_WF : forall e ea l aenv qenv vl x v n lc, compile_ses_qenv aenv l = (qenv, vl)
+      -> compile_exp_to_oqasm e = Some ea -> type_exp aenv e (QT lc n, l) -> v >= qenv x 
       -> exp_WF qenv ea.
 
-Axiom compile_exp_fresh : forall e ea l aenv qenv vl x v n, compile_ses_qenv aenv l = (qenv, vl)
-      -> compile_exp_to_oqasm e = Some ea -> type_exp aenv e (QT n, l) -> v >= qenv x 
+Axiom compile_exp_fresh : forall e ea l aenv qenv vl x v n lc, compile_ses_qenv aenv l = (qenv, vl)
+      -> compile_exp_to_oqasm e = Some ea -> type_exp aenv e (QT lc n, l) -> v >= qenv x 
       -> exp_fresh qenv (x,v) ea.
 
 Fixpoint eval_ch (rmax:nat) (env:aenv) (l:locus) (m:nat) f (e:exp) :=
@@ -180,7 +180,7 @@ Definition eval_to_had (n:nat) (b:rz_val) := (fun i => if i <? n then (update al
 
 Definition eval_to_nor (n:nat) (b:nat -> rz_val) := (fun i => if i <? n then b i 0 else false).
 
-Lemma type_exp_exists_oqasm: forall env e n l, type_exp env e (QT n,l) 
+Lemma type_exp_exists_oqasm: forall env e n l lc, type_exp env e (QT lc n,l) 
    -> (exists e', compile_exp_to_oqasm e = Some e').
 Proof.
   intros. induction H; simpl in *; try repeat eauto.
@@ -257,7 +257,7 @@ Proof.
   apply (turn_oqasm_range_exists (n1-n0) r n0 n v f b0 r0) in H0 as X1.
   destruct X1 as [v0 [t0 X1]]. exists (v0,t0). easy. easy.
 Qed.
-
+(*
 Lemma right_mode_env_compile_ses : forall l aenv b n t, compile_ses_qenv aenv l = (n, t)
     -> all_nor_mode (compile_ses_state l b) -> (forall x : Env.key, Env.MapsTo x OQASM.Nor (form_oenv t))
     -> right_mode_env n (form_oenv t) (compile_ses_state l b).
@@ -290,8 +290,8 @@ Proof.
   apply mapsto_always_same with (v1 := t0) in H1; subst; try easy.
 Qed.
 
-Lemma eval_nor_exists {rmax : nat} : forall aenv l n c b e,
-          type_exp aenv e (QT n,l) -> simple_ses l -> oracle_prop aenv l e
+Lemma eval_nor_exists {rmax : nat} : forall aenv l n c b e lc,
+          type_exp aenv e (QT lc n,l) -> simple_ses l -> oracle_prop aenv l e
                  -> exists ba, eval_nor rmax aenv l c b e = Some ba.
 Proof.
   intros.
@@ -327,8 +327,8 @@ Proof.
   exists ((c * Cexp (2 * PI * turn_angle b0 rmax))%C, r). easy. easy.
 Qed.
 
-Lemma eval_ch_exists {rmax : nat} : forall m aenv l n f e,
-          type_exp aenv e (QT n,l) -> simple_ses l -> oracle_prop aenv l e
+Lemma eval_ch_exists {rmax : nat} : forall m aenv l n f e lc,
+          type_exp aenv e (QT lc n,l) -> simple_ses l -> oracle_prop aenv l e
                  -> exists ba, eval_ch rmax aenv l m f e = Some ba.
 Proof.
   induction m; intros;simpl in *.
@@ -340,7 +340,7 @@ Proof.
   rewrite H3. 
   exists (update x m (c, r)). easy.
 Qed.
-
+*)
 
 (* functions for defining boolean. *)
 
@@ -723,41 +723,26 @@ Qed.
 *)
 
 (*small step semantics. *)
-Inductive cstep {rmax:nat}
-           : aenv -> qstate -> cexp -> R -> qstate -> cexp -> Prop :=
-  (*| eq_step : forall aenv s sa s' e r e1,
-  @state_equiv rmax s sa -> step aenv sa e r s' e1 -> step aenv s e r s' e1 *)
-  | skip_cstep : forall aenv s, cstep aenv s CSKIP (1:R) s CSKIP
-  | let_cstep : forall aenv s x a n e, simp_aexp a = Some n 
-             -> cstep aenv s (CLet x (AE a) e) (1:R) s (subst_cexp e x n)
-  | let_cstep_q : forall aenv s l x a n e r v va va', AEnv.MapsTo a (QT n) aenv ->
-                       @pick_mea n va (r,v) -> build_state_ch n v va = Some va' 
-        -> cstep aenv (((a,BNum 0,BNum n)::l,va)::s) 
-                       (CLet x (Meas a) e) r ((l,va')::s) (subst_cexp e x v)
-  | appu_cstep_nor : forall aenv s a e r b ra ba, eval_nor rmax aenv a r b e = Some (ra,ba) 
-         -> cstep aenv ((a,Nval r b)::s) (CAppU a e) (1:R) ((a,Nval ra ba)::s) CSKIP
-  | appu_cstep_ch : forall aenv s a e l b m ba, eval_ch rmax aenv a m b e = Some ba 
-           -> cstep aenv ((a++l,Cval m b)::s) (CAppU a e) (1:R) ((a++l,Cval m ba)::s) CSKIP
-  | seq_cstep_1: forall aenv e1 e1' e2 r s s1, cstep aenv s e1 r s1 e1' -> cstep aenv s (CSeq e1 e2) r s1 (CSeq e1' e2)
-  | seq_cstep_2: forall aenv e2 s, cstep aenv s (CSeq CSKIP e2) (1:R) s e2
-  | if_cstep_ct : forall aenv s b e, simp_bexp b = Some true -> cstep aenv s (CIf b e) (1:R) s (e)
-  | if_cstep_cf : forall aenv s b e, simp_bexp b = Some false -> cstep aenv s (CIf b e) (1:R) s CSKIP
-  | if_sem_q : forall aenv l1 i a v n s s' e e' m f fc fc' fc'',
-      simp_aexp a = Some v -> ses_len l1 = Some n ->
-      mut_state 0 1 n (Cval (fst (grab_bool f m 1)) (snd (grab_bool f m 1))) fc ->
-     cstep aenv ((l1,fc)::s) e (1:R) ((l1,fc')::s') e' -> assem_bool 1 n m f fc' fc'' ->
-     cstep aenv (((i,BNum v,BNum (S v))::l1, Cval m f)::s)
-           (CIf (BTest i a) e) (1:R) (((i,BNum v,BNum (S v))::l1, fc'')::s') (CIf (BTest i a) e')
-
-  | if_sem_side : forall aenv l l1 b b' n s e m f f',
-      get_core_bexp b = Some b' -> type_bexp aenv b (QT n,l) -> 
-      @eval_bexp ((l++l1, Cval m f)::s) b ((l++l1, Cval m f')::s) ->
-     cstep aenv ((l++l1, Cval m f)::s)
-       (CIf b e) (1:R) ((l++l1, Cval m f')::s) (CIf b' e)
-  | paral_sem_1 : forall aenv e1 e1' e2 r s s1, cstep aenv s e1 r s1 e1' -> cstep aenv s (Paral e1 e2) r s1 (Paral e1' e2)
-  | paral_sem_2 : forall aenv e1 e2 e2' r s s1, cstep aenv s e1 r s1 e2' -> cstep aenv s (Paral e1 e2) r s1 (Paral e1 e2')
+Inductive pro_step {rmax:nat}
+           : aenv -> qstate -> process -> R -> qstate -> process -> Prop :=
+  | appu_pstep_nor : forall aenv s a e r b ra ba Q, eval_nor rmax aenv a r b e = Some (ra,ba) 
+         -> pro_step aenv ((a,Nval r b)::s) (AP (CAppU a e) Q) (1:R) ((a,Nval ra ba)::s) Q
+  | appu_pstep_ch : forall aenv s a e l b m ba Q, eval_ch rmax aenv a m b e = Some ba 
+          -> pro_step aenv ((a++l,Cval m b)::s) (AP (CAppU a e) Q) (1:R) ((a++l,Cval m ba)::s) Q
+  | meas_pstep : forall aenv s l x a n v va va' lc Q k, AEnv.MapsTo a (QT lc n) aenv -> k = [(a, BNum 0, BNum n)] -> build_state_ch n v va = Some va' -> pro_step aenv (((a,BNum 0, BNum n)::l, va)::s) (AP (CMeas x k) Q) (1:R) ((l, va')::s) Q
+  | if_pstep_t : forall aenv s b P Q, simp_cbexp b = Some true -> pro_step aenv s (PIf b P Q) (1:R) s P
+  | if_pstep_f : forall aenv s b P Q, simp_cbexp b = Some false -> pro_step aenv s (PIf b P Q) (1:R) s Q
+. 
+                                                                                              
+  Inductive memb_step {rmax:nat}
+    : aenv -> qstate -> memb -> R -> qstate -> memb -> Prop :=
+  | lock_step : forall aenv s m n l P lp, m = (Memb l n (P::lp)) -> memb_step aenv s m (1/2%R^n) s (LockMemb l n P lp)
+  | move_step : forall aenv s m n l lp P s' P' r, m = (LockMemb l n P lp) -> @pro_step rmax aenv s P r s' P' -> memb_step aenv s m r s' (Memb l n lp)
+  (*| newvar_step : forall aenv s m n l p x x' a, x = (x', QVar) -> memb_step aenv s (NewMemb x n m) (1:R) (s ++ ([(x', BNum 0, BNum n)], a)) m *).
+(*need  to  revisit*)
+                         (*
   | send_rev_sem : forall aenv e1 e2 s c x y n, simp_aexp x = Some n -> cstep aenv s (Paral (CSeq (Send c x) e1) (CSeq (Recv c y) e2)) 1 s (Paral e1 (subst_cexp e2 y n)).
-
+*)
 
 Inductive steps {rmax:nat}
            : nat -> aenv -> qstate -> cexp -> R -> qstate -> Prop :=

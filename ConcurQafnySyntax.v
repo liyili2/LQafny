@@ -25,6 +25,8 @@ Inductive ktype := CT | QT (l:var) (n:nat) | QC (l1:var) (l2:var) (n:nat).
 
 Inductive ktypeName := QTN | QCN.
 
+Inductive qtype := EN.
+
 (*
 Definition meet_ktype (a1 a2: ktype) := 
        match a1 with CT => (match a2 with CT => CT | _ => a2 end)
@@ -95,7 +97,7 @@ Inductive type := Phi (b:nat) | Nor.
 
 Inductive single_u := RH (p:varia) | SQFT (x:var) | SRQFT (x:var).
 
-Inductive ctype := Chan | QVar.
+Inductive ctype := Chan | QVar. 
 
 Inductive cexp := CAppU (l: locus) (e: exp)
              | Send (c: var) (a: aexp)
@@ -105,12 +107,13 @@ Inductive cexp := CAppU (l: locus) (e: exp)
 
 Inductive process := PNil
                 | AP (a: cexp) (p: process)
-                | PIf (b: cbexp) (p: process) (q: process)
-                | PFix (f:var) (p: process).
+                | PIf (b: cbexp) (p: process) (q: process).
+
+Definition tvar : Type := var * ctype.
 
 Inductive memb := Memb (l: var) (n: nat) (lp: list process)
-                 | PMemb (l: var) (n: nat) (r: process) (lp: list process)
-                 | NewC (x: var) (n: nat) (m: memb).
+                 | LockMemb (l: var) (n: nat) (r: process) (lp: list process)
+                 | NewMemb (x: tvar) (n: nat) (m: memb).
 
 (*Definition memb : Type := var * nat * list process. location and nat of processes and list of process *)
 
