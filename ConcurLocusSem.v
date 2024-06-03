@@ -745,9 +745,9 @@ Inductive conf_step {rmax:nat}
  | send_rev_sem : forall aenv s x y l1 l2 n n1 n2 m1 m2 c a P Q, simp_aexp a = Some n -> conf_step aenv s ((LockMemb l1 n1 (AP (Send x a) P) m1)::(LockMemb l2 n2 (AP (Recv x y) Q) m2)::c) 1 s ((Memb l1 n1 (P::m1))::(Memb l2 n2 (Q::m2))::c).
 
 Inductive steps {rmax:nat}
-           : nat -> aenv -> qstate -> cexp -> R -> qstate -> Prop :=
-   steps_0 : forall env s, steps 0 env s CSKIP (1:R) s
- | steps_n : forall n env s e r s' e', @cstep rmax env s e r s' e'
+           : nat -> aenv -> qstate -> config -> R -> qstate -> Prop :=
+   steps_0 : forall env s, steps 0 env s [] (1:R) s
+ | steps_n : forall n env s e r s' e', @conf_step rmax env s e r s' e'
                  -> steps n env s' e' r s -> steps (S n) env s e r s.
 
 (*
