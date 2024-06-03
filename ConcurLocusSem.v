@@ -734,15 +734,15 @@ Inductive pro_step {rmax:nat}
   | if_pstep_f : forall aenv s b P Q, simp_cbexp b = Some false -> pro_step aenv s (PIf b P Q) (1:R) s Q
 . 
                                                                                               
-  Inductive memb_step {rmax:nat}
+Inductive memb_step {rmax:nat}
     : aenv -> qstate -> memb -> R -> qstate -> memb -> Prop :=
   | lock_step : forall aenv s m n l P lp, m = (Memb l n (P::lp)) -> memb_step aenv s m (1/2%R^n) s (LockMemb l n P lp)
   | move_step : forall aenv s m n l lp P s' P' r, m = (LockMemb l n P lp) -> @pro_step rmax aenv s P r s' P' -> memb_step aenv s m r s' (Memb l n lp)
-  (*| newvar_step : forall aenv s m n l p x x' a, x = (x', QVar) -> memb_step aenv s (NewMemb x n m) (1:R) (s ++ ([(x', BNum 0, BNum n)], a)) m *).
-(*need  to  revisit*)
-                         (*
-  | send_rev_sem : forall aenv e1 e2 s c x y n, simp_aexp x = Some n -> cstep aenv s (Paral (CSeq (Send c x) e1) (CSeq (Recv c y) e2)) 1 s (Paral e1 (subst_cexp e2 y n)).
-*)
+  | newvar_step : forall aenv s m n x x' ra ba e, x = (x', QVar) -> eval_nor rmax aenv [(x', BNum 0, BNum n)] ra ba e = Some (ra,ba) -> memb_step aenv s (NewMemb x n m) (1:R) (s ++ [([(x', BNum 0, BNum n)], Nval ra ba)]) m.
+
+Inductive conf_step {rmax:nat}
+  : aenv -> qstate -> config -> R -> qstate -> config -> Prop :=
+ | send_rev_sem : forall aenv s x y l1 l2 n n1 n2 m1 m2 c a P Q, simp_aexp a = Some n -> conf_step aenv s ((LockMemb l1 n1 (AP (Send x a) P) m1)::(LockMemb l2 n2 (AP (Recv x y) Q) m2)::c) 1 s ((Memb l1 n1 (P::m1))::(Memb l2 n2 (Q::m2))::c).
 
 Inductive steps {rmax:nat}
            : nat -> aenv -> qstate -> cexp -> R -> qstate -> Prop :=
