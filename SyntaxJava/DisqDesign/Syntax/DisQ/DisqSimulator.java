@@ -7,6 +7,10 @@ import java.util.Arrays;
 public class DisqSimulator {
     public static void main(String[] args) {
 
+      int N = 21;  // Number to factorize
+        ShorsAlgorithm shor = new ShorsAlgorithm();
+        shor.factorize(N);
+
 
 
 

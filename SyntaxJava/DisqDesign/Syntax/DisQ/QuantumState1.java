@@ -174,4 +174,14 @@ public class QuantumState1 {
             }
         });
     }
+
+     // Getter for stateVector
+     public Map<String, Pair<Complex, String>> getStateVector() {
+        return stateVectors;
+    }
+
+    // Setter for stateVector
+    public void setStateVector(Map<String, Pair<Complex, String>> stateVectors) {
+        this.stateVectors = stateVectors;
+    }
 }
