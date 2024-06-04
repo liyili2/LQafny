@@ -30,7 +30,7 @@ public class DisqSimulator {
         quantumState.applyHadamardToQubit3(0);
        System.out.println("Hadamard::::\n");
       quantumState.printStateVector3();
-      quantumState.measureQubit(0);
+      quantumState.measureQubit(1);
       quantumState.printStateVector3();
      
 
