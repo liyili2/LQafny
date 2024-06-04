@@ -17,7 +17,7 @@ public class DisqSimulator {
         quantumState.SaddQubit(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0)));
         quantumState.SaddQubit(new Locus(1), new Qubit(new Complex(0, 0), new Complex(1, 0)));
         quantumState.SaddQubit(new Locus(2), new Qubit(new Complex(0, 0), new Complex(1, 0)));
-        // quantumState.SaddQubit(new Locus(3), new Qubit(new Complex(1, 0), new Complex(0, 0)));
+         quantumState.SaddQubit(new Locus(3), new Qubit(new Complex(1, 0), new Complex(0, 0)));
        
        
         // quantumState.printStateVector();
@@ -27,9 +27,12 @@ public class DisqSimulator {
         // quantumState.SaddQubit(new Locus(2), new Qubit(new Complex(0.3, 0), new Complex(0.7, 0)));
         // quantumState.SaddQubit(new Locus(3), new Qubit(new Complex(0.7, 0), new Complex(0.3, 0)));
         //quantumState.applyHadamardToQubit(new Locus(1));
-       // quantumState.applyHadamardToQubit3(0);
-      // System.out.println("Hadamard::::\n");
-      // quantumState.printStateVector3();
+        quantumState.applyHadamardToQubit3(0);
+       System.out.println("Hadamard::::\n");
+      quantumState.printStateVector3();
+      quantumState.measureQubit(0);
+      quantumState.printStateVector3();
+     
 
         // quantumState.applyHadamardToQubit(1);
        //   System.out.println("Xgate ::::\n");
@@ -42,9 +45,9 @@ public class DisqSimulator {
       // quantumState.applyRzToQubit(1,Math.PI);
       // quantumState.printStateVector3();
 
-      System.out.println("QFT Gate\n");
-      quantumState.applyQFT(3);
-      quantumState.printStateVector3();
+      // System.out.println("QFT Gate\n");
+      // quantumState.applyQFT(3);
+      // quantumState.printStateVector3();
       
 
       //  quantumState.qubits.get(0).getValue().normalize();       // quantumState.printStateVector();
@@ -175,10 +178,10 @@ public class DisqSimulator {
         //Membrane
         Membraneprocess membrane = new Membraneprocess("membran1");
        // Locus loci = new Locus(1);
-        membrane.Addqubits(new Locus(0), new Qubit(new Complex(0, 0), new Complex(1, 0)));
-        membrane.Addqubits(new Locus(1), new Qubit(new Complex(1, 0), new Complex(0, 0)));
-        membrane.Addqubits(new Locus(2), new Qubit(new Complex(1, 0), new Complex(0, 0)));
-        membrane.Addqubits(new Locus(3), new Qubit(new Complex(0, 0), new Complex(1, 0)));
+        membrane.Addqubits(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0)));
+        membrane.Addqubits(new Locus(1), new Qubit(new Complex(0, 0), new Complex(1, 0)));
+        membrane.Addqubits(new Locus(2), new Qubit(new Complex(0, 0), new Complex(1, 0)));
+        membrane.Addqubits(new Locus(3), new Qubit(new Complex(1, 0), new Complex(0, 0)));
        
         Membraneprocess membrane2 = new Membraneprocess("membrane2");
         // Locus loci = new Locus(1);
@@ -203,8 +206,8 @@ public class DisqSimulator {
         MembraneVisitor membraneVisitor = new MembraneExecutor(processVisitor);
         MembraneVisitor membraneVisitor2 = new MembraneExecutor(processVisitor2);
 
-      // membrane.accept(membraneVisitor); // Execute visitor on the membrane
-      // membrane2.accept(membraneVisitor2); // Execute visitor on the membrane
+       membrane.accept(membraneVisitor); // Execute visitor on the membrane
+       membrane2.accept(membraneVisitor2); // Execute visitor on the membrane
       
        QuantumChannelcreation channel = new QuantumChannelcreation(membrane, membrane2, 1);
        channel.sendsignals("Hello");

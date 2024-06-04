@@ -20,11 +20,14 @@ public class Membraneprocess implements Membrane {
         this.location = location;
         this.processes = new ArrayList<>();
         this.airlockedProcess = null;
+        this.quantumstate = new QuantumState() ;
     }
 
     public void Addqubits(Locus locus , Qubit qubit)
     {
-            quantumstate.addQubit(locus, qubit);
+        double processProbability = getProcessProbability();
+        quantumstate.SaddQubit(locus, qubit, location, processProbability);
+  
     }
     
     public QuantumState getQuantumState()
@@ -66,6 +69,14 @@ public class Membraneprocess implements Membrane {
     public Process getAirlockedProcess() {
         return airlockedProcess;
     }
+
+    public double getProcessProbability() {
+        if (processes.isEmpty()) {
+            return 0.0;
+        }
+        return 1.0 / processes.size();
+    }
+
 
     @Override
     public void accept(MembraneVisitor visitor) {

@@ -25,7 +25,8 @@ public class ActionInterpreter implements ActionVisitor {
         if (operation instanceof Hadamard) {
             //quantumState.applyHadamard(qubitIndex);
             System.out.println("\nHadamardGate: \n");
-            quantumState.applyHadamardToQubit(qubitIndex);
+           // quantumState.applyHadamardToQubit(qubitIndex);
+            quantumState.applyHadamardToQubit3(qubitIndex);
         } else if (operation instanceof PauliX) {
             System.out.println("\nX Gate: \n");
             quantumState.applyXgate(qubitIndex);

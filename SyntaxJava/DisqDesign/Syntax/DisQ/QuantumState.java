@@ -44,12 +44,17 @@ public class QuantumState {
     public List<QuantumValue> quantumValues;  // To hold all quantum states
     List<Pair<Locus, Qubit>> qubits;
     double norms;
+    private double probability;  // Probability associated with the state
+
     
 
     public QuantumState() {
         this.qubits = new ArrayList<>();
     }
     private Map<String, Complex> stateVector = new HashMap<>();
+    private Map<String, Pair<Complex, String>> stateVectors = new HashMap<>();
+    private Map<String, Double> probabilities = new HashMap<>();
+   
 
     public void SaddQubit(Locus locus, Qubit qubit) {
         if (stateVector.isEmpty()) {
@@ -63,6 +68,22 @@ public class QuantumState {
                 newStateVector.put(key + "1", value.mul(qubit.getOneAmplitude()));
             });
             stateVector = newStateVector;
+        }
+    }
+
+    public void SaddQubit(Locus locus, Qubit qubit, String membraneLabel, double probability) {
+        this.probability = probability;
+        if (stateVectors.isEmpty()) {
+            stateVectors.put("0", new Pair<>(qubit.getZeroAmplitude(), membraneLabel));
+            stateVectors.put("1", new Pair<>(qubit.getOneAmplitude(), membraneLabel));
+        } else {
+            Map<String, Pair<Complex, String>> newStateVector = new HashMap<>();
+            // Tensor each existing state with the new qubit state
+            stateVectors.forEach((key, value) -> {
+                newStateVector.put(key + "0", new Pair<>(value.getKey().mul(qubit.getZeroAmplitude()), membraneLabel));
+                newStateVector.put(key + "1", new Pair<>(value.getKey().mul(qubit.getOneAmplitude()), membraneLabel));
+            });
+            stateVectors = newStateVector;
         }
     }
 
@@ -575,6 +596,43 @@ public class QuantumState {
         stateVector = newStateVector;
         normalizeStateVector3();
     }
+
+    public void measureQubit(int qubitIndex) {
+        Map<String, Complex> newStateVector = new HashMap<>();
+        double zeroProbability = stateVector.entrySet().stream()
+            .filter(entry -> entry.getKey().charAt(qubitIndex) == '0')
+            .mapToDouble(entry -> entry.getValue().abssqr())
+            .sum();
+
+        double oneProbability = 1.0 - zeroProbability;
+
+        if (Math.abs(zeroProbability) < 1e-10 && Math.abs(oneProbability) < 1e-10) {
+            System.out.println("Measurement error: probabilities are too close to zero.");
+            return;
+        }
+
+        probabilities.put("0", zeroProbability);
+        probabilities.put("1", oneProbability);
+
+        Random random = new Random();
+        boolean measureZero = random.nextDouble() < zeroProbability;
+
+        String measurementResult = measureZero ? "0" : "1";
+        double normalizationFactor = measureZero ? Math.sqrt(zeroProbability) : Math.sqrt(oneProbability);
+
+        stateVector.forEach((state, amplitude) -> {
+            if (state.charAt(qubitIndex) == measurementResult.charAt(0)) {
+                String newState = state.substring(0, qubitIndex) + state.substring(qubitIndex + 1);
+                newStateVector.merge(newState, amplitude.div(normalizationFactor), Complex::add);
+            }
+        });
+
+        stateVector = newStateVector;
+        normalizeStateVector3();
+
+        System.out.println("Measurement result: " + measurementResult);
+    }
+
     
     public void normalizeStateVector3() {
          norms = stateVector.values().stream()
