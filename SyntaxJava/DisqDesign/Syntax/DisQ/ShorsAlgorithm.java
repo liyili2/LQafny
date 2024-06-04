@@ -1,20 +1,46 @@
 package SyntaxJava.DisqDesign.Syntax.DisQ;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class ShorsAlgorithm {
-     public void factorize(int N) {
+
+    public void factorize(int N) {
+        if (N <= 1) {
+            System.out.println("Invalid input: N must be greater than 1.");
+            return;
+        }
+
+        if (isPrime(N)) {
+            System.out.println(N + " is a prime number.");
+            return;
+        }
+
+        Set<Integer> factors = new HashSet<>();
+        factorizeHelper(N, factors);
+
+        List<Integer> sortedFactors = new ArrayList<>(factors);
+        Collections.sort(sortedFactors);
+        System.out.println("Found factors: " + sortedFactors);
+    }
+
+    private void factorizeHelper(int N, Set<Integer> factors) {
+        if (isPrime(N)) {
+            factors.add(N);
+            return;
+        }
+
         Random rand = new Random();
-        while (true) {
-            int a = 2 + rand.nextInt(N - 2);
+        boolean factorFound = false;
+
+        while (!factorFound) {
+           // int a = 2 + rand.nextInt(N - 2);
+            int a = 2 + rand.nextInt(Math.max(1, N - 2));
             int gcd = gcd(a, N);
-            if (gcd != 1) {
-                System.out.println("Found factor: " + gcd);
-                return;
+            if (gcd != 1 && gcd != N) {
+                factorizeHelper(gcd, factors);
+                factorizeHelper(N / gcd, factors);
+                factorFound = true;
+                continue;
             }
 
             int r = findPeriod(a, N);
@@ -24,12 +50,26 @@ public class ShorsAlgorithm {
             int factor1 = gcd((int) Math.pow(a, r / 2) - 1, N);
             int factor2 = gcd((int) Math.pow(a, r / 2) + 1, N);
 
-            if (factor1 == 1 || factor1 == N) continue;
-            if (factor2 == 1 || factor2 == N) continue;
+            if (factor1 != 1 && factor1 != N) {
+                factorizeHelper(factor1, factors);
+                factorizeHelper(N / factor1, factors);
+                factorFound = true;
+            }
 
-            System.out.println("Found factors: " + factor1 + ", " + factor2);
-            break;
+            if (factor2 != 1 && factor2 != N) {
+                factorizeHelper(factor2, factors);
+                factorizeHelper(N / factor2, factors);
+                factorFound = true;
+            }
         }
+    }
+
+    private boolean isPrime(int N) {
+        if (N <= 1) return false;
+        for (int i = 2; i * i <= N; i++) {
+            if (N % i == 0) return false;
+        }
+        return true;
     }
 
     private int gcd(int a, int b) {
@@ -83,7 +123,7 @@ public class ShorsAlgorithm {
     private void applyQFT(QuantumState1 qs) {
         // Placeholder for applying Quantum Fourier Transform on the quantum state
         // Simulating with classical code for now
-        int n = qs.getStateVector().size();
+        int n = (int) (Math.log(qs.getStateVector().size()) / Math.log(2)); // Number of qubits
         for (int i = 0; i < n; i++) {
             qs.applyHadamardToQubit(i);
             for (int j = i + 1; j < n; j++) {
@@ -123,4 +163,10 @@ public class ShorsAlgorithm {
         return (int) Math.round(1.0 / fraction);
     }
 
+    public static void main(String[] args) {
+        ShorsAlgorithm shorsAlgorithm = new ShorsAlgorithm();
+        int N = 448212;  // Example with N = 150
+        System.out.println("Shor's");
+        shorsAlgorithm.factorize(N);
+    }
 }

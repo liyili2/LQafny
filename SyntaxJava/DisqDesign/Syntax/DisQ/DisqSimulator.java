@@ -7,7 +7,7 @@ import java.util.Arrays;
 public class DisqSimulator {
     public static void main(String[] args) {
 
-      int N = 21;  // Number to factorize
+      int N = 4;  // Number to factorize
         ShorsAlgorithm shor = new ShorsAlgorithm();
         shor.factorize(N);
 
@@ -26,16 +26,16 @@ public class DisqSimulator {
        
         // quantumState.printStateVector();
         quantumState.normalizeStateVector3();
-        quantumState.printStateVector3();
+      //  quantumState.printStateVector3();
         // quantumState.SaddQubit(new Locus(1), new Qubit(new Complex(0.3, 0), new Complex(0.4, 0)));
         // quantumState.SaddQubit(new Locus(2), new Qubit(new Complex(0.3, 0), new Complex(0.7, 0)));
         // quantumState.SaddQubit(new Locus(3), new Qubit(new Complex(0.7, 0), new Complex(0.3, 0)));
         //quantumState.applyHadamardToQubit(new Locus(1));
         quantumState.applyHadamardToQubit3(0);
-       System.out.println("Hadamard::::\n");
-      quantumState.printStateVector3();
-      quantumState.measureQubit(1);
-      quantumState.printStateVector3();
+      // System.out.println("Hadamard::::\n");
+    //  quantumState.printStateVector3();
+    //  quantumState.measureQubit(1);
+    //  quantumState.printStateVector3();
      
 
         // quantumState.applyHadamardToQubit(1);
@@ -210,11 +210,11 @@ public class DisqSimulator {
         MembraneVisitor membraneVisitor = new MembraneExecutor(processVisitor);
         MembraneVisitor membraneVisitor2 = new MembraneExecutor(processVisitor2);
 
-       membrane.accept(membraneVisitor); // Execute visitor on the membrane
-       membrane2.accept(membraneVisitor2); // Execute visitor on the membrane
+     //  membrane.accept(membraneVisitor); // Execute visitor on the membrane
+     //  membrane2.accept(membraneVisitor2); // Execute visitor on the membrane
       
        QuantumChannelcreation channel = new QuantumChannelcreation(membrane, membrane2, 1);
-       channel.sendsignals("Hello");
+    //   channel.sendsignals("Hello");
 
 
        // System.out.println("\nSize of qubits:"+membrane.getnumberofqubits());
