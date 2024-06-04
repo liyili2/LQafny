@@ -179,6 +179,16 @@ Fixpoint simp_bexp (a:bexp) :=
               | _ => None
    end.
 
+Definition simp_cbexp (a:cbexp) :=
+   match a with (CEq x y) => match (simp_aexp x,simp_aexp y) with (Some v1,Some v2) => Some (v1 =? v2)
+                                                                   | _ => None
+                                end
+              | (CLt x y) => match (simp_aexp x,simp_aexp y) with (Some v1,Some v2) => Some (v1 <? v2)
+                                                                   | _ => None
+                                end
+   end.
+
+
 Inductive eval_aexp : stack -> aexp -> nat -> Prop :=
     | var_sem : forall s x n, AEnv.MapsTo x n s -> eval_aexp s (BA x) n
     | mnum_sem: forall s n, eval_aexp s (Num n) n

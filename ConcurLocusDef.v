@@ -64,7 +64,6 @@ Inductive ses_dis_aux : range -> locus -> Prop :=
     ses_dis_aux_empty : forall r, ses_dis_aux r nil
   | ses_dis_aux_many: forall r a l, ~ in_range r a -> ses_dis_aux r l -> ses_dis_aux r (a::l).
 
-
 Inductive ses_dis_aux2 : range -> locus -> Prop := 
     ses_dis_empty : forall r, ses_dis_aux2 r nil
   | ses_dis_many: forall r a l, ses_dis_aux r (a::l) -> ses_dis_aux2 a l -> ses_dis_aux2 r (a::l).
@@ -75,7 +74,6 @@ Definition ses_dis (s:locus) :=
 Inductive two_ses_dis : locus -> locus -> Prop :=
    two_ses_empty : forall s, two_ses_dis nil s
  | two_ses_many: forall a l s, ses_dis_aux a s -> two_ses_dis l s -> two_ses_dis (a::l) s. 
-
 
 Definition join_two_ses (a:(var * bound * bound)) (b:(var*bound*bound)) :=
    match a with (x,BNum n1,BNum n2) => 
@@ -612,6 +610,10 @@ Module AEnvFacts := FMapFacts.Facts (AEnv).
 Definition aenv := AEnv.t ktype.
 Definition empty_aenv := @AEnv.empty ktype.
 
+Module TEnv := FMapList.Make Nat_as_OT.
+Module TEnvFacts := FMapFacts.Facts (TEnv).
+Definition tenv := TEnv.t qtype.
+Definition empty_tenv := @TEnv.empty qtype.
 (* Compiling locus to OQASM variables. *)
 Fixpoint ses_vars (s:locus) :=
   match s with nil => nil
