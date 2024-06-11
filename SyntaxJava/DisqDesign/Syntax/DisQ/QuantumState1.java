@@ -86,6 +86,39 @@ public class QuantumState1 {
         normalizeStateVector();
     }
 
+    public void applyXToQubit(int qubitIndex) {
+        Map<String, Pair<Complex, String>> newStateVector = new HashMap<>();
+
+        stateVectors.forEach((state, pair) -> {
+            char bit = state.charAt(qubitIndex);
+            String flippedState = state.substring(0, qubitIndex) + (bit == '0' ? "1" : "0") + state.substring(qubitIndex + 1);
+
+            newStateVector.put(flippedState, pair);
+        });
+
+        stateVectors = newStateVector;
+        normalizeStateVector();
+    }
+
+    public void applyControlledXToQubit(int controlQubitIndex, int targetQubitIndex) {
+        Map<String, Pair<Complex, String>> newStateVector = new HashMap<>();
+
+        stateVectors.forEach((state, pair) -> {
+            char controlBit = state.charAt(controlQubitIndex);
+            if (controlBit == '1') {
+                char targetBit = state.charAt(targetQubitIndex);
+                String flippedState = state.substring(0, targetQubitIndex) + (targetBit == '0' ? "1" : "0") + state.substring(targetQubitIndex + 1);
+                newStateVector.put(flippedState, pair);
+            } else {
+                newStateVector.put(state, pair);
+            }
+        });
+
+        stateVectors = newStateVector;
+        normalizeStateVector();
+    }
+
+
     public void applyRotationZToQubit(int qubitIndex, double theta) {
         Map<String, Pair<Complex, String>> newStateVector = new HashMap<>();
         Complex phaseFactor = Complex.fromPolar(1, theta);
@@ -184,4 +217,6 @@ public class QuantumState1 {
     public void setStateVector(Map<String, Pair<Complex, String>> stateVectors) {
         this.stateVectors = stateVectors;
     }
+
+   
 }

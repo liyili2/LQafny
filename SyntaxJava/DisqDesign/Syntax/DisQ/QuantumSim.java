@@ -24,13 +24,15 @@ public class QuantumSim {
         // qs2.printStateVector();
 
         // Apply Hadamard gate to the first qubit of the first membrane
-        qs1.applyHadamardToQubit(0);
+       qs1.applyHadamardToQubit(0);
+       qs1.printStateVectorWithProbabilities();
+       qs1.applyControlledXToQubit(1,0);
 
-        System.out.println("\nState Vector after applying Hadamard to the first qubit of membrane1:");
+        System.out.println("\nState Vector after applying  to the first qubit of membrane1:");
         qs1.printStateVectorWithProbabilities();
 
          // Measure the second qubit of the second membrane
-         qs1.measureQubit(1);
+         qs1.measureQubit(0);
          qs1.printStateVectorWithProbabilities();
 
 

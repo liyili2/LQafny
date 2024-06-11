@@ -7,7 +7,7 @@ import java.util.Arrays;
 public class DisqSimulator {
     public static void main(String[] args) {
 
-      int N = 4;  // Number to factorize
+      int N = 499911;  // Number to factorize
         ShorsAlgorithm shor = new ShorsAlgorithm();
         shor.factorize(N);
 
@@ -182,7 +182,7 @@ public class DisqSimulator {
         //Membrane
         Membraneprocess membrane = new Membraneprocess("membran1");
        // Locus loci = new Locus(1);
-        membrane.Addqubits(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0)));
+        membrane.Addqubits(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0)),"membranel",0.25);
         membrane.Addqubits(new Locus(1), new Qubit(new Complex(0, 0), new Complex(1, 0)));
         membrane.Addqubits(new Locus(2), new Qubit(new Complex(0, 0), new Complex(1, 0)));
         membrane.Addqubits(new Locus(3), new Qubit(new Complex(1, 0), new Complex(0, 0)));

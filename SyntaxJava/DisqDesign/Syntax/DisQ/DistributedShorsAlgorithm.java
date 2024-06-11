@@ -2,7 +2,13 @@ package SyntaxJava.DisqDesign.Syntax.DisQ;
 
 import java.util.*;
 
-public class ShorsAlgorithm {
+public class DistributedShorsAlgorithm {
+
+    public static void main(String[] args) {
+        DistributedShorsAlgorithm algorithm = new DistributedShorsAlgorithm();
+        int N = 15 ; // Example with N = 15
+        algorithm.factorize(N);
+    }
 
     public void factorize(int N) {
         if (N <= 1) {
@@ -33,7 +39,6 @@ public class ShorsAlgorithm {
         boolean factorFound = false;
 
         while (!factorFound) {
-           // int a = 2 + rand.nextInt(N - 2);
             int a = 2 + rand.nextInt(Math.max(1, N - 2));
             int gcd = gcd(a, N);
             if (gcd != 1 && gcd != N) {
@@ -78,34 +83,49 @@ public class ShorsAlgorithm {
     }
 
     private int findPeriod(int a, int N) {
-        QuantumState1 qs = new QuantumState1();
+        Membraneprocess membraneL = new Membraneprocess("membraneL");
+        Membraneprocess membraneR = new Membraneprocess("membraneR");
+        Membraneprocess membraneT = new Membraneprocess("membraneT");
 
-        // Initialize quantum state with |0000>
-        for (int i = 0; i < 4; i++) {  // Example with 4 qubits for clarity
-            qs.addQubit(new Locus(i), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane1", 0.25);
-        }
-
-        // Apply Hadamard to all qubits
+        // Initialize quantum state with |0000> in membraneL
         for (int i = 0; i < 4; i++) {
-            qs.applyHadamardToQubit(i);
+            membraneL.Addqubits(new Locus(i), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membraneL", 0.25);
         }
 
-        // Apply modular exponentiation
-        applyModularExponentiation(qs, a, N);
+        // Apply Hadamard to all qubits in membraneL and teleport to membraneR
+        for (int i = 0; i < 4; i++) {
+            membraneL.getQuantumState().applyHadamardToQubit(i);
+            teleportQubit(membraneL, membraneR, i);
+        }
 
-        // Apply QFT (Quantum Fourier Transform)
-        applyQFT(qs);
+        // Apply modular exponentiation in membraneR and teleport to membraneT
+        applyModularExponentiation(membraneR.getQuantumState(), a, N);
+        for (int i = 0; i < 4; i++) {
+            teleportQubit(membraneR, membraneT, i);
+        }
 
-        // Measure the qubits to find the period
-        String measuredValue = measureQubits(qs);
+        // Apply QFT in membraneT
+        applyQFT(membraneT.getQuantumState());
+
+        // Measure the qubits in membraneT
+        String measuredValue = measureQubits(membraneT.getQuantumState());
 
         return extractPeriodFromMeasurement(measuredValue, N);
     }
 
+    private void teleportQubit(Membraneprocess sourceMembrane, Membraneprocess targetMembrane, int qubitIndex) {
+        QuantumState1 sourceState = sourceMembrane.getQuantumState();
+        QuantumState1 targetState = targetMembrane.getQuantumState();
+
+        // Simulate teleportation by copying the state from source to target
+        sourceState.getStateVector().forEach((state, pair) -> {
+            if (state.charAt(qubitIndex) == '1') {
+                targetState.addQubit(new Locus(qubitIndex), new Qubit(pair.getKey(), pair.getKey()), targetMembrane.getLocation(), sourceMembrane.getProcessProbability());
+            }
+        });
+    }
+
     private void applyModularExponentiation(QuantumState1 qs, int a, int N) {
-        // Placeholder for applying modular exponentiation on the quantum state
-        // In a real quantum computer, this would be a quantum circuit
-        // Simulating with classical code for now
         Map<String, Pair<Complex, String>> newStateVector = new HashMap<>();
 
         qs.getStateVector().forEach((state, pair) -> {
@@ -121,8 +141,6 @@ public class ShorsAlgorithm {
     }
 
     private void applyQFT(QuantumState1 qs) {
-        // Placeholder for applying Quantum Fourier Transform on the quantum state
-        // Simulating with classical code for now
         int n = (int) (Math.log(qs.getStateVector().size()) / Math.log(2)); // Number of qubits
         for (int i = 0; i < n; i++) {
             qs.applyHadamardToQubit(i);
@@ -134,8 +152,6 @@ public class ShorsAlgorithm {
     }
 
     private String measureQubits(QuantumState1 qs) {
-        // Placeholder for measuring qubits in the quantum state
-        // In a real quantum computer, this would collapse the quantum state to a classical state
         Random random = new Random();
         List<String> states = new ArrayList<>(qs.getStateVector().keySet());
         double[] probabilities = new double[states.size()];
@@ -156,17 +172,8 @@ public class ShorsAlgorithm {
     }
 
     private int extractPeriodFromMeasurement(String measuredValue, int N) {
-        // Placeholder for extracting the period from the measurement result
-        // Simulating with classical code for now
         int measuredInt = Integer.parseInt(measuredValue, 2);
         double fraction = (double) measuredInt / Math.pow(2, measuredValue.length());
         return (int) Math.round(1.0 / fraction);
-    }
-
-    public static void main(String[] args) {
-        ShorsAlgorithm shorsAlgorithm = new ShorsAlgorithm();
-        int N = 4911;  // Example with N = 150
-        System.out.println("Shor's");
-        shorsAlgorithm.factorize(N);
     }
 }

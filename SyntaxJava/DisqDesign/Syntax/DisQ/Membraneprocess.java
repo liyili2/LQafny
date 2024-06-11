@@ -8,6 +8,7 @@ public class Membraneprocess implements Membrane {
     private List<Process> processes;  // List of processes within this membrane
     private Process airlockedProcess;  // Represents an airlocked process if any
     private QuantumState  quantumstate = new QuantumState();
+    private QuantumState1 quantumstate1 = new QuantumState1();
     private String message;
 
     public Membraneprocess() {
@@ -21,18 +22,20 @@ public class Membraneprocess implements Membrane {
         this.processes = new ArrayList<>();
         this.airlockedProcess = null;
         this.quantumstate = new QuantumState() ;
+        this.quantumstate1 = new QuantumState1() ;
     }
 
-    public void Addqubits(Locus locus , Qubit qubit)
+    public void Addqubits(Locus locus , Qubit qubit,String location , double prob)
     {
-        double processProbability = getProcessProbability();
-        quantumstate.SaddQubit(locus, qubit, location, processProbability);
+       // double processProbability = getProcessProbability();
+       // quantumstate.SaddQubit(locus, qubit, location, processProbability);
+        quantumstate1.addQubit(locus, qubit, location, prob);
   
     }
     
-    public QuantumState getQuantumState()
+    public QuantumState1 getQuantumState()
     {
-        return quantumstate;
+        return quantumstate1;
     }
     public int getnumberofqubits()
     {
