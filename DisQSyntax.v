@@ -35,6 +35,7 @@ Definition simple_bound (b:bound) :=
 Definition range : Set := var * bound * bound.
 
 Definition locus : Type := list range.
+Definition glocus : Type := list (range * var). (*range * location*)
 
 Inductive aexp := BA (x:var) | Num (n:nat)
          | APlus (e1:aexp) (e2:aexp) | AMult (e1:aexp) (e2:aexp).

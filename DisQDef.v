@@ -303,7 +303,8 @@ Inductive state_elem :=
                  | Hval (b:nat -> rz_val)
                  | Cval (m:nat) (b : nat -> C * rz_val).
 
-Definition qstate := list (locus * state_elem * var).
+Definition qstate := list (locus * state_elem).
+Definition gqstate := list (glocus * state_elem).
 
 (*TODO: translate the qstate to SQIR state. *)
 
@@ -463,11 +464,11 @@ Inductive state_equiv {rmax:nat} : qstate -> qstate -> Prop :=
      | state_comm :forall a1 a2, state_equiv (a1++a2) (a2++a1) 
      | state_ses_assoc: forall s v S S', state_equiv S S' -> state_equiv ((s,v)::S) ((s,v)::S') *)
     (* | state_ses_eq: forall s s' v S, ses_eq s s' -> state_equiv ((s,v)::S) ((s',v)::S) *)
-     | state_sub: forall x v n u a lc, ses_len x = Some n -> @state_same rmax n v u 
-                       -> state_equiv ((x,v,lc)::a) ((x,u,lc)::a) 
-     | state_mut: forall l1 l2 n a n1 b n2 v u S lc, ses_len l1 = Some n -> ses_len ([a]) = Some n1 -> ses_len ([b]) = Some n2 ->
+     | state_sub: forall x v n u a, ses_len x = Some n -> @state_same rmax n v u 
+                       -> state_equiv ((x,v)::a) ((x,u)::a) 
+     | state_mut: forall l1 l2 n a n1 b n2 v u S, ses_len l1 = Some n -> ses_len ([a]) = Some n1 -> ses_len ([b]) = Some n2 ->
                      mut_state n n1 n2 v u ->
-                 state_equiv ((l1++(a::b::l2),v,lc)::S) ((l1++(b::a::l2),u,lc)::S)
+                 state_equiv ((l1++(a::b::l2),v)::S) ((l1++(b::a::l2),u)::S)
      | state_cong: forall S1 S2 x, @state_equiv rmax S1 S2 -> @state_equiv rmax (x::S1) (x::S2).
 (*
      | state_merge: forall x n v y u a vu, ses_len x = Some n -> 

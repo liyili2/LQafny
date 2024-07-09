@@ -73,7 +73,7 @@ Inductive match_value : nat -> state_elem -> state_elem -> Prop :=
 
 Definition match_values (S1 S2: qstate) :=
   Forall2 (fun s1 s2 =>
-           (match (s1,s2) with ((l,s,lc), (l',s',lc')) =>
+           (match (s1,s2) with ((l,s), (l',s')) =>
              l = l' /\
             (match ses_len l with Some n => match_value n s s'
                                 | None => False
@@ -144,26 +144,26 @@ Definition get_core_bexp (b:bexp) := match b with (BEq x y z a)
             => Some (BTest z a) | BLt x y z a => Some (BTest z a)  | _ => None end.
 
 Inductive eval_bexp : qstate -> bexp -> qstate -> Prop :=
-    | beq_sem_1 : forall s x a y z i l n m f lc, simp_aexp a = Some y ->
-                     eval_bexp (((x,BNum 0,BNum n)::(z,BNum i,BNum (S i))::l,Cval m f,lc)::s)
+    | beq_sem_1 : forall s x a y z i l n m f, simp_aexp a = Some y ->
+                     eval_bexp (((x,BNum 0,BNum n)::(z,BNum i,BNum (S i))::l,Cval m f)::s)
                          (BEq (BA x) (a) z (Num i)) 
-                            (((x,BNum 0,BNum n)::(z,BNum i,BNum (S i))::l,Cval m (eval_eq_bool f m n y),lc)::s)
-    | beq_sem_2 : forall s x a y z i l n m f lc,
+                            (((x,BNum 0,BNum n)::(z,BNum i,BNum (S i))::l,Cval m (eval_eq_bool f m n y))::s)
+    | beq_sem_2 : forall s x a y z i l n m f,
                simp_aexp a = Some y ->
-                eval_bexp (((x,BNum 0,BNum n)::(z,BNum i,BNum (S i))::l,Cval m f,lc)::s)
+                eval_bexp (((x,BNum 0,BNum n)::(z,BNum i,BNum (S i))::l,Cval m f)::s)
                          (BEq (a) (BA x) z (Num i))
-                            (((x,BNum 0,BNum n)::(z,BNum i,BNum (S i))::l,Cval m (eval_eq_bool f m n y),lc)::s)
-    | blt_sem_1 : forall s x a y z i l n m f lc, 
+                            (((x,BNum 0,BNum n)::(z,BNum i,BNum (S i))::l,Cval m (eval_eq_bool f m n y))::s)
+    | blt_sem_1 : forall s x a y z i l n m f, 
                simp_aexp a = Some y ->
-                eval_bexp ((((x,BNum 0,BNum n)::(z,BNum i,BNum (S i))::l),Cval m f,lc)::s)
+                eval_bexp ((((x,BNum 0,BNum n)::(z,BNum i,BNum (S i))::l),Cval m f)::s)
                        (BLt (BA x) (a) z (Num i)) 
-                         ((((x,BNum 0,BNum n)::(z,BNum i,BNum (S i))::l),(Cval m (eval_lt_bool f m n y)),lc)::s)
+                         ((((x,BNum 0,BNum n)::(z,BNum i,BNum (S i))::l),(Cval m (eval_lt_bool f m n y)))::s)
 
-    | blt_sem_2 : forall s x a y z i l n m f lc, 
+    | blt_sem_2 : forall s x a y z i l n m f, 
                simp_aexp a = Some y ->
-                 eval_bexp ((((x,BNum 0,BNum n)::(z,BNum i,BNum (S i))::l),Cval m f,lc)::s)
+                 eval_bexp ((((x,BNum 0,BNum n)::(z,BNum i,BNum (S i))::l),Cval m f)::s)
                         (BLt (a) (BA x) z (Num i))
-                       ((((x,BNum 0,BNum n)::(z,BNum i,BNum (S i))::l),(Cval m (eval_rlt_bool f m n y)),lc)::s).
+                       ((((x,BNum 0,BNum n)::(z,BNum i,BNum (S i))::l),(Cval m (eval_rlt_bool f m n y)))::s).
 
 Inductive find_basis_elems (n n':nat) (f:rz_val) (fc:nat -> C*rz_val): 
             nat -> nat -> (nat -> C * rz_val) -> Prop :=
@@ -213,7 +213,7 @@ Inductive assem_bool (n n':nat): nat -> (nat-> C * rz_val) -> state_elem -> stat
 
 Fixpoint subst_qstate (l:qstate) (x:var) (n:nat) :=
   match l with nil => nil
-          | (y,v,lc)::yl => (subst_locus y x n,v,lc)::(subst_qstate yl x n)
+          | (y,v)::yl => (subst_locus y x n,v)::(subst_qstate yl x n)
   end.
 Definition subst_state (l:state) (x:var) n := (fst l,subst_qstate (snd l) x n).
 
@@ -231,20 +231,20 @@ Inductive p_step {rmax:nat}
   | self_pstep : forall aenv s Q, p_step aenv s Q (1:R) s Q  
   | if_pstep_t : forall aenv s b P Q, simp_cbexp b = Some true -> p_step aenv s (PIf b P Q) (1:R) s P
   | if_pstep_f : forall aenv s b P Q, simp_cbexp b = Some false -> p_step aenv s (PIf b P Q) (1:R) s Q
-  | op_pstep   : forall aenv s a l m b e ba Q lc, eval_ch rmax aenv a m b e = Some ba ->
-                   p_step aenv ((a++l, Cval m b,lc)::s) (AP (CAppU a e) Q) (1:R) ((a++l, Cval m ba,lc)::s) Q
+  | op_pstep   : forall aenv s a l m b e ba Q, eval_ch rmax aenv a m b e = Some ba ->
+                   p_step aenv ((a++l, Cval m b)::s) (AP (CAppU a e) Q) (1:R) ((a++l, Cval m ba)::s) Q
   | mea_pstep   : forall aenv s l x a n v r va va' lc Q k, AEnv.MapsTo a (QT lc n) aenv -> @pick_mea n va (r,v) ->
                                                    k = [(a, BNum 0, BNum n)] -> build_state_ch n v va = Some va' ->
-                 p_step aenv (((a,BNum 0, BNum n)::l, va, lc)::s) (AP (CMeas x k) Q) r ((l, va', lc)::s) (subst_pexp Q x v).
+                 p_step aenv (((a,BNum 0, BNum n)::l, va)::s) (AP (CMeas x k) Q) r ((l, va')::s) (subst_pexp Q x v).
 
 (* single memb semantics *)
 Inductive m_step {rmax:nat}
   : aenv -> qstate -> memb -> R -> var -> qstate -> memb -> Prop :=
   | end_step : forall aenv s l,  m_step aenv s (Memb l []) (1:R) l s (Memb l [])
   | rev_step : forall aenv s m l P lp, m = (LockMemb l P lp) -> m_step aenv s m (1:R) l s (Memb l (P::lp)) 
-  | move_step : forall aenv s m l lp P s' P' r, m = (LockMemb l P lp) -> @p_step rmax aenv s P r s' P' -> m_step aenv s m r l s' (Memb l lp) (*TODO: rewrite MOVE*)
+  | move_step : forall aenv s a l lp P P' r n n' v va lc fc, n = (length lp)+1 -> ses_len a = Some n' -> @p_step rmax aenv [(a,v)] P r [(a,va)] P' -> mut_state 0 1 n' va fc ->  m_step aenv ((a++l, v)::s) (Memb lc (P::lp)) ((INR 1)/r) lc ((a++l, fc)::s) (Memb lc (P'::lp))
   | newvar_step : forall aenv s m n x v l lc,  lc = loc_memb m ->
-                  m_step aenv ((l, v, lc)::s) (NewVMemb x n m) (1:R) lc ((l++[(x, BNum 0, BNum n)], Cval n (fun _ => (C0,allfalse)), lc)::s) m.
+                  m_step aenv ((l, v)::s) (NewVMemb x n m) (1:R) lc ((l++[(x, BNum 0, BNum n)], Cval n (fun _ => (C0,allfalse)))::s) m.
 
 (* multi-memb semantics *)
 Definition inv_sqrt2 : R := / sqrt 2.
@@ -255,8 +255,8 @@ Inductive cf_step {rmax:nat}
   | send_rev_sem : forall aenv s x y l1 l2 n m1 m2 cf a P Q,
                    simp_aexp a = Some n -> cf_step aenv s ((LockMemb l1 (AP (Send x a) P) m1)::(LockMemb l2 (AP (Recv x y) Q) m2)::cf) (1:R) (l1::[l2]) s ((Memb l1 (P::m1))::(Memb l2 (Q::m2))::cf)
   | newchan_step : forall aenv l l' v v' lc1 lc2 c n m1 m2 cf s,
-                   loc_memb m1 = lc1 /\ loc_memb m2 = lc2 ->
-                   cf_step aenv ((l,v,lc1)::(l',v',lc2)::s) ((NewCMemb c n m1)::(NewCMemb c n m2)::cf) (1:R) (lc1::[lc2]) ((l++[(c,BNum 0, BNum n)], Cval n (fun i => if i =? 0 then (cinv_sqrt2,allfalse) else (cinv_sqrt2,alltrue)), lc1)::(l'++[(c,BNum 0,BNum n)], Cval n (fun i => if i =? 0 then (cinv_sqrt2,allfalse) else (cinv_sqrt2,alltrue)), lc2)::s) (m1::m2::cf) .
+                   loc_memb m1 = lc1 -> loc_memb m2 = lc2 ->
+                   cf_step aenv ((l,v)::(l',v')::s) ((NewCMemb c n m1)::(NewCMemb c n m2)::cf) (1:R) (lc1::[lc2]) ((l++[(c,BNum 0, BNum n)], Cval n (fun i => if i =? 0 then (cinv_sqrt2,allfalse) else (cinv_sqrt2,alltrue)))::(l'++[(c,BNum 0,BNum n)], Cval n (fun i => if i =? 0 then (cinv_sqrt2,allfalse) else (cinv_sqrt2,alltrue)))::s) (m1::m2::cf) .
 
 Inductive steps {rmax:nat}
            : nat -> aenv -> qstate -> config -> R -> qstate -> Prop :=
