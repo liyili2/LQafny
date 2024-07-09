@@ -1,7 +1,9 @@
 package SyntaxJava.DisqDesign.Syntax.DisQ;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Membraneprocess implements Membrane {
     private String location;  // Identifier for the membrane's location
@@ -32,7 +34,11 @@ public class Membraneprocess implements Membrane {
         quantumstate1.addQubit(locus, qubit, location, prob);
   
     }
-    
+
+    public void printQS()
+    {
+        quantumstate1.printStateVector();
+    }
     public QuantumState1 getQuantumState()
     {
         return quantumstate1;
@@ -41,6 +47,7 @@ public class Membraneprocess implements Membrane {
     {
         return quantumstate.getnumberofqubits();
     }
+    
 
     public void receiveMessage(String message) {
         this.message = message;
@@ -51,7 +58,22 @@ public class Membraneprocess implements Membrane {
         return message;
     }
 
+     private void teleportQubit(Membraneprocess sourceMembrane, Membraneprocess targetMembrane, int qubitIndex) {
+        QuantumState1 sourceState = sourceMembrane.getQuantumState();
+        QuantumState1 targetState = targetMembrane.getQuantumState();
 
+        // Simulate teleportation by copying the state from source to target
+        Map<String, Pair<Complex, String>> newStateVector = new HashMap<>(targetState.getStateVector());
+        sourceState.getStateVector().forEach((state, pair) -> {
+            if (state.charAt(qubitIndex) == '1') {
+                String newState = state.substring(0, qubitIndex) + '1' + state.substring(qubitIndex + 1);
+                newStateVector.merge(newState, new Pair<>(pair.getKey(), targetMembrane.getLocation()), (oldVal, newVal) -> new Pair<>(oldVal.getKey().add(newVal.getKey()), newVal.getValue()));
+            }
+        });
+
+        targetState.setStateVector(newStateVector);
+        targetState.normalizeStateVector();
+    }
 
     public void addProcess(Process process) {
         processes.add(process);

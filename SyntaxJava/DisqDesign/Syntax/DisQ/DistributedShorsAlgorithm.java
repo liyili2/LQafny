@@ -6,7 +6,7 @@ public class DistributedShorsAlgorithm {
 
     public static void main(String[] args) {
         DistributedShorsAlgorithm algorithm = new DistributedShorsAlgorithm();
-        int N = 15 ; // Example with N = 15
+        int N = 15212 ; // Example with N = 15
         algorithm.factorize(N);
     }
 
@@ -90,13 +90,24 @@ public class DistributedShorsAlgorithm {
         // Initialize quantum state with |0000> in membraneL
         for (int i = 0; i < 4; i++) {
             membraneL.Addqubits(new Locus(i), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membraneL", 0.25);
+             membraneR.Addqubits(new Locus(i), new Qubit(new Complex(0, 0), new Complex(1, 0)), "membraneR", 0.25);
+            
         }
+
+        //PRINT
+        //membraneL.printQS();
+        //membraneR.printQS();
+
 
         // Apply Hadamard to all qubits in membraneL and teleport to membraneR
         for (int i = 0; i < 4; i++) {
+           // System.out.println("Hada");
             membraneL.getQuantumState().applyHadamardToQubit(i);
             teleportQubit(membraneL, membraneR, i);
         }
+        membraneL.printQS();
+        System.out.println("--\n");
+        membraneR.printQS();
 
         // Apply modular exponentiation in membraneR and teleport to membraneT
         applyModularExponentiation(membraneR.getQuantumState(), a, N);
@@ -118,11 +129,16 @@ public class DistributedShorsAlgorithm {
         QuantumState1 targetState = targetMembrane.getQuantumState();
 
         // Simulate teleportation by copying the state from source to target
+        Map<String, Pair<Complex, String>> newStateVector = new HashMap<>(targetState.getStateVector());
         sourceState.getStateVector().forEach((state, pair) -> {
             if (state.charAt(qubitIndex) == '1') {
-                targetState.addQubit(new Locus(qubitIndex), new Qubit(pair.getKey(), pair.getKey()), targetMembrane.getLocation(), sourceMembrane.getProcessProbability());
+                String newState = state.substring(0, qubitIndex) + '1' + state.substring(qubitIndex + 1);
+                newStateVector.merge(newState, new Pair<>(pair.getKey(), targetMembrane.getLocation()), (oldVal, newVal) -> new Pair<>(oldVal.getKey().add(newVal.getKey()), newVal.getValue()));
             }
         });
+
+        targetState.setStateVector(newStateVector);
+        targetState.normalizeStateVector();
     }
 
     private void applyModularExponentiation(QuantumState1 qs, int a, int N) {

@@ -20,7 +20,7 @@ public class ShorsAlgorithm {
 
         List<Integer> sortedFactors = new ArrayList<>(factors);
         Collections.sort(sortedFactors);
-        System.out.println("Found factors: " + sortedFactors);
+        System.out.println("Found factorsss: " + sortedFactors);
     }
 
     private void factorizeHelper(int N, Set<Integer> factors) {
@@ -84,12 +84,12 @@ public class ShorsAlgorithm {
         for (int i = 0; i < 4; i++) {  // Example with 4 qubits for clarity
             qs.addQubit(new Locus(i), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane1", 0.25);
         }
-
+           // qs.printStateVector();
         // Apply Hadamard to all qubits
         for (int i = 0; i < 4; i++) {
             qs.applyHadamardToQubit(i);
         }
-
+      //  qs.printStateVector();
         // Apply modular exponentiation
         applyModularExponentiation(qs, a, N);
 

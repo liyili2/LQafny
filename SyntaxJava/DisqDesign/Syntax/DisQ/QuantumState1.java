@@ -136,7 +136,21 @@ public class QuantumState1 {
         normalizeStateVector();
     }
 
-    public void measureQubit(int qubitIndex) {
+    public void teleportQubit(QuantumState1 targetState, int qubitIndex) {
+        // Simulate teleportation by copying the state from this quantum state to the target quantum state
+        Map<String, Pair<Complex, String>> newStateVector = new HashMap<>(targetState.getStateVector());
+        this.stateVectors.forEach((state, pair) -> {
+            if (state.charAt(qubitIndex) == '1') {
+                String newState = state.substring(0, qubitIndex) + '1' + state.substring(qubitIndex + 1);
+                newStateVector.merge(newState, new Pair<>(pair.getKey(), pair.getValue()), (oldVal, newVal) -> new Pair<>(oldVal.getKey().add(newVal.getKey()), newVal.getValue()));
+            }
+        });
+
+        targetState.setStateVector(newStateVector);
+        targetState.normalizeStateVector();
+    }
+
+    public String measureQubit(int qubitIndex) {
         Map<String, Pair<Complex, String>> newStateVector = new HashMap<>();
         double zeroProbability = stateVectors.entrySet().stream()
             .filter(entry -> entry.getKey().charAt(qubitIndex) == '0')
@@ -147,7 +161,7 @@ public class QuantumState1 {
 
         if (Math.abs(zeroProbability) < 1e-10 && Math.abs(oneProbability) < 1e-10) {
             System.out.println("Measurement error: probabilities are too close to zero.");
-            return;
+            return null;
         }
 
         probabilities.put("0", zeroProbability);
@@ -170,6 +184,7 @@ public class QuantumState1 {
         normalizeStateVector();
 
         System.out.println("Measurement result: " + measurementResult);
+        return measurementResult ; 
     }
 
     public void normalizeStateVector() {
