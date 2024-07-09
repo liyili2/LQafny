@@ -9,7 +9,7 @@ Require Import OQASM.
 Require Import BasicUtility.
 Require Import Classical_Prop.
 Require Import MathSpec.
-Require Import ConcurQafnySyntax.
+Require Import DisQSyntax.
 (**********************)
 (** Locus Definitions **)
 (**********************)
@@ -130,6 +130,7 @@ Inductive se_type : Type := THT (n:nat) (t:type_elem).
 *)
 
 Definition type_map := list (locus * se_type).
+Definition type_gmap := list (locus * se_type * var).
 
 Definition simple_tenv (t:type_map) := forall a b, In (a,b) t -> simple_ses a.
 
@@ -264,6 +265,12 @@ Inductive env_equiv : type_map -> type_map -> Prop :=
      | env_mut: forall l1 l2 x y v S, env_equiv ((l1++x::y::l2,v)::S) ((l1++y::x::l2,v)::S)
      | env_cong: forall x T1 T2, env_equiv T1 T2 -> env_equiv (x::T1) (x::T2).
 
+Inductive genv_equiv : type_gmap -> type_gmap -> Prop :=
+     | genv_id : forall S, genv_equiv S S
+     | genv_subtype :forall s v v' l S, subtype v v' -> genv_equiv ((s,v,l)::S) ((s,v',l)::S)
+     | genv_mut: forall l1 l2 l x y v S, genv_equiv ((l1++x::y::l2,v,l)::S) ((l1++y::x::l2,v,l)::S)
+     | genv_cong: forall x T1 T2, genv_equiv T1 T2 -> genv_equiv (x::T1) (x::T2).
+
 Lemma subtype_trans: forall v1 v2 v3, subtype v1 v2 -> subtype v2 v3 -> subtype v1 v3.
 Proof.
   intros. inv H. easy. inv H0. constructor. inv H0. constructor.
@@ -296,7 +303,7 @@ Inductive state_elem :=
                  | Hval (b:nat -> rz_val)
                  | Cval (m:nat) (b : nat -> C * rz_val).
 
-Definition qstate := list (locus * state_elem).
+Definition qstate := list (locus * state_elem * var).
 
 (*TODO: translate the qstate to SQIR state. *)
 
@@ -456,11 +463,11 @@ Inductive state_equiv {rmax:nat} : qstate -> qstate -> Prop :=
      | state_comm :forall a1 a2, state_equiv (a1++a2) (a2++a1) 
      | state_ses_assoc: forall s v S S', state_equiv S S' -> state_equiv ((s,v)::S) ((s,v)::S') *)
     (* | state_ses_eq: forall s s' v S, ses_eq s s' -> state_equiv ((s,v)::S) ((s',v)::S) *)
-     | state_sub: forall x v n u a, ses_len x = Some n -> @state_same rmax n v u 
-                       -> state_equiv ((x,v)::a) ((x,u)::a) 
-     | state_mut: forall l1 l2 n a n1 b n2 v u S, ses_len l1 = Some n -> ses_len ([a]) = Some n1 -> ses_len ([b]) = Some n2 ->
+     | state_sub: forall x v n u a lc, ses_len x = Some n -> @state_same rmax n v u 
+                       -> state_equiv ((x,v,lc)::a) ((x,u,lc)::a) 
+     | state_mut: forall l1 l2 n a n1 b n2 v u S lc, ses_len l1 = Some n -> ses_len ([a]) = Some n1 -> ses_len ([b]) = Some n2 ->
                      mut_state n n1 n2 v u ->
-                 state_equiv ((l1++(a::b::l2),v)::S) ((l1++(b::a::l2),u)::S)
+                 state_equiv ((l1++(a::b::l2),v,lc)::S) ((l1++(b::a::l2),u,lc)::S)
      | state_cong: forall S1 S2 x, @state_equiv rmax S1 S2 -> @state_equiv rmax (x::S1) (x::S2).
 (*
      | state_merge: forall x n v y u a vu, ses_len x = Some n -> 
@@ -590,6 +597,12 @@ Definition subst_cexp (e:cexp) (x:var) (n:nat) :=
                    | Recv c y => Recv c y
         end.
 
+Fixpoint subst_pexp (p:process) (x:var) (n:nat) := 
+   match p with PNil => PNil 
+              | AP a q => AP (subst_cexp a x n) (subst_pexp q x n) 
+              | PIf b q r => PIf b (subst_pexp q x n) (subst_pexp r x n)
+   end. 
+
 (*
 Lemma depth_subst_cexp_same: forall e x v, depth_cexp (subst_cexp e x v) = depth_cexp e.
 Proof.
@@ -692,23 +705,12 @@ Inductive up_types: type_map -> type_map -> type_map -> Prop :=
    | up_type_many: forall T T1 T2 T3 s t, up_type T s t T1 -> up_types T1 T2 T3 -> up_types T ((s,t)::T2) T3.
 
 
-Inductive find_state {rmax} : state -> locus -> option (locus * state_elem) -> Prop :=
-    | find_qstate_rule: forall M S S' x t, @state_equiv rmax S S' -> find_env S' x t -> find_state (M,S) x t.
-
-
 Inductive pick_mea : nat -> state_elem -> (R * nat) -> Prop :=
    pick_meas : forall n m b i r bl,
           0 <= i < m -> b i = (r,bl) -> pick_mea n (Cval m b) (Cmod r, a_nat2fb bl n).
 
 
 Definition update_cval (l:state) (a:var) (v: nat) := (AEnv.add a v (fst l),snd l).
-
-Inductive up_state {rmax:nat} : state -> locus -> state_elem -> state -> Prop :=
-    | up_state_rule : forall S M M' M'' l t, @state_equiv rmax M M' -> update_env M' l t M'' -> up_state (S,M) l t (S,M'').
-
-Inductive mask_state {rmax:nat}: locus -> nat -> state -> state -> Prop :=
-    mask_state_rule : forall l n m l1 t t' S Sa, @find_state rmax S l (Some (l++l1,t)) -> ses_len l = Some m ->
-              build_state_ch m n t = Some t' -> @up_state rmax S l t' Sa -> mask_state l n S Sa.
 
 Inductive type_state_elem_same : se_type -> state_elem -> Prop :=
       nor_state_same: forall p r, type_state_elem_same TNor (Nval p r)

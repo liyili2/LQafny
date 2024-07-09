@@ -27,11 +27,6 @@ Inductive ktypeName := QTN | QCN.
 
 Inductive qtype := EN.
 
-(*
-Definition meet_ktype (a1 a2: ktype) := 
-       match a1 with CT => (match a2 with CT => CT | _ => a2 end)
-                | QT n => match a2 with QT m => QT (n+m) | _ => QT n end end.
-*)
 Inductive bound := BVar (v:var) (n:nat) | BNum (n:nat).
 
 Definition simple_bound (b:bound) :=
@@ -47,7 +42,6 @@ Inductive aexp := BA (x:var) | Num (n:nat)
 Coercion BA : var >-> aexp.
 
 Coercion Num: nat >-> aexp.
-
 
 Notation "e0 [+] e1" := (APlus e0 e1) (at level 50) : cexp_scope.
 Notation "e0 [*] e1" := (AMult e0 e1) (at level 50) : cexp_scope.
@@ -97,31 +91,20 @@ Inductive type := Phi (b:nat) | Nor.
 
 Inductive single_u := RH (p:varia) | SQFT (x:var) | SRQFT (x:var).
 
-Inductive ctype := Chan | QVar. 
-
 Inductive cexp := CAppU (l: locus) (e: exp)
              | Send (c: var) (a: aexp)
              | Recv (c: var) (x: var)
-             | CMeas (x: var) (k: locus) 
-             (*| NewC (x: var) (t:ktypeName) (n: nat). *).
+             | CMeas (x: var) (k: locus).
 
 Inductive process := PNil
                 | AP (a: cexp) (p: process)
                 | PIf (b: cbexp) (p: process) (q: process).
 
-Definition tvar : Type := var * ctype.
 
-Inductive memb := Memb (l: var) (n: nat) (lp: list process)
-                 | LockMemb (l: var) (n: nat) (r: process) (lp: list process)
-                 | NewMemb (x: tvar) (n: nat) (m: memb).
-
-(*Definition memb : Type := var * nat * list process. location and nat of processes and list of process *)
+Inductive memb := Memb (l: var) (lp: list process)
+                 | LockMemb (l: var) (r: process) (lp: list process)
+                 | NewCMemb (x: var) (n: nat) (m: memb)
+                 | NewVMemb (x: var) (n: nat) (m: memb).
 
 Definition config : Type := list memb.
-
-(*
-Notation "p1 ; p2" := (CSeq p1 p2) (at level 50) : cexp_scope.
-
-Notation "p1 [<-] p2" := (CAppU p1 p2) (at level 50) : cexp_scope.
-*)
 

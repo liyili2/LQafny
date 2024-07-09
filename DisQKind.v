@@ -8,8 +8,8 @@ Require Import QPE.
 Require Import BasicUtility.
 Require Import Classical_Prop.
 Require Import MathSpec.
-Require Import ConcurQafnySyntax.
-Require Import ConcurLocusDef.
+Require Import DisQSyntax.
+Require Import DisQDef.
 (**********************)
 (** Locus Definitions **)
 (**********************)
@@ -358,48 +358,6 @@ Proof.
   right. apply freeVarsAExp_subst in H. easy.
   apply IHn in H. easy.
 Qed.
-(*
-Lemma freeVarsCExp_subst: forall n y x v, In y (freeVarsCExp (subst_cexp n x v))
-       -> In y (freeVarsCExp n).
-Proof.
-  induction n; intros; simpl in *; try easy.
-  bdestruct (x =? x0); subst.
-  simpl in *. apply in_app_iff in H.
-  destruct H. apply freeVarsMAExp_subst in H.
-  apply in_app_iff. left. easy.
-  apply in_app_iff. right. easy.
-  simpl in *. apply in_app_iff in H. destruct H.
-  apply freeVarsMAExp_subst in H. apply in_app_iff. left. easy.
-  apply in_app_iff. right.
-  bdestruct (y =? x); subst.
-  specialize (list_sub_not_same x (freeVarsCExp (subst_cexp n0 x0 v))) as X1. easy.
-  apply list_sub_not_in; try easy. eapply IHn. apply list_sub_not_in_r in H; try lia.
-  apply H. 
-  apply in_app_iff in H. apply in_app_iff. 
-  destruct H. apply IHn1 in H. auto. apply IHn2 in H. auto.
-  apply in_app_iff in H. apply in_app_iff.
-  destruct H. apply freeVarsBExp_subst in H. left. easy.
-  apply IHn in H. right. easy.
-  simpl in *.
-  apply in_app_iff in H. apply in_app_iff.
-  destruct H. apply IHn1 in H. auto.
-  apply IHn2 in H. auto.
-Qed.
-
-Lemma freeVars_cexp_in : forall e env x a v, 
-      ~ AEnv.In x env -> 
-        freeVarsNotCCExp env (CLet x (AE a) e) -> simp_aexp a = Some v ->
-             freeVarsNotCCExp env (subst_cexp e x v).
-Proof.
-  intros. unfold freeVarsNotCCExp in *; intros;simpl in *.
-  apply simp_aexp_empty in H1 as X1. rewrite X1 in H0. simpl in *.
-  bdestruct (x0 =? x); subst.
-  assert (AEnv.In x env). exists t. easy. easy.
-  apply H0 with (x0 := x0); try easy. simpl in *.
-  apply list_sub_not_in. lia.
-  apply freeVarsCExp_subst in H2. easy.
-Qed.
-*)
 
 Lemma type_cbexp_no_qt: forall b env t n lc, type_cbexp env b t -> t <> QT lc n.
 Proof.

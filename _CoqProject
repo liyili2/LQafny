@@ -40,5 +40,7 @@ LocusDef.v
 LocusKind.v
 LocusType.v
 LocusSem.v
-ConcurQafnySyntax.v
-
+DisQSyntax.v
+DisQDef.v
+DisQKind.v
+DisQSem.v
