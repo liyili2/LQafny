@@ -84,6 +84,25 @@ Inductive perm_envs: type_map -> type_map -> Prop :=
 
 Axiom perm_envs_sym: forall T1 T2, perm_envs T1 T2 -> perm_envs T2 T1.
 
+Fixpoint has_mea_aux (p: process) :=
+  match p with PNil => false
+             | (PIf _ p q) => orb (has_mea_aux p) (has_mea_aux q)
+             | (AP (CMeas _ _) p) => true
+             | (AP _ p) => has_mea_aux p
+  end.
+    
+Definition has_mea (lp:list process) := filter has_mea_aux lp.
+Definition has_no_mea (lp:list process) := filter (fun i => negb (has_mea_aux i)) lp.
+Fixpoint locus_with_mea_aux (p: process) :=
+  match p with PNil => nil
+           |(PIf _ p q) => locus_with_mea_aux p ++ locus_with_mea_aux q
+           |(AP (CMeas _ k) p) => k::(locus_with_mea_aux p)
+          |(AP _ p) => locus_with_mea_aux p end.
+Fixpoint locus_with_mea (lp:list process) :=
+  match lp with nil => nil
+           | p::ps => (locus_with_mea_aux p) ++ (locus_with_mea ps) end.
+Definition sep_type_map (tm: type_gmap) : (type_gmap * type_gmap).
+Admitted.
 
 (* process type *)
 Inductive p_locus_system {rmax:nat}
@@ -106,7 +125,8 @@ Inductive p_locus_system {rmax:nat}
                                p_locus_system q env T (AP (Send a v) Q) T'
     | recv_ses : forall q env a x T T' Q, AEnv.MapsTo a (CT) env ->
                                           p_locus_system q (AEnv.add x (CT) env) T Q T' ->
-                                          p_locus_system q env T (AP (Recv a x) Q) T'.
+                                          p_locus_system q env T (AP (Recv a x) Q) T'                 
+.
            
 (* memb type *)
 Inductive m_locus_system {rmax:nat}
@@ -120,7 +140,8 @@ Inductive m_locus_system {rmax:nat}
          m_locus_system q env T (NewVMemb x n m) T'
     | newc_ses :  forall q env x n m T T' l ls, loc_memb m = l ->
          m_locus_system q (AEnv.add x (QT l n) env) (([(x, BNum 0, BNum n)]++ls,CH,l)::T) m T' -> 
-         m_locus_system q env T (NewCMemb x n m) T'.
+         m_locus_system q env T (NewCMemb x n m) T'
+    | mem_sys : forall m nm s T1 T2 T T' l q env lp Ts, m = has_mea lp -> nm = has_no_mea lp -> T = [(T', s, l)] -> T1 = fst (sep_type_map T) -> T2 = snd (sep_type_map T) -> m_locus_system q env (T++Ts) (Memb l lp) (T1++T2++Ts).
 
 (* config type *)
 Inductive c_locus_system {rmax:nat}
