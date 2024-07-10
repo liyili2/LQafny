@@ -1,6 +1,6 @@
 # DisQ
 
-This repo contains the JAVA Implementation of DisQ , in which we define the syntax, semantics and DisQ intrepretor. 
+This repo contains the JAVA Implementation of DisQ , in which we define the syntax, semantics and DisQ intrepreter. 
 
 ## Overview
 
@@ -40,18 +40,18 @@ java SyntaxJava.DisqDesign.Syntax.DisQ.DisQSimulation
 
 ## Directory Contents
 
-*Action.java, ActionInterpreter.java, ActionVisitor.java - Base classes and interfaces for actions within the DisQ framework.
+* Action.java, ActionInterpreter.java, ActionVisitor.java - Base classes and interfaces for actions within the DisQ framework.
 
-*ClassicalChannel.java, ClassicalReceiveAction.java, ClassicalSendAction.java - Components handling classical communication channels and actions.
+* ClassicalChannel.java, ClassicalReceiveAction.java, ClassicalSendAction.java - Components handling classical communication channels and actions.
 
-*Complex.java - A class for handling complex numbers, likely used for quantum state calculations.
+* Complex.java - A class for handling complex numbers, likely used for quantum state calculations.
 
-*ControlledNot.java, Hadamard.java, PauliX.java, RotationZ.java - Quantum gate implementations.
+* ControlledNot.java, Hadamard.java, PauliX.java, RotationZ.java - Quantum gate implementations.
 
-*DisQInterpreter.java, DisQSimulation.java, DisqSimulator.java - Classes for interpreting and simulating DisQ programs.
+* DisQInterpreter.java, DisQSimulation.java, DisqSimulator.java - Classes for interpreting and simulating DisQ programs.
 
-*QuantumFourierTransform.java, QuantumMeasurementAction.java, QuantumOperationAction.java - Specific quantum operations, including QFT.
+* QuantumFourierTransform.java, QuantumMeasurementAction.java, QuantumOperationAction.java - Specific quantum operations, including QFT.
 
-*QuantumState.java, QuantumValue.java, Qubit.java - Core quantum computing constructs.
+* QuantumState.java, QuantumValue.java, Qubit.java - Core quantum computing constructs.
 
-*ShorsAlgorithm.java, DistributedShorsAlgorithm.java - Implementations of Shor's algorithm, both centralized and distributed.
+* ShorsAlgorithm.java, DistributedShorsAlgorithm.java - Implementations of Shor's algorithm, both centralized and distributed.
