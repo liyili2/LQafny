@@ -35,6 +35,7 @@ Definition simple_bound (b:bound) :=
 Definition range : Set := var * bound * bound.
 
 Definition locus : Type := list range.
+Definition glocus : Type := list (range * var). (*range * location*)
 
 Inductive aexp := BA (x:var) | Num (n:nat)
          | APlus (e1:aexp) (e2:aexp) | AMult (e1:aexp) (e2:aexp).
@@ -92,12 +93,14 @@ Inductive type := Phi (b:nat) | Nor.
 Inductive single_u := RH (p:varia) | SQFT (x:var) | SRQFT (x:var).
 
 Inductive cexp := CAppU (l: locus) (e: exp)
-             | Send (c: var) (a: aexp)
-             | Recv (c: var) (x: var)
              | CMeas (x: var) (k: locus).
+
+Inductive cdexp := Send (c: var) (a: aexp)
+             | Recv (c: var) (x: var).
 
 Inductive process := PNil
                 | AP (a: cexp) (p: process)
+                | DP (a:cdexp) (p:process)
                 | PIf (b: cbexp) (p: process) (q: process).
 
 
