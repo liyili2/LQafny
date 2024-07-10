@@ -1,16 +1,15 @@
-# LQafny
+# DisQ
 
-LQafny is a language for Qafny. It provides a Markov-decision-process-based small-step quantum operational semantics.
+This repo contains the coq definition of DisQ, in which we define the syntax, semantics and type system of it. 
 
 ## Overview
 
-Quantum programs are typically described as denotational semantics, e.g., unitary semantics and density matrix semantics, which provides a holistic view of all program probabilistic and nondeterministic behaviors. Locality, the ability of focusing on a single path of nondeterministic choices and a program piece, is essential in analyzing program behaviors, which the denotational semantics lack of.
-We develop the LQafny system, admitting small-step operational semantics for quantum programs, inspired by Markov decision process, which permits the locality property.
-We also show that the correctness of compiling LQafny to a quantum circuit, admitting denotational semantics.
+Quantum algorithms generally demand a large number of qubits, making implementation on a single quantum computer difficult due to limited resources. To solve this problem, we have developed a new system called DisQ.
+DisQ is a framework designed to facilitate the rewriting of quantum algorithms into their distributed versions. The core of  DisQ is distributed quantum programming language that integrates concepts from the Chemical Abstract Machine (CHAM) and Markov Decision Processes (MDP) to define the quantum concurrent and distributed behaviors.
 
 ## Setup
 
-To compile LQafny, you will need [Coq](https://coq.inria.fr/) and [QuickChick](https://github.com/QuickChick/QuickChick). We strongly recommend using [opam](https://opam.ocaml.org/doc/Install.html) to install Coq and `opam switch` to manage Coq versions. We currently support Coq **versions 8.13**.
+To compile DisQ, you will need [Coq](https://coq.inria.fr/) and [QuickChick](https://github.com/QuickChick/QuickChick). We strongly recommend using [opam](https://opam.ocaml.org/doc/Install.html) to install Coq and `opam switch` to manage Coq versions. We currently support Coq **versions 8.13**.
 
 Assuming you have opam installed (following the instructions in the link above), follow the steps below to set up your environment.
 ```
@@ -40,11 +39,10 @@ Run `make` in the top-level directory to compile our Coq proofs. externals direc
 
 ## Directory Contents
 
-* QafnySyntax.v - The LQafny language syntax.
-* LocusDef.v - Locus and state syntax and equation rules.
-* LocusType.v - The LQafny Type system.
-* LocusSem.v - The LQafny language semantics.
-* LocusTypeProof.v - The LQafny Type system Soundness Proof.
-* QafnySQIR.v - The LQafny to SQIR compilation.
+* DisQSyntax.v - The DisQ language syntax.
+* DisQDef.v - Locus and state syntax and equation rules.
+* DisQType.v - The DisQ Type system.
+* DisQSem.v - The DisQ language semantics.
+
 
 
