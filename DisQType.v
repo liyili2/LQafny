@@ -119,14 +119,15 @@ Inductive p_locus_system {rmax:nat}
     | meas_ses : forall env x y e n l T T' lc Q k, AEnv.MapsTo y (QT lc n) env -> ~ AEnv.In x env ->
                p_locus_system (AEnv.add x (CT) env) ((l,CH)::T) e T' -> k = [(y, BNum 0, BNum n)]
                -> p_locus_system env ((k++l,CH)::T) (AP (CMeas x k) Q)  T'
-    | op_ses : forall env t k l e T T' Q, p_locus_system env ((k++l,t)::T) Q T' ->
+    | op_ses : forall env t k l e T T' Q, oracle_prop env k e -> 
+                     p_locus_system env ((k++l,t)::T) Q T' ->
                          p_locus_system env ((k++l,t)::T) (AP (CAppU k e) Q) T'
     | qif_ses : forall env T T' b P Q, p_locus_system env T P T' -> p_locus_system env T Q T' ->
                                         p_locus_system env T (PIf b P Q) T'
     | send_ses : forall env a v T T' Q,  AEnv.MapsTo a (CT) env -> type_aexp env v (CT,nil) -> 
                                p_locus_system env T Q T' ->
                                p_locus_system env T (DP (Send a v) Q) T'
-    | recv_ses : forall env a x T T' Q, AEnv.MapsTo a (CT) env ->
+    | recv_ses : forall env a x T T' Q, AEnv.MapsTo a (CT) env -> 
                                           p_locus_system (AEnv.add x (CT) env) T Q T' ->
                                           p_locus_system env T (DP (Recv a x) Q) T'                 
 .
