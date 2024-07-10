@@ -48,10 +48,12 @@ java SyntaxJava.DisqDesign.Syntax.DisQ.DisQSimulation
 
 * ControlledNot.java, Hadamard.java, PauliX.java, RotationZ.java - Quantum gate implementations.
 
-* DisQInterpreter.java, DisQSimulation.java, DisqSimulator.java - Classes for interpreting and simulating DisQ programs.
+* DisQInterpreter.java - A class for DisQ Interpreter for showing step by step DisQ program behaviors.
+
+* DisQSimulation.java, DisqSimulator.java - Classes for the simulation checker of DisQ programs.
 
 * QuantumFourierTransform.java, QuantumMeasurementAction.java, QuantumOperationAction.java - Specific quantum operations, including QFT.
 
 * QuantumState.java, QuantumValue.java, Qubit.java - Core quantum computing constructs.
 
-* ShorsAlgorithm.java, DistributedShorsAlgorithm.java - Implementations of Shor's algorithm, both centralized and distributed.
+* ShorsAlgorithm.java, DistributedShorsAlgorithm.java - Implementations of Shor's algorithm, both centralized and distributed, and show their equivlance through the simulation checker.
