@@ -2,13 +2,26 @@ package SyntaxJava.DisqDesign.Syntax.DisQ;
 
 import java.util.*;
 
+/**
+ * Class for simulating and comparing quantum configurations using DisQ.
+ */
 public class DisQSimulation {
-    static class Configuration {
-        QuantumState1 phi;
-        List<String> gates; // list of gate operations
-        double probability;
-        String measurementResult;
 
+    /**
+     * Inner class representing a quantum configuration with state, gates, probability, and measurement results.
+     */
+    static class Configuration {
+        QuantumState1 phi;              // Quantum state
+        List<String> gates;             // List of gate operations
+        double probability;             // Probability
+        String measurementResult;       // Measurement result
+
+        /**
+         * Constructor to initialize a configuration with quantum state, gates, and probability.
+         * @param phi The quantum state.
+         * @param gates List of gate operations.
+         * @param probability Probability of the configuration.
+         */
         Configuration(QuantumState1 phi, List<String> gates, double probability) {
             this.phi = phi;
             this.gates = gates;
@@ -16,7 +29,10 @@ public class DisQSimulation {
             this.measurementResult = null; // Initialize measurement result as null
         }
 
-        // Copy constructor for creating a new Configuration based on an existing one
+        /**
+         * Copy constructor for creating a new Configuration based on an existing one.
+         * @param config Existing Configuration to copy.
+         */
         Configuration(Configuration config) {
             this.phi = new QuantumState1();
             this.phi.setStateVector(new HashMap<>(config.phi.getStateVector()));
@@ -25,7 +41,9 @@ public class DisQSimulation {
             this.measurementResult = config.measurementResult;
         }
 
-        // Apply the gates to the quantum state
+        /**
+         * Apply the gates to the quantum state.
+         */
         void applyGates() {
             for (String gate : gates) {
                 switch (gate) {
@@ -40,10 +58,19 @@ public class DisQSimulation {
             }
         }
 
+        /**
+         * Measure a specific qubit in the quantum state.
+         * @param qubitIndex Index of the qubit to measure.
+         */
         void measureQubit(int qubitIndex) {
             measurementResult = phi.measureQubit(qubitIndex); // Store measurement result
         }
 
+        /**
+         * Override equals method to compare Configuration objects.
+         * @param o Object to compare.
+         * @return True if objects are equal, false otherwise.
+         */
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -55,49 +82,68 @@ public class DisQSimulation {
                     Objects.equals(measurementResult, that.measurementResult); // Compare measurement results
         }
 
+        /**
+         * Override hashCode method.
+         * @return Hash code of the Configuration object.
+         */
         @Override
         public int hashCode() {
             return Objects.hash(phi, gates, probability, measurementResult);
         }
     }
 
+    /**
+     * Main method demonstrating quantum simulation and equivalence checking.
+     * @param args Command-line arguments (not used).
+     */
     public static void main(String[] args) {
-        // Example setup of configurations G and H
+        // Example setup of quantum states G and H
         QuantumState1 stateG = new QuantumState1();
         QuantumState1 stateH = new QuantumState1();
 
-        // Add initial qubits and gates for G and H
-        stateG.addQubit(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane", 0.5);
-        stateG.addQubit(new Locus(1), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane", 0.5);
-        stateG.addQubit(new Locus(2), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane", 0.5);
+        // Add initial qubits and gates for states G and H
+        stateG.addQubit(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane1", 0.5);
+        stateG.addQubit(new Locus(1), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane1", 0.5);
+        stateG.addQubit(new Locus(2), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane1", 0.5);
+        stateG.addQubit(new Locus(3), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane1", 0.5);
 
-        stateH.addQubit(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane", 0.5);
-        stateH.addQubit(new Locus(1), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane", 0.5);
-        stateH.addQubit(new Locus(2), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane", 0.5);
+        stateH.addQubit(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane2", 0.5);
+        stateH.addQubit(new Locus(1), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane2", 0.5);
+        stateH.addQubit(new Locus(2), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane2", 0.5);
+        stateH.addQubit(new Locus(3), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane2", 0.5);
 
         stateG.printStateVector();
         stateH.printStateVector();
 
+        // Create configurations for G and H
         Configuration configG = new Configuration(stateG, Arrays.asList("Hadamard", "CNot"), 0.5);
         Configuration configH = new Configuration(stateH, Arrays.asList("Hadamard", "CNot"), 0.5);
 
-        // Apply gates
+        // Apply gates to configurations G and H
         configG.applyGates();
         configH.applyGates();
 
-        // Measure qubits
+        // Measure qubits in configurations G and H
         configG.measureQubit(2);
         configH.measureQubit(2);
 
+        // Create sets of configurations G and H for equivalence checking
         Set<Configuration> setG = new HashSet<>(Collections.singleton(configG));
         Set<Configuration> setH = new HashSet<>(Collections.singleton(configH));
 
+        // Check if configurations G and H are not simulation equivalent
         boolean result = notSim(setG, setH);
 
-        System.out.println("Simulation result: " + result);
+        // Print simulation result
+        System.out.println("Not Simulation result: " + result);
     }
 
-    // Function to check simulation equivalence
+    /**
+     * Function to check if sets of configurations G and H are not simulation equivalent.
+     * @param G Set of configurations G.
+     * @param H Set of configurations H.
+     * @return True if G and H are not simulation equivalent, false otherwise.
+     */
     private static boolean notSim(Set<Configuration> G, Set<Configuration> H) {
         for (Configuration configG : G) {
             boolean matchFound = false;
@@ -114,6 +160,12 @@ public class DisQSimulation {
         return false;
     }
 
+    /**
+     * Helper function to compare transitions between two configurations.
+     * @param g Configuration G.
+     * @param h Configuration H.
+     * @return True if transitions between G and H match, false otherwise.
+     */
     private static boolean transitionsMatch(Configuration g, Configuration h) {
         if (!g.gates.equals(h.gates) || Double.compare(g.probability, h.probability) != 0) {
             return false;
@@ -130,7 +182,7 @@ public class DisQSimulation {
             Pair<Complex, String> pairG = entryG.getValue();
             Pair<Complex, String> pairH = stateVectorH.get(entryG.getKey());
 
-            if (pairH == null || !compareComplex(pairG.getKey(), pairH.getKey()) || !pairG.getValue().equals(pairH.getValue())) {
+            if (pairH == null || !compareComplex(pairG.getKey(), pairH.getKey()) ) {
                 return false;
             }
         }
@@ -138,6 +190,12 @@ public class DisQSimulation {
         return Objects.equals(g.measurementResult, h.measurementResult); // Compare measurement results
     }
 
+    /**
+     * Helper function to compare complex numbers.
+     * @param a Complex number A.
+     * @param b Complex number B.
+     * @return True if complex numbers A and B are equal, false otherwise.
+     */
     private static boolean compareComplex(Complex a, Complex b) {
         return Double.compare(a.getReal(), b.getReal()) == 0;
     }

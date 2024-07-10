@@ -1,113 +1,67 @@
 package SyntaxJava.DisqDesign.Syntax.DisQ;
 
+/**
+ * Represents the quantum state of a multi-qubit system with complex amplitudes.
+ */
 public class QuantumValue {
-    Complex[] amplitudes;
+    private Complex[] amplitudes; // Array to store complex amplitudes of quantum states
 
-    // Constructor for initializing a multi-qubit system with zero amplitudes
+    /**
+     * Constructor for initializing a quantum state with zero amplitudes for a given number of qubits.
+     * @param numQubits The number of qubits in the quantum state.
+     */
     public QuantumValue(int numQubits) {
-        this.amplitudes = new Complex[1 << numQubits];  // 2^numQubits states
+        this.amplitudes = new Complex[1 << numQubits]; // Allocate space for 2^numQubits states
         for (int i = 0; i < amplitudes.length; i++) {
-            amplitudes[i] = Complex.ZERO;
+            amplitudes[i] = Complex.ZERO; // Initialize all amplitudes to zero
         }
     }
 
-    // Constructor to directly initialize amplitudes
+    /**
+     * Constructor for initializing a quantum state with provided complex amplitudes.
+     * @param amplitudes The array of complex amplitudes representing the quantum state.
+     */
     public QuantumValue(Complex[] amplitudes) {
-        this.amplitudes = amplitudes;
+        this.amplitudes = amplitudes; // Initialize with provided amplitudes
     }
 
+    /**
+     * Retrieves the array of complex amplitudes representing the quantum state.
+     * @return The array of complex amplitudes.
+     */
     public Complex[] getAmplitudes() {
         return amplitudes;
     }
 
+    /**
+     * Retrieves the complex amplitude at the specified index.
+     * @param index The index of the amplitude to retrieve.
+     * @return The complex amplitude at the specified index.
+     */
     public Complex getAmplitude(int index) {
         return amplitudes[index];
     }
 
+    /**
+     * Sets the complex amplitude at the specified index.
+     * @param index The index of the amplitude to set.
+     * @param amplitude The complex amplitude to set.
+     */
     public void setAmplitude(int index, Complex amplitude) {
         amplitudes[index] = amplitude;
     }
 
+    /**
+     * Normalizes the quantum state by dividing each amplitude by the square root of the sum of their squared magnitudes.
+     */
     public void normalize() {
         double sum = 0.0;
         for (Complex amp : amplitudes) {
-            sum += amp.abssqr();
+            sum += amp.abssqr(); // Calculate sum of squared magnitudes
         }
-        double normalizationFactor = 1 / Math.sqrt(sum);
+        double normalizationFactor = 1 / Math.sqrt(sum); // Calculate normalization factor
         for (int i = 0; i < amplitudes.length; i++) {
-            amplitudes[i] = amplitudes[i].mul(normalizationFactor);
+            amplitudes[i] = amplitudes[i].mul(normalizationFactor); // Normalize each amplitude
         }
     }
 }
-
-
-/**class QuantumValue {
-    private Complex[] amplitudes; // Array of complex amplitudes for basis states |0>, |1>, |2>, ...
-
-    // Constructor for a multi-state system
-    public QuantumValue(Complex[] amplitudes) {
-        this.amplitudes = amplitudes;
-    }
-
-    // Return the probability amplitude for a given basis state 'c'
-    public Complex getAmplitude(int c) {
-        if (c >= 0 && c < amplitudes.length) {
-            return amplitudes[c];
-        } else {
-            return Complex.ZERO; // Default to zero if out of bounds
-        }
-    }
-
-    // Calculate the magnitude squared of the probability amplitude for a given basis state 'c'
-    public double getMagnitudeSquared(int c) {
-        Complex amplitude = getAmplitude(c);
-        return amplitude.r * amplitude.r + amplitude.i * amplitude.i;
-    }
-
-    // Normalize the amplitudes
-    public void normalize() {
-        double sum = 0.0;
-        for (Complex amplitude : amplitudes) {
-            sum += amplitude.r * amplitude.r + amplitude.i * amplitude.i;
-        }
-        double normalizationFactor = 1 / Math.sqrt(sum);
-        for (int i = 0; i < amplitudes.length; i++) {
-            amplitudes[i] = amplitudes[i].mul(normalizationFactor);
-        }
-    }
-
-    // Collapse the quantum state to the measured outcome
-    public void collapse(int measurementResult) {
-        if (measurementResult >= 0 && measurementResult < amplitudes.length) {
-            for (int i = 0; i < amplitudes.length; i++) {
-                amplitudes[i] = Complex.ZERO;
-            }
-            amplitudes[measurementResult] = Complex.ONE;
-        }
-    }
-    
-    // Check if the QuantumValue has the basis state 'c' as a prefix
-    public boolean hasPrefix(int c) {
-        // This method requires a specific interpretation of 'prefix'.
-        // For a binary representation, 'prefix' would typically be used with bitstrings.
-        // Here, we'll interpret it as the 'c'-th basis state having a non-zero amplitude.
-        return !getAmplitude(c).equals(Complex.ZERO);
-    }
-
-    // Get the basis value representing the most probable state
-    public int getBasisValue() {
-        int basisState = 0;
-        double maxMagnitudeSq = 0.0;
-        for (int i = 0; i < amplitudes.length; i++) {
-            double magnitudeSq = getMagnitudeSquared(i);
-            if (magnitudeSq > maxMagnitudeSq) {
-                maxMagnitudeSq = magnitudeSq;
-                basisState = i;
-            }
-        }
-        return basisState;
-    }
-
-    // Additional methods would go here
-} **/
-

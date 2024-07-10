@@ -11,6 +11,7 @@ public class QuantumSim {
     
        QuantumState1 qs1 = new QuantumState1();
        QuantumState1 qs2 = new QuantumState1();
+      // QuantumState1 qs3 = qs2 ;
 
         //Adding qubits to the first membrane
         qs1.addQubit(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane1", 0.25);
@@ -19,24 +20,34 @@ public class QuantumSim {
       //  qs1.addQubit(new Locus(3), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane1", 0.25);
 
        // Adding qubits to the second membrane
-        qs2.addQubit(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane2", 0.25);
-        qs2.addQubit(new Locus(1), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane2", 0.25);
-        qs2.addQubit(new Locus(2), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane2", 0.25);
-        qs2.addQubit(new Locus(3), new Qubit(new Complex(0, 0), new Complex(1, 0)), "membrane2", 0.25);
+        qs2.addQubit(new Locus(0), new Qubit(new Complex(0, 0), new Complex(1, 0)), "membrane2", 0.25);
+       // qs2.addQubit(new Locus(1), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane2", 0.25);
+        //qs2.addQubit(new Locus(2), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane2", 0.25);
+      //  qs2.addQubit(new Locus(3), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane2", 0.25);
 
-        //Print initial state vectors
-        System.out.println("Initial State Vector for membrane1:");
-        qs1.printStateVector();
-      //  qs1.applyHadamardToQubit(0);
-       // qs1.printStateVector();
-        qs1.applyHadamardToQubit(1);
-       // qs1.printStateVector();
-      //  qs1.applyHadamardToQubit(2);
-        qs1.printStateVector();
+        QuantumState1 qs3 = qs2 ;
+        System.out.println("cc\n");
+        qs3.printStateVector();
+        System.out.println("123cc\n");
+        
+        qs3.applyQFT();
+        System.out.println("princc\n");
+        qs3.printStateVector();
 
-        qs1.measureQubit(0);
+      //   //Print initial state vectors
+      //   System.out.println("Initial State Vector for membrane1:");
+      //   qs1.printStateVector();
+      //   System.out.println("cc\n");
+      // //  qs1.applyHadamardToQubit(0);
+      //  // qs1.printStateVector();
+      //   qs1.applyHadamardToQubit(1);
+      //  // qs1.printStateVector();
+      // //  qs1.applyHadamardToQubit(2);
+      //   qs1.printStateVector();
 
-        qs1.printStateVector();
+      //   qs1.measureQubit(0);
+
+      //   qs1.printStateVector();
 
         // System.out.println("\nInitial State Vector for membrane2:");
         // qs2.printStateVector();

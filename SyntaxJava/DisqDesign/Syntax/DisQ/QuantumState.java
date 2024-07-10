@@ -184,13 +184,7 @@ public class QuantumState {
         this.quantumValues.add(qv);
     }
 
-    public void printState() {
-        for (QuantumValue qv : quantumValues) {
-            for (int i = 0; i < qv.amplitudes.length; i++) {
-                System.out.println("State |" + Integer.toBinaryString(i) + "> Amplitude: " + qv.getAmplitude(i));
-            }
-        }
-    }
+   
     // Example method to print all qubits
     public void printQubits() {
         for (Pair<Locus, Qubit> pair : qubits) {
