@@ -216,40 +216,59 @@ Fixpoint loc_memb (m: memb) :=
 Definition alltrue := fun (_:nat) => true.
 (* single process semantics. *)
 Inductive p_step {rmax:nat}
-  : aenv -> qstate -> process -> R -> qstate -> process -> Prop :=
-  | self_pstep : forall aenv s Q, p_step aenv s Q (1:R) s Q  
-  | if_pstep_t : forall aenv s b P Q, simp_cbexp b = Some true -> p_step aenv s (PIf b P Q) (1:R) s P
-  | if_pstep_f : forall aenv s b P Q, simp_cbexp b = Some false -> p_step aenv s (PIf b P Q) (1:R) s Q
+  : aenv -> qstate -> process -> (R * option nat) -> qstate -> process -> Prop :=
+  | self_pstep : forall aenv s, p_step aenv s PNil (1%R, None) s PNil  
+  | if_pstep_t : forall aenv s b P Q, simp_cbexp b = Some true -> p_step aenv s (PIf b P Q) (1%R, None) s P
+  | if_pstep_f : forall aenv s b P Q, simp_cbexp b = Some false -> p_step aenv s (PIf b P Q) (1%R, None) s Q
   | op_pstep   : forall aenv s a l m b e ba Q, eval_ch rmax aenv a m b e = Some ba ->
-                   p_step aenv ((a++l, Cval m b)::s) (AP (CAppU a e) Q) (1:R) ((a++l, Cval m ba)::s) Q
+                   p_step aenv ((a++l, Cval m b)::s) (AP (CAppU a e) Q) (1%R, None) ((a++l, Cval m ba)::s) Q
   | mea_pstep   : forall aenv s l x a n v r va va' lc Q k, AEnv.MapsTo a (QT lc n) aenv -> @pick_mea n va (r,v) ->
                                                    k = [(a, BNum 0, BNum n)] -> build_state_ch n v va = Some va' ->
-                 p_step aenv (((a,BNum 0, BNum n)::l, va)::s) (AP (CMeas x k) Q) r ((l, va')::s) (subst_pexp Q x v).
+                 p_step aenv (((a,BNum 0, BNum n)::l, va)::s) (AP (CMeas x k) Q) (r, Some v) ((l, va')::s) (subst_pexp Q x v).
 
-(* single memb semantics *)
-Inductive m_step {rmax:nat}
-  : aenv -> qstate -> memb -> R -> var -> qstate -> memb -> Prop :=
-  | end_step : forall aenv s l,  m_step aenv s (Memb l []) (1:R) l s (Memb l [])
-  | rev_step : forall aenv s m l P lp, m = (LockMemb l P lp) -> m_step aenv s m (1:R) l s (Memb l (P::lp)) 
-  | move_step : forall aenv s a l lp P P' r n n' v va lc fc, n = (length lp)+1 -> ses_len a = Some n' -> @p_step rmax aenv [(a,v)] P r [(a,va)] P' -> mut_state 0 1 n' va fc ->  m_step aenv ((a++l, v)::s) (Memb lc (P::lp)) ((INR 1)/r) lc ((a++l, fc)::s) (Memb lc (P'::lp))
-  | newvar_step : forall aenv s m n x v l lc,  lc = loc_memb m ->
-                  m_step aenv ((l, v)::s) (NewVMemb x n m) (1:R) lc ((l++[(x, BNum 0, BNum n)], Cval n (fun _ => (C0,allfalse)))::s) m.
+Fixpoint are_0 (l:list process) :=
+   match l with [] => True
+              | (PNil::xl) => are_0 xl
+              | _::_ => False
+   end.
 
-(* multi-memb semantics *)
+Fixpoint same_l (l:glocus) (lv:var) :=
+  match l with [] => True
+             | ((x,a,b),r)::xl => if r =? lv then same_l xl lv else False
+  end.
+
+Fixpoint cut_l (l:glocus) :=
+  match l with [] => [] | (((x,a,b),r)::xl) => (x,a,b)::(cut_l xl) end.
+
+(* memb semantics *)
 Definition inv_sqrt2 : R := / sqrt 2.
 Definition cinv_sqrt2: C := inv_sqrt2%C.
 
-Inductive cf_step {rmax:nat}
-  : aenv -> qstate -> config -> R -> list var -> qstate -> config -> Prop :=
-  | send_rev_sem : forall aenv s x y l1 l2 n m1 m2 cf a P Q,
-                   simp_aexp a = Some n -> cf_step aenv s ((LockMemb l1 (AP (Send x a) P) m1)::(LockMemb l2 (AP (Recv x y) Q) m2)::cf) (1:R) (l1::[l2]) s ((Memb l1 (P::m1))::(Memb l2 (Q::m2))::cf)
-  | newchan_step : forall aenv l l' v v' lc1 lc2 c n m1 m2 cf s,
+Inductive m_step {rmax:nat}
+  : aenv -> gqstate -> config -> R * option nat -> list var -> gqstate -> config -> Prop :=
+  | end_step : forall aenv s l Q, are_0 Q -> m_step aenv s ([Memb l Q]) (1%R, None) [l] s ([Memb l Q])
+  | mem_step : forall aenv s l P Q, m_step aenv s ([Memb l (P::Q)]) (Rdiv 1%R (INR (length (P::Q))), None) [l] s ([LockMemb l P Q])
+  | rev_step : forall aenv s m l P lp, m = ([LockMemb l P lp]) -> m_step aenv s m (1%R, None) [l] s ([Memb l (P::lp)])
+  | send_rev_sem : forall aenv s x y l1 l2 n m1 m2 cf a P Q, simp_aexp a = Some n -> 
+             m_step aenv s ((LockMemb l1 (DP (Send x a) P) m1)::(LockMemb l2 (DP (Recv x y) Q) m2)::cf) 
+             (1%R, None) (l1::[l2]) s ((Memb l1 (P::m1))::(Memb l2 (Q::m2))::cf)
+  | move_step : forall aenv s a l lp P P' r n n' m v va lv lc fc fca, n = (length lp)+1 -> 
+               gses_len a = Some n' -> gses_len l = Some m -> same_l a lc -> mut_state 0 n' m v fc
+               -> @p_step rmax aenv [(cut_l a,fc)] P (r,lv) [(cut_l a,va)] P' -> mut_state 0 m n' va fca ->
+            m_step aenv ((a++l, v)::s) ([Memb lc (P::lp)]) ((r / INR n)%R, lv) [lc] ((a++l, fc)::s) ([Memb lc (P'::lp)])
+  | newvar_step : forall aenv s m n x lc,  lc = loc_memb m ->
+                  m_step aenv s ([NewVMemb x n m]) (1%R, None) [lc] (([((x, BNum 0, BNum n),lc)], Cval 1 (fun _ => (C0,allfalse)))::s) [m]
+  | newchan_step : forall aenv lc1 lc2 c n m1 m2 cf s,
                    loc_memb m1 = lc1 -> loc_memb m2 = lc2 ->
-                   cf_step aenv ((l,v)::(l',v')::s) ((NewCMemb c n m1)::(NewCMemb c n m2)::cf) (1:R) (lc1::[lc2]) ((l++[(c,BNum 0, BNum n)], Cval n (fun i => if i =? 0 then (cinv_sqrt2,allfalse) else (cinv_sqrt2,alltrue)))::(l'++[(c,BNum 0,BNum n)], Cval n (fun i => if i =? 0 then (cinv_sqrt2,allfalse) else (cinv_sqrt2,alltrue)))::s) (m1::m2::cf) .
+                   m_step aenv s ((NewCMemb c n m1)::(NewCMemb c n m2)::cf) (1%R, None) (lc1::[lc2]) 
+                   ((([((c,BNum 0, BNum n),lc1)]++[((c,BNum 0,BNum n),lc2)]), 
+                        Cval (2^n) (fun i => if i =? 0 then (cinv_sqrt2,allfalse) else (cinv_sqrt2,alltrue)))::s) (m1::m2::cf).
+
+(* multi-memb semantics 
 
 Inductive steps {rmax:nat}
            : nat -> aenv -> qstate -> config -> R -> qstate -> Prop :=
    steps_0 : forall env s, steps 0 env s [] (1:R) s
  | steps_n : forall n env s e r s' e' l, @cf_step rmax env s e r l s' e'
                  -> steps n env s' e' r s -> steps (S n) env s e r s.
-
+*)

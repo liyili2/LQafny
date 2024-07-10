@@ -91,9 +91,11 @@ Inductive fv_su : aenv -> single_u -> locus -> Prop :=
 
 Inductive fv_cexp : aenv -> cexp -> locus -> Prop :=
   | cmeas : forall env x l, fv_cexp env (CMeas x l) l
-  | cappu_fa : forall env l e, fv_cexp env (CAppU l e) l
-  | csend_fa : forall env c a, fv_cexp env (Send c a) nil
-  | crecv_fa : forall env c a,  fv_cexp env (Recv c a) nil.                                    
+  | cappu_fa : forall env l e, fv_cexp env (CAppU l e) l.
+
+Inductive fv_cdexp : aenv -> cdexp -> locus -> Prop :=
+  | csend_fa : forall env c a, fv_cdexp env (Send c a) nil
+  | crecv_fa : forall env c a,  fv_cdexp env (Recv c a) nil.                                    
 
 Fixpoint freeVarsAExp (a:aexp) := match a with BA x => ([x]) | Num n => nil
             | APlus e1 e2 => (freeVarsAExp e1)++(freeVarsAExp e2)
