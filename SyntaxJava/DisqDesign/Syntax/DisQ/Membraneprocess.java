@@ -14,7 +14,6 @@ public class Membraneprocess implements Membrane {
     private String location;  // Identifier for the membrane's location
     private List<Process> processes;  // List of processes within this membrane
     private Process airlockedProcess;  // Represents an airlocked process if any
-    private QuantumState quantumstate;  // Quantum state representation (not used)
     private QuantumState1 quantumstate1;  // Quantum state representation using QuantumState1
     private String message;  // Message received by the membrane
 
@@ -24,7 +23,7 @@ public class Membraneprocess implements Membrane {
     public Membraneprocess() {
         this.processes = new ArrayList<>();
         this.airlockedProcess = null;
-        this.quantumstate = new QuantumState();  // Not used in current implementation
+        
         this.quantumstate1 = new QuantumState1();
     }
 
@@ -36,7 +35,7 @@ public class Membraneprocess implements Membrane {
         this.location = location;
         this.processes = new ArrayList<>();
         this.airlockedProcess = null;
-        this.quantumstate = new QuantumState();  // Not used in current implementation
+        
         this.quantumstate1 = new QuantumState1();
     }
 
@@ -66,13 +65,11 @@ public class Membraneprocess implements Membrane {
         return quantumstate1;
     }
 
-    /**
-     * Retrieves the number of qubits in the quantum state (not used in current implementation).
-     * @return The number of qubits.
-     */
-    public int getnumberofqubits() {
-        return quantumstate.getnumberofqubits();  // Not implemented in current QuantumState
+    public int getnumberofqubits()
+    {
+        return quantumstate1.getnumberofqubits();
     }
+
 
     /**
      * Receives a message and stores it within the membrane.

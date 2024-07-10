@@ -419,4 +419,9 @@ public class QuantumState1 {
     public void setStateVector(Map<String, Pair<Complex, String>> stateVectors) {
         this.stateVectors = stateVectors;
     }
+
+    public int getnumberofqubits()
+    {
+        return stateVectors.size();
+    }
 }
