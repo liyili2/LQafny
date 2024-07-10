@@ -137,8 +137,6 @@ Fixpoint grab_bool_elem (f:nat -> C * rz_val) (m size:nat) :=
    end.
 Definition grab_bool f m size := grab_bool_elem f m (size - 1).
 
-Axiom grab_bool_gt : forall f m size, m > 0 -> size > 0 -> fst (grab_bool f m size) > 0.
-
 
 Definition get_core_bexp (b:bexp) := match b with (BEq x y z a)
             => Some (BTest z a) | BLt x y z a => Some (BTest z a)  | _ => None end.
@@ -173,15 +171,6 @@ Inductive find_basis_elems (n n':nat) (f:rz_val) (fc:nat -> C*rz_val):
          -> find_basis_elems n n' f fc (S i) (S m) (update acc m (fc i))
  | find_basis_many_2: forall i m acc, find_basis_elems n n' f fc i m acc -> 
             f <> cut_n (lshift_fun (snd (fc i)) n') n -> find_basis_elems n n' f fc (S i) m acc.
-
-(* The proof has been given in VQO based on the fact of quantum states. *)
-Axiom find_basis_elems_same: forall m1 n n1 f r r' mv fv,
-      (forall j : nat,
-      j < m1 ->
-      fst (r j) = fst (r' j) /\
-      (forall i : nat, i < n1 -> snd (r j) i = snd (r' j) i)) ->
-      find_basis_elems n n1 f r m1 mv fv ->
-      (exists fv', find_basis_elems n n1 f r' m1 mv fv' /\ match_value n1 (Cval mv fv) (Cval mv fv')).
 
 Inductive assem_elem : nat -> nat -> rz_val -> (nat-> C * rz_val) -> list nat -> Prop :=
     assem_elem_0 : forall size c f, assem_elem 0 size c f nil
