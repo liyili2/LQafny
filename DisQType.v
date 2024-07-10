@@ -109,26 +109,26 @@ Admitted.
 
 (* process type *)
 Inductive p_locus_system {rmax:nat}
-           : mode -> aenv -> type_map -> process -> type_map -> Prop :=
+           : aenv -> type_map -> process -> type_map -> Prop :=
 
-    | eq_ses : forall q env s T T' T1,
-         p_locus_system q env T s T' -> env_equiv T' T1 -> p_locus_system q env T s T1
-    | sub_ses: forall q env s T T' T1,
-        p_locus_system q env T s T' -> p_locus_system q env (T++T1) s (T'++T1)
-    | skip_ses : forall q env, p_locus_system q env nil (PNil) nil
+    | eq_ses : forall env s T T' T1,
+         p_locus_system env T s T' -> env_equiv T' T1 -> p_locus_system env T s T1
+    | sub_ses: forall env s T T' T1,
+        p_locus_system env T s T' -> p_locus_system env (T++T1) s (T'++T1)
+    | skip_ses : forall env, p_locus_system env nil (PNil) nil
     | meas_ses : forall env x y e n l T T' lc Q k, AEnv.MapsTo y (QT lc n) env -> ~ AEnv.In x env ->
-               p_locus_system CM (AEnv.add x (CT) env) ((l,CH)::T) e T' -> k = [(y, BNum 0, BNum n)]
-               -> p_locus_system CM env ((k++l,CH)::T) (AP (CMeas x k) Q)  T'
-    | op_ses : forall env t k l e T T' Q q, p_locus_system q env ((k++l,t)::T) Q T' ->
-                         p_locus_system q env ((k++l,t)::T) (AP (CAppU k e) Q) T'
-    | qif_ses : forall q env T T' b P Q, p_locus_system q env T P T' -> p_locus_system q env T Q T' ->
-                                        p_locus_system q env T (PIf b P Q) T'
-    | send_ses : forall q env a v T T' Q,  AEnv.MapsTo a (CT) env -> type_aexp env v (CT,nil) -> 
-                               p_locus_system q env T Q T' ->
-                               p_locus_system q env T (AP (Send a v) Q) T'
-    | recv_ses : forall q env a x T T' Q, AEnv.MapsTo a (CT) env ->
-                                          p_locus_system q (AEnv.add x (CT) env) T Q T' ->
-                                          p_locus_system q env T (AP (Recv a x) Q) T'                 
+               p_locus_system (AEnv.add x (CT) env) ((l,CH)::T) e T' -> k = [(y, BNum 0, BNum n)]
+               -> p_locus_system env ((k++l,CH)::T) (AP (CMeas x k) Q)  T'
+    | op_ses : forall env t k l e T T' Q, p_locus_system env ((k++l,t)::T) Q T' ->
+                         p_locus_system env ((k++l,t)::T) (AP (CAppU k e) Q) T'
+    | qif_ses : forall env T T' b P Q, p_locus_system env T P T' -> p_locus_system env T Q T' ->
+                                        p_locus_system env T (PIf b P Q) T'
+    | send_ses : forall env a v T T' Q,  AEnv.MapsTo a (CT) env -> type_aexp env v (CT,nil) -> 
+                               p_locus_system env T Q T' ->
+                               p_locus_system env T (DP (Send a v) Q) T'
+    | recv_ses : forall env a x T T' Q, AEnv.MapsTo a (CT) env ->
+                                          p_locus_system (AEnv.add x (CT) env) T Q T' ->
+                                          p_locus_system env T (DP (Recv a x) Q) T'                 
 .
            
 (* memb type *)
