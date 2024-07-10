@@ -1,6 +1,6 @@
 # DisQ
 
-This repo contains the JAVA definition of DisQ, in which we define the syntax, semantics and DisQ intrepretor. 
+This repo contains the JAVA Implementation of DisQ , in which we define the syntax, semantics and DisQ intrepretor. 
 
 ## Overview
 
