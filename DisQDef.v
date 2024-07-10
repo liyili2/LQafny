@@ -148,6 +148,20 @@ Fixpoint get_core_ses (l:locus) :=
 
 Definition ses_len (l:locus) := match get_core_ses l with None => None | Some xl => Some (ses_len_aux xl) end.
 
+Fixpoint gses_len_aux (l:list ((var * nat * nat) * var)) :=
+   match l with nil => 0 | ((x,l,h),a)::xl => (h - l) + gses_len_aux xl end. 
+
+Fixpoint gget_core_ses (l:glocus) :=
+   match l with [] => Some nil
+           | ((x,BNum n, BNum m),l)::al => 
+      match gget_core_ses al with None => None
+                           | Some xl => Some (((x,n,m),l)::xl)
+      end
+            | _ => None
+   end.
+
+Definition gses_len (l:glocus) := match gget_core_ses l with None => None | Some xl => Some (gses_len_aux xl) end.
+
 Axiom app_length_same : forall l1 l2 l3 l4 n, ses_len l1 = Some n 
    -> ses_len l3 = Some n -> l1++l2 = l3 ++ l4 -> l1 = l3 /\ l2 = l4.
 
@@ -594,6 +608,10 @@ Definition subst_mexp (e:maexp) (x:var) (n:nat) :=
 Definition subst_cexp (e:cexp) (x:var) (n:nat) :=
         match e with  CMeas y k => CMeas y k
                    | CAppU l e' => CAppU l (subst_exp e' x n)
+        end.
+
+Definition subst_cdexp (e:cdexp) (x:var) (n:nat) :=
+        match e with
                    | Send c a => Send c (subst_aexp a x n)
                    | Recv c y => Recv c y
         end.
@@ -601,6 +619,7 @@ Definition subst_cexp (e:cexp) (x:var) (n:nat) :=
 Fixpoint subst_pexp (p:process) (x:var) (n:nat) := 
    match p with PNil => PNil 
               | AP a q => AP (subst_cexp a x n) (subst_pexp q x n) 
+              | DP a q => DP (subst_cdexp a x n) (subst_pexp q x n) 
               | PIf b q r => PIf b (subst_pexp q x n) (subst_pexp r x n)
    end. 
 

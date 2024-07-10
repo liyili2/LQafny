@@ -141,7 +141,8 @@ Inductive m_locus_system {rmax:nat}
     | newc_ses :  forall q env x n m T T' l ls, loc_memb m = l ->
          m_locus_system q (AEnv.add x (QT l n) env) (([(x, BNum 0, BNum n)]++ls,CH,l)::T) m T' -> 
          m_locus_system q env T (NewCMemb x n m) T'
-    | mem_sys : forall m nm s T1 T2 T T' l q env lp Ts, m = has_mea lp -> nm = has_no_mea lp -> T = [(T', s, l)] -> T1 = fst (sep_type_map T) -> T2 = snd (sep_type_map T) -> m_locus_system q env (T++Ts) (Memb l lp) (T1++T2++Ts).
+    | mem_sys : forall m nm s T1 T2 T T' l q env lp Ts, m = has_mea lp -> nm = has_no_mea lp -> T = [(T', s, l)]
+          -> T1 = fst (sep_type_map T) -> T2 = snd (sep_type_map T) -> m_locus_system q env (T++Ts) (Memb l lp) (T1++T2++Ts).
 
 (* config type *)
 Inductive c_locus_system {rmax:nat}
