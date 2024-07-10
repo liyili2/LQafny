@@ -32,7 +32,7 @@ opam install coq-quickchick
 * We require Coq version >= 8.12. We have tested compilation with 8.12.2, 8.13.2, and 8.14.0.
 * opam error messages and warnings are typically informative, so if you run into trouble then make sure you read the console output.
 
-## Compiling & Running LQafny
+## Compiling & Running DisQ
 
 Run `make` in the top-level directory to compile our Coq proofs. externals directory contains the coq files from SQIR and QWIRE that support the development of LQafny.
 
