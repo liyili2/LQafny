@@ -89,6 +89,7 @@ Fixpoint has_mea_aux (p: process) :=
              | (PIf _ p q) => orb (has_mea_aux p) (has_mea_aux q)
              | (AP (CMeas _ _) p) => true
              | (AP _ p) => has_mea_aux p
+             | (DP _ p) => has_mea_aux p
   end.
     
 Definition has_mea (lp:list process) := filter has_mea_aux lp.
@@ -97,7 +98,9 @@ Fixpoint locus_with_mea_aux (p: process) :=
   match p with PNil => nil
            |(PIf _ p q) => locus_with_mea_aux p ++ locus_with_mea_aux q
            |(AP (CMeas _ k) p) => k::(locus_with_mea_aux p)
-          |(AP _ p) => locus_with_mea_aux p end.
+           |(AP _ p) => locus_with_mea_aux p 
+           | (DP _ p) => locus_with_mea_aux p
+  end.
 Fixpoint locus_with_mea (lp:list process) :=
   match lp with nil => nil
            | p::ps => (locus_with_mea_aux p) ++ (locus_with_mea ps) end.

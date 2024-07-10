@@ -4,8 +4,7 @@ This repo contains the coq definition of DisQ, in which we define the syntax, se
 
 ## Overview
 
-Quantum algorithms generally demand a large number of qubits, making implementation on a single quantum computer difficult due to limited resources. To solve this problem, we have developed a new system called DisQ.
-DisQ is a framework designed to facilitate the rewriting of quantum algorithms into their distributed versions. The core of  DisQ is distributed quantum programming language that integrates concepts from the Chemical Abstract Machine (CHAM) and Markov Decision Processes (MDP) to define the quantum concurrent and distributed behaviors.
+Quantum algorithms generally demand a large number of qubits, making implementation on a single quantum computer difficult due to limited resources. To solve this problem, we have developed a new system called DisQ. DisQ is a framework designed to facilitate the rewriting of quantum algorithms into their distributed versions. The core of  DisQ is distributed quantum programming language that integrates concepts from the Chemical Abstract Machine (CHAM) and Markov Decision Processes (MDP) to define the quantum concurrent and distributed behaviors.
 
 ## Setup
 
@@ -41,6 +40,7 @@ Run `make` in the top-level directory to compile our Coq proofs. externals direc
 
 * DisQSyntax.v - The DisQ language syntax.
 * DisQDef.v - Locus and state syntax and equation rules.
+* DisQKind.v - The DisQ Kind system and action level semantics.
 * DisQType.v - The DisQ Type system.
 * DisQSem.v - The DisQ language semantics.
 
