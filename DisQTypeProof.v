@@ -60,7 +60,7 @@ Inductive well_form : aenv -> type_gmap -> gqstate -> Prop :=
 *)
 
 (*Add wellformedness. well_form aenv T S is one. *)
-Theorem type_progress : forall rmax aenv T T' C S, 
+Theorem type_progress : forall rmax aenv T T' C S, (* well_formed aenv T S -> *)
        @c_locus_system rmax aenv T C T' -> (exists la lb S' C', @m_step rmax aenv S C la lb S' C').
 Proof.
   intros. generalize dependent S. induction H.
