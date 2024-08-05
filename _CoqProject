@@ -39,3 +39,4 @@ DisQSyntax.v
 DisQDef.v
 DisQKind.v
 DisQSem.v
+DisQType.v

@@ -9,7 +9,6 @@ Require Import BasicUtility.
 Require Import OQASM.
 Require Import Classical_Prop.
 Require Import MathSpec.
-Require Import QafnySyntax.
 Require Import DisQSyntax.
 Require Import DisQDef.
 Require Import DisQKind.
@@ -43,8 +42,10 @@ Inductive well_dom_g : aenv -> type_map -> glocus -> Prop :=
 | well_dom_gmany : forall aenv t gl l1 l2 x y l1' l2', In l1 gl /\ In l2 gl ->
                    l1 = (l1', x) -> l2 = (l2', y) -> x <> y ->
                    @well_dom_l aenv t (map fst gl) ->
-                   well_dom_g aenv t gl.                                                            
-Inductive glocus_type : type_kmap -> glocus -> se_type ->  Prop :=
+                   well_dom_g aenv t gl.                  
+
+(* redefine for type_gmap                                          
+Inductive glocus_type : type_gmap -> glocus -> se_type ->  Prop :=
 | glocus_nor : forall t l gl, In l t -> l = (gl, TNor) -> glocus_type t gl TNor
 | glocus_had : forall t l gl, In l t -> l = (gl, THad) -> glocus_type t gl THad
 | glocus_ch :  forall t l gl, In l t -> l = (gl, CH) -> glocus_type t gl CH.
@@ -52,9 +53,18 @@ Inductive glocus_type : type_kmap -> glocus -> se_type ->  Prop :=
 Inductive glocus_state : gqstate -> glocus -> state_elem -> Prop :=
 | gl_state : forall qs l gl s, In l qs -> l = (gl, s) -> glocus_state qs gl s. 
 
-Inductive well_form : aenv -> type_kmap -> gqstate -> Prop :=
+Inductive well_form : aenv -> type_gmap -> gqstate -> Prop :=
 | well_form_nor : forall aenv t qs p r s gl, glocus_type t gl TNor -> glocus_state qs gl s -> s = (Nval p r) -> well_form aenv t qs    
 | well_form_had : forall aenv t qs b gl s, glocus_type t gl THad -> glocus_state qs gl s -> s = (Hval b) -> well_form aenv t qs
 | well_form_en : forall aenv t qs m b gl s, glocus_type t gl CH -> glocus_state qs gl s -> s = (Cval m b) -> well_form aenv t qs.
+*)
 
-(*Lemma type_progress : forall rmax tenv gs s r l , well_dom tenv gs -> well_state tenv gs s -> (exists a s' p', step rmax tenv s p r l s'p') *)
+(*Add wellformedness. well_form aenv T S is one. *)
+Theorem type_progress : forall rmax aenv T T' C S, 
+       @c_locus_system rmax aenv T C T' -> (exists la lb S' C', @m_step rmax aenv S C la lb S' C').
+Proof.
+  intros. generalize dependent S. induction H.
+Admitted.
+
+
+
