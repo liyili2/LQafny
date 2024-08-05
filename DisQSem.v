@@ -214,7 +214,11 @@ Fixpoint loc_memb (m: memb) :=
   end.
 
 Definition alltrue := fun (_:nat) => true.
-(* single process semantics. *)
+
+(************* DisQ Semantics ****************)
+(** We define the semantics in two levels: process-level and membrane-level **)
+
+(** Process-level semantics. **)
 Inductive p_step {rmax:nat}
   : aenv -> qstate -> process -> (R * option nat) -> qstate -> process -> Prop :=
   | self_pstep : forall aenv s, p_step aenv s PNil (1%R, None) s PNil  
@@ -240,10 +244,10 @@ Fixpoint same_l (l:glocus) (lv:var) :=
 Fixpoint cut_l (l:glocus) :=
   match l with [] => [] | (((x,a,b),r)::xl) => (x,a,b)::(cut_l xl) end.
 
-(* memb semantics *)
 Definition inv_sqrt2 : R := / sqrt 2.
 Definition cinv_sqrt2: C := inv_sqrt2%C.
 
+(** Membrance-level semantics **)
 Inductive m_step {rmax:nat}
   : aenv -> gqstate -> config -> R * option nat -> list var -> gqstate -> config -> Prop :=
   | end_step : forall aenv s l Q, are_0 Q -> m_step aenv s ([Memb l Q]) (1%R, None) [l] s ([Memb l Q])

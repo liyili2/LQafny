@@ -131,6 +131,7 @@ Inductive se_type : Type := THT (n:nat) (t:type_elem).
 
 Definition type_map := list (locus * se_type).
 Definition type_gmap := list (locus * se_type * var).
+Definition type_kmap := list (glocus * se_type).
 
 Definition simple_tenv (t:type_map) := forall a b, In (a,b) t -> simple_ses a.
 

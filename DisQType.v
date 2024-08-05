@@ -112,7 +112,11 @@ Inductive glocus_locus : var -> type_gmap -> type_map -> Prop :=
   | glocus_zero : forall l, glocus_locus l nil nil
   | glocus_many : forall l a b T T', glocus_locus l T T' -> glocus_locus l ((a,b,l)::T) ((a,b)::T').
 
-(* process type *)
+
+(******** DisQ Type System **********)
+(** We define this type system in three levels: process-level, membrane-level and config-level. **)
+
+(** Process-level type **)
 Inductive p_locus_system {rmax:nat}
            : aenv -> type_map -> process -> type_map -> Prop :=
 
@@ -150,7 +154,7 @@ Inductive p_locus_system_mea {rmax:nat}
    | meatype_many : forall env P Q T T1 T2 T3, @p_locus_system rmax env T P T1
           -> p_locus_system_mea env T2 Q T3 -> p_locus_system_mea env (T1++T2) (P::Q) (T2++T3).
 
-(* memb type *)
+(** Membrane-level type **)
 Inductive m_locus_system {rmax:nat}
            : aenv -> type_gmap -> memb -> type_gmap -> Prop :=
     | meq_ses : forall env s T T' T1,
@@ -168,7 +172,7 @@ Inductive m_locus_system {rmax:nat}
           glocus_locus l T T1 -> glocus_locus l T' T2 -> glocus_locus l Ta T1' -> glocus_locus l Tb T2'
           -> m_locus_system env (T++T'++Ts) (Memb l lp) (Ta++Tb++Ts).
 
-(* config type *)
+(** Config-level type **)
 Inductive c_locus_system {rmax:nat}
            : aenv -> type_gmap -> config -> type_gmap -> Prop :=
 | top_ses : forall env m ms Tl Tl' l T T', loc_memb m = l -> @m_locus_system rmax env Tl m Tl' ->

@@ -35,7 +35,7 @@ Definition simple_bound (b:bound) :=
 Definition range : Set := var * bound * bound.
 
 Definition locus : Type := list range.
-Definition glocus : Type := list (range * var). (*range * location*)
+Definition glocus : Type := list (range * var).  (** range * location **)
 
 Inductive aexp := BA (x:var) | Num (n:nat)
          | APlus (e1:aexp) (e2:aexp) | AMult (e1:aexp) (e2:aexp).
@@ -55,7 +55,7 @@ Notation "e0 [ e1 ]" := (Index e0 e1) (at level 50) : cexp_scope.
 
 Inductive singleGate := H_gate | X_gate | RZ_gate (f:nat) (*representing 1/2^n of RZ rotation. *).
 
-Inductive cbexp := CEq (x:aexp) (y:aexp) | CLt (x:aexp) (y:aexp).
+Inductive cbexp := CEq (x:aexp) (y:aexp) | CLt (x:aexp) (y:aexp). (** Classical boolean expressions **)
 
 Inductive bexp :=  CB (c:cbexp)
                   | BEq (x:varia) (y:varia) (i:var) (a:aexp)
@@ -92,22 +92,27 @@ Inductive type := Phi (b:nat) | Nor.
 
 Inductive single_u := RH (p:varia) | SQFT (x:var) | SRQFT (x:var).
 
+(*********** DisQ Syntax  ***************)
+(** Local Action  **)
 Inductive cexp := CAppU (l: locus) (e: exp)
              | CMeas (x: var) (k: locus).
 
+(** Communication Action **)
 Inductive cdexp := Send (c: var) (a: aexp)
              | Recv (c: var) (x: var).
 
+(** Process  **)
 Inductive process := PNil
                 | AP (a: cexp) (p: process)
                 | DP (a:cdexp) (p:process)
                 | PIf (b: cbexp) (p: process) (q: process).
 
-
+(** Membrane **)
 Inductive memb := Memb (l: var) (lp: list process)
                  | LockMemb (l: var) (r: process) (lp: list process)
                  | NewCMemb (x: var) (n: nat) (m: memb)
                  | NewVMemb (x: var) (n: nat) (m: memb).
 
+(** Configuration **)
 Definition config : Type := list memb.
 
