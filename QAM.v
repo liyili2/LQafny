@@ -40,17 +40,25 @@ Inductive shareC := ShareC (c: chan_n) (m: chan_m).
 
 Definition contexts  := list shareC.
 
-Inductive action := CreatC (c: qchan) | QSwap (c: qchan) | CSend (cc: cchan) (cm: cmess)
+Inductive action := QSwap (c: qchan) | CSend (cc: cchan) (cm: cmess)
                | CcRecv (cc: cchan) (x: var) | CqRecv (qc: qchan) (x: var)
                | LEncode (q: qmess) (mu: mess) (x: var) | LDecode (q: qmess) (x: var)
                | GEncode (c: qchan) (x: mess) | GDecode (c: qchan) (x: var)
                | Trans (c: qchan) (x: var).
 
-Inductive process := Nil | AR (a: action) (r: process) | Choice (p: process) (r: process) | Rept (r: process).
+Inductive process := Nil | AR (a: action) (r: process) | Choice (p: process) (r: process) | Rept (r: process)
+| GeneralProcess (k: list chan_n) (p: process).
+
+Definition subprocess: Type := nat.
+
+Definition processPair: Type := (list chan_n) * subprocess.
 
 Definition rmemb := list process.
 
-Inductive memb := CtxM (r: rmemb) (phi: contexts) | ALock (r: process) (t: memb) | ActM (p: memb) (c: shareC) (Q: memb).
+Definition membraneSet := list processPair.
+
+Inductive memb := CtxM (r: rmemb) (phi: contexts) | ALock (r: process) (t: memb) | ActM (p: memb) (c: shareC) (Q: memb)
+| GeneralMembrane (k: list GeneralProcess).
 
 Definition config := list memb.
 
