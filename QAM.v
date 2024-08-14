@@ -46,14 +46,14 @@ Inductive action := QSwap (c: qchan) | CSend (cc: cchan) (cm: cmess)
                | GEncode (c: qchan) (x: mess) | GDecode (c: qchan) (x: var)
                | Trans (c: qchan) (x: var).
 
-Inductive process := Nil | AR (a: action) (r: process) | Choice (p: process) (r: process) | Rept (r: process)
-| GeneralProcess (k: list chan_n) (p: process).
+(* Inductive process := Nil | AR (a: action) (r: process) | Choice (p: process) (r: process) | Rept (r: process)
+| GeneralProcess (k: list chan_n) (p: process). *)
 
-Definition subprocess: Type := nat.
+Inductive subprocess := Nil | AR (a: action) (r: subprocess) | Choice (p: subprocess) (r: subprocess) | Rept (r: subprocess).
 
 Definition processPair: Type := (list chan_n) * subprocess.
 
-Definition rmemb := list process.
+Definition rmemb := list subprocess.
 
 Definition membraneSet := list processPair.
 
