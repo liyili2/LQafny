@@ -57,18 +57,20 @@ Definition type_gmap2glocus (l: type_gmap):(glocus) :=
  *)
 
 Inductive glocus_type : type_gmap -> glocus -> se_type ->  Prop :=
-| gl_type : forall t l l' gl s v, l = map fst gl -> In l' t -> l' = (l,s,v) -> glocus_type t gl s.
+| glocus_nor : forall t l gl, In l t -> l = (gl, TNor) -> glocus_type t gl TNor
+| glocus_had : forall t l gl, In l t -> l = (gl, THad) -> glocus_type t gl THad
+| glocus_ch :  forall t l gl, In l t -> l = (gl, CH) -> glocus_type t gl CH.
+
 Inductive glocus_state : gqstate -> glocus -> state_elem -> Prop :=
 | gl_state : forall qs l gl s, In l qs -> l = (gl, s) -> glocus_state qs gl s. 
 
-Inductive well_formed : aenv -> type_gmap -> gqstate -> Prop :=
-| well_form_nor : forall aenv t qs p r s gl, glocus_type t gl TNor -> glocus_state qs gl s -> s = (Nval p r) -> well_formed aenv t qs    
-| well_form_had : forall aenv t qs b gl s, glocus_type t gl THad -> glocus_state qs gl s -> s = (Hval b) -> well_formed aenv t qs
-| well_form_en : forall aenv t qs m b gl s, glocus_type t gl CH -> glocus_state qs gl s -> s = (Cval m b) -> well_formed aenv t qs.
-
+Inductive well_form : aenv -> type_gmap -> gqstate -> Prop :=
+| well_form_nor : forall aenv t qs p r s gl, glocus_type t gl TNor -> glocus_state qs gl s -> s = (Nval p r) -> well_form aenv t qs    
+| well_form_had : forall aenv t qs b gl s, glocus_type t gl THad -> glocus_state qs gl s -> s = (Hval b) -> well_form aenv t qs
+| well_form_en : forall aenv t qs m b gl s, glocus_type t gl CH -> glocus_state qs gl s -> s = (Cval m b) -> well_form aenv t qs.
 
 (*Add wellformedness. well_form aenv T S is one. *)
-Theorem type_progress : forall rmax aenv T T' C S, well_formed aenv T S ->
+Theorem type_progress : forall rmax aenv T T' C S, well_form aenv T S ->
        @c_locus_system rmax aenv T C T' -> (exists la lb S' C', @m_step rmax aenv S C la lb S' C').
 Proof.
   intros. generalize dependent S. intros. induction H0.

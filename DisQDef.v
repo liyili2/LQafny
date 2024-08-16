@@ -130,8 +130,8 @@ Inductive se_type : Type := THT (n:nat) (t:type_elem).
 *)
 
 Definition type_map := list (locus * se_type).
-Definition type_gmap := list (locus * se_type * var).
-Definition type_kmap := list (glocus * se_type).
+Definition type_kmap := list (locus * se_type * var).
+Definition type_gmap := list (glocus * se_type).
 
 Definition simple_tenv (t:type_map) := forall a b, In (a,b) t -> simple_ses a.
 
@@ -282,8 +282,8 @@ Inductive env_equiv : type_map -> type_map -> Prop :=
 
 Inductive genv_equiv : type_gmap -> type_gmap -> Prop :=
      | genv_id : forall S, genv_equiv S S
-     | genv_subtype :forall s v v' l S, subtype v v' -> genv_equiv ((s,v,l)::S) ((s,v',l)::S)
-     | genv_mut: forall l1 l2 l x y v S, genv_equiv ((l1++x::y::l2,v,l)::S) ((l1++y::x::l2,v,l)::S)
+     | genv_subtype :forall s v v' S, subtype v v' -> genv_equiv ((s,v)::S) ((s,v')::S)
+     | genv_mut: forall l1 l2 x y v S, genv_equiv ((l1++x::y::l2,v)::S) ((l1++y::x::l2,v)::S)
      | genv_cong: forall x T1 T2, genv_equiv T1 T2 -> genv_equiv (x::T1) (x::T2).
 
 Lemma subtype_trans: forall v1 v2 v3, subtype v1 v2 -> subtype v2 v3 -> subtype v1 v3.
