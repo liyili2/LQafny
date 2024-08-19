@@ -40,7 +40,7 @@ Inductive shareC := ShareC (c: chan_n) (m: chan_m).
 
 Definition contexts  := list shareC.
 
-Inductive action := QSwap (c: qchan) | CSend (cc: cchan) (cm: cmess)
+Inductive action := CreatC (c: qchan) | QSwap (c: qchan) | CSend (cc: cchan) (cm: cmess)
                | CcRecv (cc: cchan) (x: var) | CqRecv (qc: qchan) (x: var)
                | LEncode (q: qmess) (mu: mess) (x: var) | LDecode (q: qmess) (x: var)
                | GEncode (c: qchan) (x: mess) | GDecode (c: qchan) (x: var)
@@ -57,8 +57,7 @@ Definition rmemb := list subprocess.
 
 Definition membraneSet := list processPair.
 
-Inductive memb := CtxM (r: rmemb) (phi: contexts) | ALock (r: process) (t: memb) | ActM (p: memb) (c: shareC) (Q: memb)
-| GeneralMembrane (k: list GeneralProcess).
+Inductive memb := CtxM (r: rmemb) (phi: contexts) | ALock (r: subprocess) (t: memb) | ActM (p: memb) (c: shareC) (Q: memb).
 
 Definition config := list memb.
 
@@ -93,7 +92,7 @@ Definition FC_action (a: action) :=
  
 end.
 
-Fixpoint FC_process (r: process) :=
+Fixpoint FC_process (r: subprocess) :=
   match r with
   | Nil => []
   | AR a p =>  (FC_process p) ++ (FC_action a)
@@ -140,9 +139,9 @@ Definition recover_mess m1 m2 :=
   end.
 
 (** Op Sem **)
-Fixpoint replace_mess (p: process) (x: var) (m: mess) : process := p. (*TODO*)
+Fixpoint replace_mess (p: subprocess) (x: var) (m: mess) : subprocess := p. (*TODO*)
 
-Inductive process_sem : process -> rmemb -> Prop :=
+Inductive process_sem : subprocess -> rmemb -> Prop :=
 | choose_l : forall p1 p2,  process_sem (Choice p1 p2) [p1]
 | choose_r : forall p1 p2, process_sem (Choice p1 p2) [p2]
 | mt : forall p1,  process_sem (Rept p1) [p1; p1]
@@ -161,9 +160,9 @@ Inductive disjoint_union : list qchan -> list qchan -> Prop :=
 | cons_case : forall x l ls, ~ (In x ls) -> disjoint_union l ls -> disjoint_union (x :: l) ls.
 
 Inductive qam_sem : config -> config -> (option mess) -> Prop :=
-| mem_split : forall (p1: process) (p2: rmemb) (cf: config),
+| mem_split : forall (p1: subprocess) (p2: rmemb) (cf: config),
     qam_sem ((CtxM (p1 :: p2) [])::cf) ((CtxM [p1] []):: (CtxM p2 []) :: cf) None
-| cohere : forall (d: qchan) (c : chan_n) (phi1: contexts) (phi2: contexts) (p: process) (q: process) (r1: rmemb) (r2: rmemb) (cf: config),
+| cohere : forall (d: qchan) (c : chan_n) (phi1: contexts) (phi2: contexts) (p: subprocess) (q: subprocess) (r1: rmemb) (r2: rmemb) (cf: config),
     not (In d ((FC_con phi1)++(FC_con phi2))) ->
     qam_sem ((CtxM ((AR (CreatC d) p)::r1) phi1)::(CtxM ((AR (CreatC d) q)::r2) phi2)::cf) ((CtxM (p::r1) ((ShareC (fresh c) (ChM d (QtM Unit)))::phi1))::(CtxM (q::r2) ((ShareC (fresh c) (ChM d (QtM Unit)))::phi2))::cf) None
 | decohere : forall mb1 mb2 s cf,
@@ -173,11 +172,11 @@ Inductive qam_sem : config -> config -> (option mess) -> Prop :=
     qam_sem ((CtxM ((AR (GEncode d mu) p)::r1) ((ShareC c (ChM d mu'))::phi)) :: cf) ((CtxM (p::r1) ((ShareC c (ChM d (recover_mess mu mu')))::phi)) :: cf) None 
 | decode : forall c d qm x y p q mb1 mb2 cf,
     qam_sem ((ActM (ALock (AR (GDecode d x) p) mb1) (ShareC c (ChM d (QtM qm))) (ALock (AR (CqRecv d y) q) mb2))::cf) ((ALock (replace_mess p x (CcM (MeasureQ qm))) mb1)::(ALock (replace_mess q y (QtM (PartM qm))) mb2)::cf) (Some (QtM (ChanM (ChM d (QtM qm)))))
-| assemble : forall (q: qmess) (mu: mess) (p: process) x mb cf,
+| assemble : forall (q: qmess) (mu: mess) (p: subprocess) x mb cf,
     qam_sem ((ALock (AR (LEncode q mu x) p) mb)::cf) ((ALock (replace_mess p x (recover_mess (QtM q) mu)) mb)::cf) None
-| extract : forall (c: qchan) (i: cmess) (x: var) (p: process) mb (cf: config),
+| extract : forall (c: qchan) (i: cmess) (x: var) (p: subprocess) mb (cf: config),
     qam_sem ((ALock (AR (LDecode (ChanM (ChM c (CcM i))) x) p) mb)::cf) ((ALock (replace_mess p x (CcM i)) mb)::cf) (Some (QtM (ChanM (ChM c (CcM i)))))  
-| transfer : forall (m: mess) (c: chan_n) (d: chan_n) (x: var) (p: process) (cf: config) mb1 mb2,
+| transfer : forall (m: mess) (c: chan_n) (d: chan_n) (x: var) (p: subprocess) (cf: config) mb1 mb2,
     qam_sem ((ActM (ALock (AR (Trans d x) p) mb1) (ShareC c (ChM d m)) mb2)::cf)  ((ALock (replace_mess p x m) mb1) :: mb2 :: cf) None 
 | commu : forall (c: cchan) (i: cmess) x p q mb1 mb2 cf,
     qam_sem ((ALock (AR (CSend c i) p) mb1)::(ALock (AR (CcRecv c x) q) mb2)::cf) ((ALock p mb1)::(ALock (replace_mess q x (CcM i)) mb2)::cf) (Some (CcM i))  

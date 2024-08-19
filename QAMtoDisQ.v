@@ -20,7 +20,6 @@ end.
 
 Definition ActionTranslation (a: QAM.action) : (DisQSyntax.process)
 := match a with
-| CreatC c => SKIP
 | QSwap c => 
 | CSend cc cm =>
 | CcRecv cc x =>
