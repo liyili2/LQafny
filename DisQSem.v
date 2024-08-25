@@ -206,13 +206,14 @@ Fixpoint subst_qstate (l:qstate) (x:var) (n:nat) :=
   end.
 Definition subst_state (l:state) (x:var) n := (fst l,subst_qstate (snd l) x n).
 
+(*
 Fixpoint loc_memb (m: memb) :=
   match m with Memb l lp => l
           | LockMemb l p lp => l
           | NewVMemb x n m' => loc_memb m'
           | NewCMemb x n m' => loc_memb m'
   end.
-
+*)
 Definition alltrue := fun (_:nat) => true.
 
 (************* DisQ Semantics ****************)
@@ -250,23 +251,22 @@ Definition cinv_sqrt2: C := inv_sqrt2%C.
 (** Membrance-level semantics **)
 Inductive m_step {rmax:nat}
   : aenv -> gqstate -> config -> R * option nat -> list var -> gqstate -> config -> Prop :=
-  | end_step : forall aenv s l Q, are_0 Q -> m_step aenv s ([Memb l Q]) (1%R, None) [l] s ([Memb l Q])
-  | mem_step : forall aenv s l P Q, m_step aenv s ([Memb l (P::Q)]) (Rdiv 1%R (INR (length (P::Q))), None) [l] s ([LockMemb l P Q])
-  | rev_step : forall aenv s m l P lp, m = ([LockMemb l P lp]) -> m_step aenv s m (1%R, None) [l] s ([Memb l (P::lp)])
-  | send_rev_sem : forall aenv s x y l1 l2 n m1 m2 cf a P Q, simp_aexp a = Some n -> 
-             m_step aenv s ((LockMemb l1 (DP (Send x a) P) m1)::(LockMemb l2 (DP (Recv x y) Q) m2)::cf) 
-             (1%R, None) (l1::[l2]) s ((Memb l1 (P::m1))::(Memb l2 (Q::m2))::cf)
-  | move_step : forall aenv s a l lp P P' r n n' m v va lv lc fc fca, n = (length lp)+1 -> 
+  | end_step : forall aenv s l Q cfg, are_0 Q -> m_step aenv s ((Memb Q, l)::cfg) (1%R, None) [l] s ((Memb Q, l)::cfg)
+  | mem_step : forall aenv s l P Q cfg, m_step aenv s ((Memb (P::Q), l)::cfg) (Rdiv 1%R (INR (length (P::Q))), None) [l] s ((LockMemb P Q,l)::cfg)
+  | rev_step : forall aenv s m l P lp cfg, m = ((LockMemb P lp, l)::cfg) -> m_step aenv s m (1%R, None) [l] s ((Memb (P::lp), l)::cfg)
+  | send_rev_sem : forall aenv s x y l1 l2 n m1 m2 a P Q cfg, simp_aexp a = Some n -> 
+             m_step aenv s (((LockMemb (DP (Send x a) P) m1), l1)::((LockMemb (DP (Recv x y) Q) m2), l2)::cfg) 
+             (1%R, None) (l1::[l2]) s (((Memb (P::m1)), l1)::((Memb (Q::m2)), l2)::cfg)
+  | move_step : forall aenv s a l lp P P' r n n' m v va lv lc fc fca cfg, n = (length lp)+1 -> 
                gses_len a = Some n' -> gses_len l = Some m -> same_l a lc -> mut_state 0 n' m v fc
                -> @p_step rmax aenv [(cut_l a,fc)] P (r,lv) [(cut_l a,va)] P' -> mut_state 0 m n' va fca ->
-            m_step aenv ((a++l, v)::s) ([Memb lc (P::lp)]) ((r / INR n)%R, lv) [lc] ((a++l, fc)::s) ([Memb lc (P'::lp)])
-  | newvar_step : forall aenv s m n x lc,  lc = loc_memb m ->
-                  m_step aenv s ([NewVMemb x n m]) (1%R, None) [lc] (([((x, BNum 0, BNum n),lc)], Cval 1 (fun _ => (C0,allfalse)))::s) [m]
-  | newchan_step : forall aenv lc1 lc2 c n m1 m2 cf s,
-                   loc_memb m1 = lc1 -> loc_memb m2 = lc2 ->
-                   m_step aenv s ((NewCMemb c n m1)::(NewCMemb c n m2)::cf) (1%R, None) (lc1::[lc2]) 
+            m_step aenv ((a++l, v)::s) ((Memb (P::lp),lc)::cfg) ((r / INR n)%R, lv) [lc] ((a++l, fc)::s) ((Memb (P'::lp), lc)::cfg)
+  | newvar_step : forall aenv s m n x lc cfg,
+                  m_step aenv s ((NewVMemb x n m,lc)::cfg) (1%R, None) [lc] (([((x, BNum 0, BNum n),lc)], Cval 1 (fun _ => (C0,allfalse)))::s) ((m,lc)::cfg)
+  | newchan_step : forall aenv lc1 lc2 c n m1 m2 s cfg,
+                   m_step aenv s (((NewCMemb c n m1),lc1)::((NewCMemb c n m2),lc2)::cfg) (1%R, None) (lc1::[lc2]) 
                    ((([((c,BNum 0, BNum n),lc1)]++[((c,BNum 0,BNum n),lc2)]), 
-                        Cval (2^n) (fun i => if i =? 0 then (cinv_sqrt2,allfalse) else (cinv_sqrt2,alltrue)))::s) (m1::m2::cf).
+                        Cval (2^n) (fun i => if i =? 0 then (cinv_sqrt2,allfalse) else (cinv_sqrt2,alltrue)))::s) ((m1,lc1)::(m2,lc2)::cfg).
 
 (* multi-memb semantics 
 
