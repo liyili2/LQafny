@@ -104,15 +104,25 @@ Fixpoint locus_with_mea_aux (p: process) :=
 Fixpoint locus_with_mea (lp:list process) :=
   match lp with nil => nil
            | p::ps => (locus_with_mea_aux p) ++ (locus_with_mea ps) end.
-(*
-Definition sep_type_map (tm: type_gmap) : (type_gmap * type_gmap).
-Admitted.
-*)
-Inductive glocus_locus : var -> type_gmap -> type_map -> Prop :=
-  | glocus_zero : forall l, glocus_locus l nil nil
-  | glocus_many : forall l a b T T', glocus_locus l T T' -> glocus_locus l ((a,b,l)::T) ((a,b)::T').
 
-(* process type *)
+Inductive AllSame {A : Type} : list A -> Prop :=
+| AllSame_nil : AllSame nil
+| AllSame_singleton : forall x, AllSame (x::nil)
+| AllSame_cons : forall x y l, x = y -> AllSame (y::l) -> AllSame (x::y::l).
+
+Inductive GroupByB {A B : Type} : list (A * B) -> list (list A * B) -> Prop :=
+| GroupByB_nil : GroupByB nil nil
+| GroupByB_cons : forall a b l l' la, GroupByB l l' -> GroupByB ((a, b)::l) (((a::la),b)::l').
+
+Inductive gmap_map : var -> type_gmap -> type_map -> Prop :=
+  | glocus_zero : forall l, gmap_map l nil nil
+| glocus_many : forall s e l a T T' g g', gmap_map l T T' -> GroupByB g g' ->In e g' -> e = (a,l) -> gmap_map l ((g,s)::T) ((a,s)::T').
+(* Convert gmap to map based on input location l*)
+
+(******** DisQ Type System **********)
+(** We define this type system in three levels: process-level, membrane-level and config-level. **)
+
+(** Process-level type **)
 Inductive p_locus_system {rmax:nat}
            : aenv -> type_map -> process -> type_map -> Prop :=
 
@@ -150,29 +160,26 @@ Inductive p_locus_system_mea {rmax:nat}
    | meatype_many : forall env P Q T T1 T2 T3, @p_locus_system rmax env T P T1
           -> p_locus_system_mea env T2 Q T3 -> p_locus_system_mea env (T1++T2) (P::Q) (T2++T3).
 
-(* memb type *)
+(** Membrane-level type **)
 Inductive m_locus_system {rmax:nat}
-           : aenv -> type_gmap -> memb -> type_gmap -> Prop :=
-    | meq_ses : forall env s T T' T1,
-         m_locus_system env T s T' -> genv_equiv T' T1 -> m_locus_system env T s T1
-    | msub_ses: forall env s T T' T1,
-         m_locus_system env T s T' -> m_locus_system env (T++T1) s (T'++T1)
-    | newv_ses :  forall env x n m T T' l ls, loc_memb m = l ->
-         m_locus_system (AEnv.add x (QT l n) env) (([(x, BNum 0, BNum n)]++ls,CH,l)::T) m T' -> 
-         m_locus_system env T (NewVMemb x n m) T'
-    | newc_ses :  forall env x n m T T' l ls, loc_memb m = l ->
-         m_locus_system (AEnv.add x (QT l n) env) (([(x, BNum 0, BNum n)]++ls,CH,l)::T) m T' -> 
-         m_locus_system env T (NewCMemb x n m) T'
-    | mem_sys : forall l m nm T1 T2 T1' T2' Ta Tb T T' env lp Ts, m = has_mea lp -> nm = has_no_mea lp
-          -> @p_locus_system_mea rmax env T1 m  T1' -> @p_locus_systems rmax env T2 m  T2' ->
-          glocus_locus l T T1 -> glocus_locus l T' T2 -> glocus_locus l Ta T1' -> glocus_locus l Tb T2'
-          -> m_locus_system env (T++T'++Ts) (Memb l lp) (Ta++Tb++Ts).
+           : aenv -> config -> type_gmap -> memb -> type_gmap -> Prop :=
+   (* | meq_ses : forall env s T T' T1,
+         m_locus_system env T s T' -> genv_equiv T' T1 -> m_locus_system env T s T1 *)
+    | msub_ses: forall env s T T' T1 cfg,
+         m_locus_system env cfg T s T' -> m_locus_system env cfg (T++T1) s (T'++T1)
+    | newv_ses :  forall env x n m T T' l ls cfg, In (m,l) cfg ->
+         m_locus_system (AEnv.add x (QT l n) env) cfg (([((x, BNum 0, BNum n),l)]++ls,CH)::T) m T' -> 
+         m_locus_system env cfg T (NewVMemb x n m) T'
+    | newc_ses :  forall env x n m T T' l ls cfg, In (m,l) cfg ->
+         m_locus_system (AEnv.add x (QT l n) env) cfg (([((x, BNum 0, BNum n),l)]++ls,CH)::T) m T' -> m_locus_system env cfg T (NewCMemb x n m) T'
+    | mem_sys : forall l m nm T1 T2 T1' T2' Ta Tb T T' env lp Ts cfg, m = has_mea lp -> nm = has_no_mea lp -> In ((Memb lp),l) cfg -> @p_locus_system_mea rmax env T1 m  T1' -> @p_locus_systems rmax env T2 m  T2' -> gmap_map l T T1 -> gmap_map l T' T2 -> gmap_map l Ta T1' -> gmap_map l Tb T2' -> m_locus_system env cfg (T++T'++Ts) (Memb lp) (Ta++Tb++Ts).
 
-(* config type *)
+(** Config-level type **)
 Inductive c_locus_system {rmax:nat}
            : aenv -> type_gmap -> config -> type_gmap -> Prop :=
-| top_ses : forall env m ms Tl Tl' l T T', loc_memb m = l -> @m_locus_system rmax env Tl m Tl' ->
+| nil_ses : forall env T, c_locus_system env T nil T 
+| top_ses : forall env m ms Tl Tl' l T T', @m_locus_system rmax env ((m,l)::ms) Tl m Tl' ->
                                     c_locus_system env T ms T' ->
-                                    c_locus_system env (Tl++T) (m::ms) (Tl'++T').
+                                    c_locus_system env (Tl++T) ((m,l)::ms) (Tl'++T').
                          
-      
+
