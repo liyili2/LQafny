@@ -20,7 +20,6 @@ end.
 
 Definition ActionTranslation (a: QAM.action) : (DisQSyntax.process)
 := match a with
-| QSwap c => 
 | CSend cc cm =>
 | CcRecv cc x =>
 | CqRecv qc x =>
@@ -28,7 +27,6 @@ Definition ActionTranslation (a: QAM.action) : (DisQSyntax.process)
 | LDecode q x =>
 | GEncode c x =>
 | GDecode c x =>
-| Trans c x =>
 end.
 
 Fixpoint MembraneTranslation (m: QAM.memb) : (DisQSyntax.process)
