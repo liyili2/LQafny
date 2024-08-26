@@ -251,6 +251,7 @@ Definition cinv_sqrt2: C := inv_sqrt2%C.
 (** Membrance-level semantics **)
 Inductive m_step {rmax:nat}
   : aenv -> gqstate -> config -> R * option nat -> list var -> gqstate -> config -> Prop :=
+  | nil_step : forall aenv s, m_step aenv s [] (1%R, None) [] s []
   | end_step : forall aenv s l Q cfg, are_0 Q -> m_step aenv s ((Memb Q, l)::cfg) (1%R, None) [l] s ((Memb Q, l)::cfg)
   | mem_step : forall aenv s l P Q cfg, m_step aenv s ((Memb (P::Q), l)::cfg) (Rdiv 1%R (INR (length (P::Q))), None) [l] s ((LockMemb P Q,l)::cfg)
   | rev_step : forall aenv s m l P lp cfg, m = ((LockMemb P lp, l)::cfg) -> m_step aenv s m (1%R, None) [l] s ((Memb (P::lp), l)::cfg)
