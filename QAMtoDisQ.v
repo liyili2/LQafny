@@ -20,8 +20,8 @@ end. *)
 
 Definition ActionTranslation (a: QAM.action) : (DisQSyntax.process)
 := match a with
-| CSend cc cm => Send cc cm
-| CcRecv cc x => Recv cc x
+| CSend cc cm => AP (Send cc cm) PNil
+| CcRecv cc x => AP (Recv cc x) PNil
 | CqRecv qc x => Recv cc x
 | LEncode q mu x => 
 | LDecode q x => 
