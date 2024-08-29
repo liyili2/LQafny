@@ -69,11 +69,21 @@ Inductive well_form : aenv -> type_gmap -> gqstate -> Prop :=
 | well_form_had : forall aenv t qs b gl s, glocus_type t gl THad -> glocus_state qs gl s -> s = (Hval b) -> well_form aenv t qs
 | well_form_en : forall aenv t qs m b gl s, glocus_type t gl CH -> glocus_state qs gl s -> s = (Cval m b) -> well_form aenv t qs.
 
+Fixpoint insert_l_aux (tv:locus) (l:var) :=
+   match tv with nil => nil
+              | v::s => (v,l)::(insert_l_aux s l)
+   end.
+
+Fixpoint insert_l (tv: qstate) l :=
+  match tv with nil => nil
+              | (a,b)::s => (insert_l_aux a l,b)::insert_l s l
+  end.
+
 (*Add wellformedness. well_form aenv T S is one. *)
-Theorem type_progress : forall rmax aenv T T' C S, well_form aenv T S ->
-       @c_locus_system rmax aenv T C T' -> (exists la lb S' C', @m_step rmax aenv S C la lb S' C').
+Theorem type_progress' : forall rmax l aenv T T' C S, (*well_dom_g aenv T S -> *)
+       @m_locus_system rmax l aenv T C T' -> (exists la lb S' C', @m_step rmax aenv (insert_l S l) [(C,l)] la lb (insert_l S' l) C').
 Proof.
-  intros. generalize dependent S. intros. induction H0.
+  intros. generalize dependent S. intros. indEuction H0.
   exists (1%R, None), [], S, []. apply nil_step.
   destruct IHc_locus_system as [la [lb [S' [C' Hm_step]]]]. admit.
   exists la, lb, S', C'. destruct m.

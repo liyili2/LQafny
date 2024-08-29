@@ -114,5 +114,5 @@ Inductive memb := Memb (lp: list process)
                  | NewVMemb (x: var) (n: nat) (m: memb).
 
 (** Configuration **)
-Definition config : Type := list memb * nat.
+Definition config : Type := list (memb * var).
 
