@@ -108,11 +108,11 @@ Inductive process := PNil
                 | PIf (b: cbexp) (p: process) (q: process).
 
 (** Membrane **)
-Inductive memb := Memb (l: var) (lp: list process)
-                 | LockMemb (l: var) (r: process) (lp: list process)
+Inductive memb := Memb (lp: list process)
+                 | LockMemb (r: process) (lp: list process)
                  | NewCMemb (x: var) (n: nat) (m: memb)
                  | NewVMemb (x: var) (n: nat) (m: memb).
 
 (** Configuration **)
-Definition config : Type := list memb.
+Definition config : Type := list memb * nat.
 

@@ -160,26 +160,47 @@ Inductive p_locus_system_mea {rmax:nat}
    | meatype_many : forall env P Q T T1 T2 T3, @p_locus_system rmax env T P T1
           -> p_locus_system_mea env T2 Q T3 -> p_locus_system_mea env (T1++T2) (P::Q) (T2++T3).
 
+Definition all_same_loc (g:glocus) (l:var) :=
+   forall v la, In (v, la) g -> la = l.
+
+Definition no_loc (g:glocus) (l:var) :=
+   forall v la, In (v, la) g -> la <> l.
+
 (** Membrane-level type **)
 Inductive m_locus_system {rmax:nat}
-           : aenv -> config -> type_gmap -> memb -> type_gmap -> Prop :=
+           : var -> aenv -> type_map -> memb -> type_map -> Prop :=
    (* | meq_ses : forall env s T T' T1,
-         m_locus_system env T s T' -> genv_equiv T' T1 -> m_locus_system env T s T1 *)
+         m_locus_system env T s T' -> genv_equiv T' T1 -> m_locus_system env T s T1 
     | msub_ses: forall env s T T' T1 cfg,
          m_locus_system env cfg T s T' -> m_locus_system env cfg (T++T1) s (T'++T1)
-    | newv_ses :  forall env x n m T T' l ls cfg, In (m,l) cfg ->
-         m_locus_system (AEnv.add x (QT l n) env) cfg (([((x, BNum 0, BNum n),l)]++ls,CH)::T) m T' -> 
-         m_locus_system env cfg T (NewVMemb x n m) T'
-    | newc_ses :  forall env x n m T T' l ls cfg, In (m,l) cfg ->
-         m_locus_system (AEnv.add x (QT l n) env) cfg (([((x, BNum 0, BNum n),l)]++ls,CH)::T) m T' -> m_locus_system env cfg T (NewCMemb x n m) T'
-    | mem_sys : forall l m nm T1 T2 T1' T2' Ta Tb T T' env lp Ts cfg, m = has_mea lp -> nm = has_no_mea lp -> In ((Memb lp),l) cfg -> @p_locus_system_mea rmax env T1 m  T1' -> @p_locus_systems rmax env T2 m  T2' -> gmap_map l T T1 -> gmap_map l T' T2 -> gmap_map l Ta T1' -> gmap_map l Tb T2' -> m_locus_system env cfg (T++T'++Ts) (Memb lp) (Ta++Tb++Ts).
+   *)
+    | newv_ses :  forall env x n m T T' l,
+         m_locus_system l (AEnv.add x (QT l n) env) (([((x, BNum 0, BNum n))],CH)::T) m T' -> 
+         m_locus_system l env T (NewVMemb x n m) T'
+    | newc_ses :  forall env x n m T T' l,
+         m_locus_system l (AEnv.add x (QT l n) env) (([((x, BNum 0, BNum n))],CH)::T) m T' 
+             -> m_locus_system l env T (NewCMemb x n m) T'
+    | mem_sys : forall l m nm Ta Tb T T' env lp, m = has_mea lp 
+                  -> nm = has_no_mea lp -> @p_locus_system_mea rmax env T m  Ta
+                -> @p_locus_systems rmax env T' m  Tb
+                   -> m_locus_system l env (T++T') (Memb lp) (Ta++Tb).
+
+Inductive has_no_l : var -> type_gmap -> Prop :=
+   has_no_l_empty: forall x, has_no_l x nil
+ | has_no_l_many: forall x a b M, no_loc a x -> has_no_l x M -> has_no_l x ((a,b)::M).
+
+Inductive all_l : var -> type_gmap -> Prop :=
+   all_l_empty: forall x, all_l x nil
+ | all_l_many: forall x a b M, all_same_loc a x -> all_l x M -> all_l x ((a,b)::M).
 
 (** Config-level type **)
 Inductive c_locus_system {rmax:nat}
            : aenv -> type_gmap -> config -> type_gmap -> Prop :=
 | nil_ses : forall env T, c_locus_system env T nil T 
-| top_ses : forall env m ms Tl Tl' l T T', @m_locus_system rmax env ((m,l)::ms) Tl m Tl' ->
-                                    c_locus_system env T ms T' ->
-                                    c_locus_system env (Tl++T) ((m,l)::ms) (Tl'++T').
+| top_ses : forall env m ms Tl Tl' Ta Tb l T T', has_no_l l T -> all_l l Tl
+   -> gmap_map l Tl Ta -> gmap_map l Tl' Tb ->
+        @m_locus_system l rmax env Ta m Tb ->
+        c_locus_system env T ms T' ->
+        c_locus_system env (Tl++T) ((m,l)::ms) (Tl'++T').
                          
 
