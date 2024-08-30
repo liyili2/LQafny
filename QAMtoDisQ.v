@@ -1,5 +1,4 @@
 Require Import DisQDef.
-Require Import DisQType.
 Require Import DisQSyntax.
 Require Import QAM.
 Require Import SQIR.
@@ -17,16 +16,16 @@ Require Import SQIR.
 | Choice p r =>
 | Rept r =>
 end. *)
-
+Parameter cmess_translated: cmess -> aexp.
 Definition ActionTranslation (a: QAM.action) : (DisQSyntax.process)
 := match a with
-| CSend cc cm => AP (Send cc cm) PNil
-| CcRecv cc x => AP (Recv cc x) PNil
-| CqRecv qc x => Recv cc x
-| LEncode q mu x => 
-| LDecode q x => 
-| GEncode c x => 
-| GDecode c x => 
+| CSend cc cm => DP (Send cc (cmess_translated cm)) PNil
+| CcRecv cc x => DP (Recv cc x) PNil
+| CqRecv qc x => DP (Recv qc x) PNil
+| LEncode q mu x => AP (SQIR.X SQIR.CZ q) PNil
+| LDecode q x => AP (CMeas x q) PNil
+| GEncode c x => AP (H CNOT) PNil
+| GDecode c x => AP (Meas x) PNil
 end.
 
 Fixpoint MembraneTranslation (m: QAM.memb) : (DisQSyntax.process)
