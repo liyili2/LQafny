@@ -86,6 +86,7 @@ Proof.
   intros. generalize dependent S. induction H1.
   intros. left. easy.
   intros. right. 
+  (* maybe doing this. induction H5.*)
 
 
 (* below is wrong.
