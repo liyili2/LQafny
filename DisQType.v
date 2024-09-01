@@ -166,17 +166,24 @@ Definition all_same_loc (g:glocus) (l:var) :=
 Definition no_loc (g:glocus) (l:var) :=
    forall v la, In (v, la) g -> la <> l.
 
-(*
+
+Definition wellOrdered (x:var) (l:list var) :=
+   forall y, In y l -> x > y.
+
 Inductive wellFormedMem : list var -> memb -> Prop :=
     welFormedPro : forall s l, wellFormedMem s (Memb l)
   | welFormedLock : forall s l r, wellFormedMem s (LockMemb l r)
-  | welFormedNewC : forall s x n m, not (In x s) 
+  | welFormedNewC : forall s x n m, wellOrdered x s
               -> wellFormedMem (x::s) m -> wellFormedMem s (NewCMemb x n m)
-  | welFormedNewV : forall s x n m, not (In x s) 
+  | welFormedNewV : forall s x n m, wellOrdered x s
               -> wellFormedMem (x::s) m -> wellFormedMem s (NewVMemb x n m).
+Definition wellFormedConf (l:config) : Prop :=
+   forall a b, In (a,b) l -> wellFormedMem nil a.
 
+(*
 See if you need to define and say that all variable in a type_map must be in aenv. 
   and all variables in aenv must be generated along newC/newV. 
+*)
 
 Fixpoint countChansMemb (x:var) (xl: memb) :=
   match xl with Memb l => 0
@@ -191,8 +198,10 @@ Fixpoint countChans (x:var) (xl: config) :=
 
 Definition wellFormedChans (l:config) := forall x, countChans x l = 0 \/ countChans x l = 2.
 
+(*
  you can then have an axiom saying that since there is always 0 or 2 countvars ,
-   then you can always rewite the two newChan having the same *)
+   then you can always rewite the two newChan having the same 
+*)
 
 (** Membrane-level type **)
 Inductive m_locus_system {rmax:nat}
@@ -202,14 +211,13 @@ Inductive m_locus_system {rmax:nat}
     | msub_ses: forall env s T T' T1 cfg,
          m_locus_system env cfg T s T' -> m_locus_system env cfg (T++T1) s (T'++T1)
    *)
-(*
     | newv_ses :  forall env x n m T T' l,
          m_locus_system l (AEnv.add x (QT l n) env) (([((x, BNum 0, BNum n))],CH)::T) m T' -> 
          m_locus_system l env T (NewVMemb x n m) T'
     | newc_ses :  forall env x n m T T' l,
          m_locus_system l (AEnv.add x (QT l n) env) (([((x, BNum 0, BNum n))],CH)::T) m T' 
              -> m_locus_system l env T (NewCMemb x n m) T'
-*)
+
     | mem_sys : forall l m nm Ta Tb T T' env lp, m = has_mea lp 
                   -> nm = has_no_mea lp -> @p_locus_system_mea rmax env T m  Ta
                 -> @p_locus_systems rmax env T' m  Tb

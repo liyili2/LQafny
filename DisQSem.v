@@ -261,14 +261,13 @@ Inductive m_step {rmax:nat}
   | move_step : forall aenv s a l lp P P' r n n' m v va lv lc fc fca cfg, n = (length lp)+1 -> 
                gses_len a = Some n' -> gses_len l = Some m -> same_l a lc -> mut_state 0 n' m v fc
                -> @p_step rmax aenv [(cut_l a,fc)] P (r,lv) [(cut_l a,va)] P' -> mut_state 0 m n' va fca ->
-            m_step aenv ((a++l, v)::s) ((Memb (P::lp),lc)::cfg) ((r / INR n)%R, lv) [lc] ((a++l, fc)::s) ((Memb (P'::lp), lc)::cfg).
-  (*| newvar_step : forall aenv s m n x lc cfg,
+            m_step aenv ((a++l, v)::s) ((Memb (P::lp),lc)::cfg) ((r / INR n)%R, lv) [lc] ((a++l, fc)::s) ((Memb (P'::lp), lc)::cfg)
+  | newvar_step : forall aenv s m n x lc cfg,
                   m_step aenv s ((NewVMemb x n m,lc)::cfg) (1%R, None) [lc] (([((x, BNum 0, BNum n),lc)], Cval 1 (fun _ => (C0,allfalse)))::s) ((m,lc)::cfg)
   | newchan_step : forall aenv lc1 lc2 c n m1 m2 s cfg,
                    m_step aenv s (((NewCMemb c n m1),lc1)::((NewCMemb c n m2),lc2)::cfg) (1%R, None) (lc1::[lc2]) 
                    ((([((c,BNum 0, BNum n),lc1)]++[((c,BNum 0,BNum n),lc2)]), 
-                        Cval (2^n) (fun i => if i =? 0 then (cinv_sqrt2,allfalse) else (cinv_sqrt2,alltrue)))::s) ((m1,lc1)::(m2,lc2)::cfg)
-*)
+                        Cval (2^n) (fun i => if i =? 0 then (cinv_sqrt2,allfalse) else (cinv_sqrt2,alltrue)))::s) ((m1,lc1)::(m2,lc2)::cfg).
 
 (* multi-memb semantics 
 
