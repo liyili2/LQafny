@@ -109,9 +109,9 @@ Inductive process := PNil
 
 (** Membrane **)
 Inductive memb := Memb (lp: list process)
-                 | LockMemb (r: process) (lp: list process)
-                 | NewCMemb (x: var) (n: nat) (m: memb)
-                 | NewVMemb (x: var) (n: nat) (m: memb).
+                 | LockMemb (r: process) (lp: list process).
+                 (*| NewCMemb (x: var) (n: nat) (m: memb)
+                 | NewVMemb (x: var) (n: nat) (m: memb).*)
 
 (** Configuration **)
 Definition config : Type := list (memb * var).
