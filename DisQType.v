@@ -166,6 +166,43 @@ Definition all_same_loc (g:glocus) (l:var) :=
 Definition no_loc (g:glocus) (l:var) :=
    forall v la, In (v, la) g -> la <> l.
 
+
+Definition wellOrdered (x:var) (l:list var) :=
+   forall y, In y l -> x > y.
+
+Inductive wellFormedMem : list var -> memb -> Prop :=
+    welFormedPro : forall s l, wellFormedMem s (Memb l)
+  | welFormedLock : forall s l r, wellFormedMem s (LockMemb l r)
+  | welFormedNewC : forall s x n m, wellOrdered x s
+              -> wellFormedMem (x::s) m -> wellFormedMem s (NewCMemb x n m)
+  | welFormedNewV : forall s x n m, wellOrdered x s
+              -> wellFormedMem (x::s) m -> wellFormedMem s (NewVMemb x n m).
+Definition wellFormedConf (l:config) : Prop :=
+   forall a b, In (a,b) l -> wellFormedMem nil a.
+
+(*
+See if you need to define and say that all variable in a type_map must be in aenv. 
+  and all variables in aenv must be generated along newC/newV. 
+*)
+
+Fixpoint countChansMemb (x:var) (xl: memb) :=
+  match xl with Memb l => 0
+             | LockMemb r l => 0
+             | NewCMemb y n m => if x =? y then 1+countChansMemb x m else countChansMemb x m
+             | NewVMemb y n m => 0
+  end.
+Fixpoint countChans (x:var) (xl: config) :=
+  match xl with nil => 0
+             | (a,b)::l => countChansMemb x a + countChans x l
+  end.
+
+Definition wellFormedChans (l:config) := forall x, countChans x l = 0 \/ countChans x l = 2.
+
+(*
+ you can then have an axiom saying that since there is always 0 or 2 countvars ,
+   then you can always rewite the two newChan having the same 
+*)
+
 (** Membrane-level type **)
 Inductive m_locus_system {rmax:nat}
            : var -> aenv -> type_map -> memb -> type_map -> Prop :=
@@ -180,6 +217,7 @@ Inductive m_locus_system {rmax:nat}
     | newc_ses :  forall env x n m T T' l,
          m_locus_system l (AEnv.add x (QT l n) env) (([((x, BNum 0, BNum n))],CH)::T) m T' 
              -> m_locus_system l env T (NewCMemb x n m) T'
+
     | mem_sys : forall l m nm Ta Tb T T' env lp, m = has_mea lp 
                   -> nm = has_no_mea lp -> @p_locus_system_mea rmax env T m  Ta
                 -> @p_locus_systems rmax env T' m  Tb

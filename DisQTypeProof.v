@@ -80,14 +80,21 @@ Fixpoint insert_l (tv: qstate) l :=
   end.
 
 (*Add wellformedness. well_form aenv T S is one. *)
-Theorem type_progress' : forall rmax l aenv T T' C S, (*well_dom_g aenv T S -> *)
-       @m_locus_system rmax l aenv T C T' -> (exists la lb S' C', @m_step rmax aenv (insert_l S l) [(C,l)] la lb (insert_l S' l) C').
+Theorem type_progress' : forall rmax aenv T T' C S, wellFormedConf C -> wellFormedChans C ->
+       @c_locus_system rmax aenv T C T' -> C = nil \/ (exists la lb S' C', @m_step rmax aenv S C la lb S' C').
 Proof.
-  intros. generalize dependent S. intros. indEuction H0.
+  intros. generalize dependent S. induction H1.
+  intros. left. easy.
+  intros. right. 
+  (* maybe doing this. induction H5.*)
+
+
+(* below is wrong.
+ intros. indEuction H0.
   exists (1%R, None), [], S, []. apply nil_step.
   destruct IHc_locus_system as [la [lb [S' [C' Hm_step]]]]. admit.
   exists la, lb, S', C'. destruct m.
-  
+*)
 Admitted.
 
 
