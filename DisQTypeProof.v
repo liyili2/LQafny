@@ -61,8 +61,9 @@ Definition insert_l (tv: qstate) (l: var) := map (fun x => match x with (a,b) =>
                                                                           ((map (fun y => (y,l)) a),b) end) tv.
 
 Inductive cfg_eq : config -> config -> Prop :=
-| cfg_nil_eq : forall c, cfg_eq c c
-| cfg_commu_eq : forall m1 m2 c, cfg_eq (m1::m2::c) (m2::m1::c).
+| cfg_self : forall c, cfg_eq c c
+| cfg_commu : forall c1 c2, cfg_eq (c1++c2) (c2++c1)
+| cfg_trans : forall c1 c2 c3, cfg_eq c1 c2 -> cfg_eq c2 c3 -> cfg_eq c1 c3.
 
 Lemma sub_wellFormConf : forall m l ms, wellFormedConf ((m,l)::ms) -> wellFormedConf ms.
 Proof.
@@ -74,6 +75,9 @@ Qed.
 Axiom sub_wellFormChans : forall m l ms, wellFormedChans ((m,l)::ms) -> wellFormedChans ms.
 Axiom clear_lp : forall lp, (PNil::lp) = lp.
 
+Lemma wellFormedChans_contradiction : forall x n m l ms, wellFormedChans ms -> ~ wellFormedChans ((NewCMemb x n m,l)::ms).
+  Admitted.
+                                                                                      
 (*Add wellformedness. well_form aenv T S is one. *)
 Theorem type_progress' : forall rmax aenv T T' C S, wellFormedConf C -> wellFormedChans C ->
        @c_locus_system rmax aenv T C T' -> C = nil \/ (exists la lb S' C', @m_step rmax aenv S C la lb S' C').
@@ -88,25 +92,12 @@ Proof.
   specialize (IHc_locus_system H' H0' S).
   destruct IHc_locus_system as [Hm_nil | Hms_step].
   rewrite -> Hm_nil.
-  induction m. induction lp.
-  exists (1%R, None),[l],S,[]. apply end_step. simpl. easy.
-  induction a. rewrite clear_lp in *. auto. 
+  induction H5.
+  exists (1%R,None), [l], (([((x, BNum 0, BNum n),l)],Cval 1 (fun _ => (C0,allfalse)))::S), ((m,l)::[]).
+  apply newvar_step.
+  apply wellFormedChans_contradiction with x n m l ms in H0'. contradiction.
   
- (*
-  induction H5
-  destruct (IHm_locus_system H H0 H3 H4 H6 IHc_locus_system) as [la [lb [S' [C' IHm_step]]]].
- *) 
   
-  .
-  (* maybe doing this. induction H5.*)
-
-
-(* below is wrong.
- intros. indEuction H0.
-  exists (1%R, None), [], S, []. apply nil_step.
-  destruct IHc_locus_system as [la [lb [S' [C' Hm_step]]]]. admit.
-  exists la, lb, S', C'. destruct m.
-*)
 Admitted.
 
 
