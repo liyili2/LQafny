@@ -44,18 +44,6 @@ Inductive well_dom_g : aenv -> type_map -> glocus -> Prop :=
                    @well_dom_l aenv t (map fst gl) ->
                    well_dom_g aenv t gl.                  
 
-(*
-Fixpoint flatten {A : Type} (l : list (list A)) : list A :=
-  match l with
-  | [] => []
-  | x :: xs => x ++ flatten xs
-  end.
-
-Definition type_gmap2glocus (l: type_gmap):(glocus) :=
-  flatten (map (fun x => match x with (l,s,v) =>
-                                        (map (fun y => (y,v)) l) end) l).
- *)
-
 Inductive glocus_type : type_gmap -> glocus -> se_type ->  Prop :=
 | glocus_nor : forall t l gl, In l t -> l = (gl, TNor) -> glocus_type t gl TNor
 | glocus_had : forall t l gl, In l t -> l = (gl, THad) -> glocus_type t gl THad
@@ -69,15 +57,22 @@ Inductive well_form : aenv -> type_gmap -> gqstate -> Prop :=
 | well_form_had : forall aenv t qs b gl s, glocus_type t gl THad -> glocus_state qs gl s -> s = (Hval b) -> well_form aenv t qs
 | well_form_en : forall aenv t qs m b gl s, glocus_type t gl CH -> glocus_state qs gl s -> s = (Cval m b) -> well_form aenv t qs.
 
-Fixpoint insert_l_aux (tv:locus) (l:var) :=
-   match tv with nil => nil
-              | v::s => (v,l)::(insert_l_aux s l)
-   end.
+Definition insert_l (tv: qstate) (l: var) := map (fun x => match x with (a,b) =>
+                                                                          ((map (fun y => (y,l)) a),b) end) tv.
 
-Fixpoint insert_l (tv: qstate) l :=
-  match tv with nil => nil
-              | (a,b)::s => (insert_l_aux a l,b)::insert_l s l
-  end.
+Inductive cfg_eq : config -> config -> Prop :=
+| cfg_nil_eq : forall c, cfg_eq c c
+| cfg_commu_eq : forall m1 m2 c, cfg_eq (m1::m2::c) (m2::m1::c).
+
+Lemma sub_wellFormConf : forall m l ms, wellFormedConf ((m,l)::ms) -> wellFormedConf ms.
+Proof.
+  intros. unfold wellFormedConf in *.
+  intros. apply H with b.
+  right. auto.
+Qed.
+
+Axiom sub_wellFormChans : forall m l ms, wellFormedChans ((m,l)::ms) -> wellFormedChans ms.
+Axiom clear_lp : forall lp, (PNil::lp) = lp.
 
 (*Add wellformedness. well_form aenv T S is one. *)
 Theorem type_progress' : forall rmax aenv T T' C S, wellFormedConf C -> wellFormedChans C ->
@@ -85,7 +80,24 @@ Theorem type_progress' : forall rmax aenv T T' C S, wellFormedConf C -> wellForm
 Proof.
   intros. generalize dependent S. induction H1.
   intros. left. easy.
-  intros. right. 
+  intros. right.
+  assert (H' : wellFormedConf ms).
+  { apply sub_wellFormConf with m l. auto.}
+  assert (H0' : wellFormedChans ms).
+  { apply sub_wellFormChans with m l. auto.}
+  specialize (IHc_locus_system H' H0' S).
+  destruct IHc_locus_system as [Hm_nil | Hms_step].
+  rewrite -> Hm_nil.
+  induction m. induction lp.
+  exists (1%R, None),[l],S,[]. apply end_step. simpl. easy.
+  induction a. rewrite clear_lp in *. auto. 
+  
+ (*
+  induction H5
+  destruct (IHm_locus_system H H0 H3 H4 H6 IHc_locus_system) as [la [lb [S' [C' IHm_step]]]].
+ *) 
+  
+  .
   (* maybe doing this. induction H5.*)
 
 
