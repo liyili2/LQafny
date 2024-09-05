@@ -85,15 +85,15 @@ Inductive perm_envs: type_map -> type_map -> Prop :=
 Axiom perm_envs_sym: forall T1 T2, perm_envs T1 T2 -> perm_envs T2 T1.
 
 Fixpoint has_mea_aux (p: process) :=
-  match p with PNil => false
-             | (PIf _ p q) => orb (has_mea_aux p) (has_mea_aux q)
-             | (AP (CMeas _ _) p) => true
+  match p with PNil => False
+             | (PIf _ p q) =>  (has_mea_aux p) \/ (has_mea_aux q)
+             | (AP (CMeas _ _) p) => True
              | (AP _ p) => has_mea_aux p
              | (DP _ p) => has_mea_aux p
   end.
     
-Definition has_mea (lp:list process) := filter has_mea_aux lp.
-Definition has_no_mea (lp:list process) := filter (fun i => negb (has_mea_aux i)) lp.
+Definition has_mea (lp:list process) := Forall has_mea_aux lp.
+Definition has_no_mea (lp:list process) := Forall (fun i => ~ (has_mea_aux i)) lp.
 Fixpoint locus_with_mea_aux (p: process) :=
   match p with PNil => nil
            |(PIf _ p q) => locus_with_mea_aux p ++ locus_with_mea_aux q
@@ -218,10 +218,10 @@ Inductive m_locus_system {rmax:nat}
          m_locus_system l (AEnv.add x (QT l n) env) (([((x, BNum 0, BNum n))],CH)::T) m T' 
              -> m_locus_system l env T (NewCMemb x n m) T'
 
-    | mem_sys : forall l m nm Ta Tb T T' env lp, m = has_mea lp 
-                  -> nm = has_no_mea lp -> @p_locus_system_mea rmax env T m  Ta
-                -> @p_locus_systems rmax env T' m  Tb
-                   -> m_locus_system l env (T++T') (Memb lp) (Ta++Tb).
+    | mem_sys : forall l m nm Ta Tb T T' env, has_mea m 
+                  -> has_no_mea nm -> @p_locus_system_mea rmax env T m  Ta
+                -> @p_locus_systems rmax env T' nm  Tb
+                   -> m_locus_system l env (T++T') (Memb (m++nm)) (Ta++Tb).
 
 Inductive has_no_l : var -> type_gmap -> Prop :=
    has_no_l_empty: forall x, has_no_l x nil
