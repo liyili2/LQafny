@@ -75,9 +75,12 @@ Qed.
 Axiom sub_wellFormChans : forall m l ms, wellFormedChans ((m,l)::ms) -> wellFormedChans ms.
 Axiom clear_lp : forall lp, (PNil::lp) = lp.
 
-Lemma wellFormedChans_contradiction : forall x n m l ms, wellFormedChans ms -> ~ wellFormedChans ((NewCMemb x n m,l)::ms).
-  Admitted.
-                                                                                      
+Lemma wellFormedChans_contradiction : forall x n m l, wellFormedChans ([(NewCMemb x n m, l)])
+          -> ~ wellFormedConf ([(NewCMemb x n m, l)]).
+Proof.
+Admitted.
+
+                                                                        
 (*Add wellformedness. well_form aenv T S is one. *)
 Theorem type_progress' : forall rmax aenv T T' C S, wellFormedConf C -> wellFormedChans C ->
        @c_locus_system rmax aenv T C T' -> C = nil \/ (exists la lb S' C', @m_step rmax aenv S C la lb S' C').
@@ -86,17 +89,17 @@ Proof.
   intros. left. easy.
   intros. right.
   assert (H' : wellFormedConf ms).
-  { apply sub_wellFormConf with m l. auto.}
+  { apply sub_wellFormConf with m l. auto. }
   assert (H0' : wellFormedChans ms).
-  { apply sub_wellFormChans with m l. auto.}
+  { apply sub_wellFormChans with m l. auto. }
   specialize (IHc_locus_system H' H0' S).
   destruct IHc_locus_system as [Hm_nil | Hms_step].
   rewrite -> Hm_nil.
   induction H5.
   exists (1%R,None), [l], (([((x, BNum 0, BNum n),l)],Cval 1 (fun _ => (C0,allfalse)))::S), ((m,l)::[]).
   apply newvar_step.
-  apply wellFormedChans_contradiction with x n m l ms in H0'. contradiction.
-  
+  subst. apply wellFormedChans_contradiction in H0 as X1. easy.
+  subst.
   
 Admitted.
 
