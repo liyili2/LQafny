@@ -99,9 +99,11 @@ Proof.
   exists (1%R,None), [l], (([((x, BNum 0, BNum n),l)],Cval 1 (fun _ => (C0,allfalse)))::S), ((m,l)::[]).
   apply newvar_step.
   subst. apply wellFormedChans_contradiction in H0 as X1. easy.
-  subst.
+  subst. destruct m. induction nm. simpl in *.
+  exists (1%R, None), [l], S, []. apply end_step. easy.
+  simpl in *. destruct a. rewrite clear_lp in *. auto.
+  
   
 Admitted.
-
 
 

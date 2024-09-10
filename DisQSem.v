@@ -253,7 +253,7 @@ Inductive m_step {rmax:nat}
   : aenv -> gqstate -> config -> R * option nat -> list var -> gqstate -> config -> Prop :=
   (*| nil_step : forall aenv s, m_step aenv s [] (1%R, None) [] s [] *)
   | end_step : forall aenv s l Q cfg, are_0 Q -> m_step aenv s ((Memb Q, l)::cfg) (1%R, None) [l] s (cfg)
-  | mem_step : forall aenv s l a P Q cfg, m_step aenv s ((Memb (P::Q), l)::cfg) (Rdiv 1%R (INR (length ((DP a P)::Q))), None) [l] s ((LockMemb ((DP a P)) Q,l)::cfg)
+  | mem_step : forall aenv s l a P Q cfg, m_step aenv s ((Memb ((DP a P)::Q), l)::cfg) (Rdiv 1%R (INR (length ((DP a P)::Q))), None) [l] s ((LockMemb ((DP a P)) Q,l)::cfg)
   | rev_step : forall aenv s l P lp cfg, m_step aenv s  ((LockMemb P lp, l)::cfg) (1%R, None) [l] s ((Memb (P::lp), l)::cfg)
   | send_rev_sem : forall aenv s x y l1 l2 n m1 m2 a P Q cfg, simp_aexp a = Some n -> 
              m_step aenv s (((LockMemb (DP (Send x a) P) m1), l1)::((LockMemb (DP (Recv x y) Q) m2), l2)::cfg) 
