@@ -22,10 +22,14 @@ Definition ActionTranslation (a: QAM.action) : (DisQSyntax.process)
 | CSend cc cm => DP (Send cc (cmess_translated cm)) PNil
 | CcRecv cc x => DP (Recv cc x) PNil
 | CqRecv qc x => DP (Recv qc x) PNil
-| LEncode q mu x => AP (SQIR.X SQIR.CZ q) PNil
-| LDecode q x => AP (CMeas x q) PNil
-| GEncode c x => AP (H CNOT) PNil
-| GDecode c x => AP (Meas x) PNil
+| Encode c m => match is_class m with 
+    | true => CAppU m (RZ 1 c 1)
+    | false => SQIR.CNOT SQIR.H
+    end
+| Decode c m => match is_class m with 
+    | true => SQIR.CNOT SQIR.H Meas m
+    | false => Meas m
+    end
 end.
 
 Fixpoint MembraneTranslation (m: QAM.memb) : (DisQSyntax.process)

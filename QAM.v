@@ -34,7 +34,15 @@ Definition cchan : Type := chan_n.
 Inductive qmess := Unit | Mess (m: mess_n) | ChanM (c: chan_m) | PartM (q: qmess)
 with      chan_m := ChM (c: qchan) (mu: mess)
 with      cmess := MeasureQ (q : qmess)
-with      mess   := QtM (q: qmess) | CcM (i: cmess).
+with      mess   := QtM (q: qmess) | CcM (i: cmess)
+with      pchan := Hat (c: qchan).
+
+Definition is_class (a: mess) := 
+  match a with 
+  | CcM a => true 
+  | _ => false 
+  end.
+
 
 Inductive shareC := ShareC (c: chan_n) (m: chan_m).
 
@@ -42,8 +50,8 @@ Definition contexts  := list shareC.
 
 Inductive action := CSend (cc: cchan) (cm: cmess)
                | CcRecv (cc: cchan) (x: var) | CqRecv (qc: qchan) (x: var)
-               | LEncode (q: qmess) (mu: mess) (x: var) | LDecode (q: qmess) (x: var)
-               | GEncode (c: qchan) (x: mess) | GDecode (c: qchan) (x: var).
+               | Encode (channel: chan_n) (message: mess)
+               | Decode (channel: chan_n) (message: mess).
 
 (* Inductive process := Nil | AR (a: action) (r: process) | Choice (p: process) (r: process) | Rept (r: process)
 | GeneralProcess (k: list chan_n) (p: process). *)
@@ -64,7 +72,7 @@ Definition config := list memb.
 
 (***      Semantics   ***)
 (** Free Channel **)
-Fixpoint FC_con (cx: contexts) :=
+(* Fixpoint FC_con (cx: contexts) :=
   match cx with
   | [] => []
   | ((ShareC c (ChM d m)) :: t) => c :: d :: (FC_con t)
@@ -82,14 +90,14 @@ with FC_mess (mu: mess) :=
   | QtM q => FC_qmess q
   end.
 
-Definition FC_action (a: action) :=
+(* Definition FC_action (a: action) :=
        match a with
       | CqRecv c _ | GEncode c _ | GDecode c _ => [c]
        | CSend _ _ | CcRecv _ _ => []
        | LEncode q m _ => (FC_qmess q) ++ (FC_mess m)
        | LDecode q _ => FC_qmess q
  
-end.
+end. *)
 
 Fixpoint FC_process (r: subprocess) :=
   match r with
@@ -181,4 +189,4 @@ Inductive disjoint_union : list qchan -> list qchan -> Prop :=
     qam_sem ((ALock (AR (CSend c i) p) mb1)::(ALock (AR (CcRecv c x) q) mb2)::cf) ((ALock p mb1)::(ALock (replace_mess q x (CcM i)) mb2)::cf) (Some (CcM i))  
 | swap : forall (d: qchan) (c1 c2: chan_n) p q mb1 mb2 mb1' mb2' cf,
     not (In c1 (FC_memb mb2')) ->
-    qam_sem ((ActM (ALock (AR (QSwap d) p) mb1) (ShareC c1 (ChM d (QtM Unit))) mb2)::(ActM (ALock (AR (QSwap d) q) mb1') (ShareC c2 (ChM d (QtM Unit))) mb2')::cf) ((ActM mb2 (ShareC c1 (ChM d (QtM Unit))) mb2')::(ALock p mb1)::(ALock q mb1')::cf) None.   *)
+    qam_sem ((ActM (ALock (AR (QSwap d) p) mb1) (ShareC c1 (ChM d (QtM Unit))) mb2)::(ActM (ALock (AR (QSwap d) q) mb1') (ShareC c2 (ChM d (QtM Unit))) mb2')::cf) ((ActM mb2 (ShareC c1 (ChM d (QtM Unit))) mb2')::(ALock p mb1)::(ALock q mb1')::cf) None.   *) *)
