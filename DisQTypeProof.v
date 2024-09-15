@@ -74,7 +74,7 @@ Qed.
 
 Axiom sub_wellFormChans : forall m l ms, wellFormedChans ((m,l)::ms) -> wellFormedChans ms.
 Axiom clear_lp : forall lp, (PNil::lp) = lp.
-
+Axiom s_nonempty : forall (s:gqstate), (exists a l v s', s = (a++l,v)::s').
 Lemma wellFormedChans_contradiction : forall x n m l, wellFormedChans ([(NewCMemb x n m, l)])
           -> ~ wellFormedConf ([(NewCMemb x n m, l)]).
 Proof.
@@ -99,11 +99,16 @@ Proof.
   exists (1%R,None), [l], (([((x, BNum 0, BNum n),l)],Cval 1 (fun _ => (C0,allfalse)))::S), ((m,l)::[]).
   apply newvar_step.
   subst. apply wellFormedChans_contradiction in H0 as X1. easy.
-  subst. destruct m. induction nm. simpl in *.
+  subst. destruct m. destruct nm. simpl in *.
   exists (1%R, None), [l], S, []. apply end_step. easy.
-  simpl in *. destruct a. rewrite clear_lp in *. auto.
+  simpl in *. destruct p.
+  destruct (s_nonempty S) as [a [l' [v [s' H_nonempty]]]].
+  exists ((1/(INR ((length nm)+1)))%R, None), [l], S, [(Memb (PNil::nm), l)].
+  rewrite (H_nonempty). eapply move_step. easy. 
+  admit. admit. admit. admit.
+  apply self_pstep. admit.
   
-  
+
 Admitted.
 
 
