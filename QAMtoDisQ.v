@@ -27,7 +27,7 @@ Definition ActionTranslation (a: QAM.action) (n: nat): (DisQSyntax.process)
 | CcRecv cc x => DP (Recv cc x) PNil
 | CqRecv qc x => DP (Recv qc x) PNil
 | Encode c m => match is_class m with 
-    | true => AP (CAppU ((c, (BNum 0), (BVar n 0))::nil) (RZ 1 c (Num 0))) (AP (CAppU ((c, (BNum 0), (BVar n 0))::nil) (X c (Num 0))) PNil)
+    | true => AP (CAppU ((c, (BNum 0), (BVar n 0))::nil) (X c (Num 0))) (AP (CAppU ((c, (BNum 0), (BVar n 0))::nil) (RZ 1 c (Num 0))) PNil)
     | false => AP (CAppU ((c, (BNum 0), (BVar n 0))::nil) (SQIR.CNOT 1 0)) (AP (CAppU ((c, (BNum 0), (BVar n 0))::nil) (SQIR.H c (Num 0))) PNil)
     end
 | Decode c m => match is_class m with 
