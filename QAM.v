@@ -43,7 +43,6 @@ Definition is_class (a: mess) :=
   | _ => false 
   end.
 
-
 Inductive shareC := ShareC (c: chan_n) (m: chan_m).
 
 Definition contexts  := list shareC.
@@ -52,6 +51,8 @@ Inductive action := CSend (cc: cchan) (cm: cmess)
                | CcRecv (cc: cchan) (x: var) | CqRecv (qc: qchan) (x: var)
                | Encode (channel: chan_n) (message: mess)
                | Decode (channel: chan_n) (message: mess).
+
+Definition return_chan_name (c: chan_n) (a: qmess) := c.
 
 (* Inductive process := Nil | AR (a: action) (r: process) | Choice (p: process) (r: process) | Rept (r: process)
 | GeneralProcess (k: list chan_n) (p: process). *)
