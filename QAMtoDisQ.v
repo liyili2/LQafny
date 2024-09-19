@@ -2,6 +2,7 @@ Require Import DisQDef.
 Require Import DisQSyntax.
 Require Import QAM.
 Require Import SQIR.
+Require Import Coq.FSets.FMapList.
 
 (*work in progress*)
 (* Fixpoint QAMtoDisqTranslation (a: config) : (config) * (qstate)(*input is not qam_sem*)
@@ -17,13 +18,17 @@ Require Import SQIR.
 | Rept r =>
 end. *)
 Parameter cmess_translated: cmess -> aexp.
-Definition ActionTranslation (a: QAM.action) : (DisQSyntax.process)
+Declare Scope cexp_scope.
+Delimit Scope cexp_scope with cexp.
+Local Open Scope cexp_scope.
+Local Open Scope nat_scope.
+Definition ActionTranslation (a: QAM.action) (n: nat): (DisQSyntax.process)
 := match a with
 | CSend cc cm => DP (Send cc (cmess_translated cm)) PNil
 | CcRecv cc x => DP (Recv cc x) PNil
 | CqRecv qc x => DP (Recv qc x) PNil
 | Encode c m => match is_class m with 
-    | true => CAppU m (RZ 1 c 1)
+    | true => CAppU ((c, (BNum 0), (BVar n 0))::nil) (RZ 1 c 1)
     | false => SQIR.CNOT SQIR.H
     end
 | Decode c m => match is_class m with 
