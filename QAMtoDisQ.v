@@ -1,7 +1,5 @@
-Require Import DisQDef.
 Require Import DisQSyntax.
 Require Import QAM.
-Require Import Coq.FSets.FMapList.
 Require Import List.
 Import ListNotations.
 (*work in progress*)
@@ -27,13 +25,13 @@ Definition ActionTranslation (a: QAM.action) (n: nat): (DisQSyntax.process)
 | CcRecv cc x => DP (Recv cc x) PNil
 | CqRecv qc x => DP (Recv qc x) PNil
 | Encode c m => match is_class m with 
-    | true => AP (CAppU ((c, (BNum 0), (BVar n 0))::nil) (X c (Num 0))) (AP (CAppU ((c, (BNum 0), (BVar n 0))::nil) (RZ 1 c (Num 0))) PNil)
-    | false => AP (CAppU ((c, (BNum 0), (BVar n 0))::nil) (X c (Num 0))) (AP (CAppU ((c, (BNum 0), (BVar n 0))::nil) (RZ 1 c (Num 0))) PNil)
+    | true => AP (CAppU ((c, (BNum 0), (BNum n))::nil) (X c (Num 0))) (AP (CAppU ((c, (BNum 0), (BNum n))::nil) (RZ 1 c (Num 0))) PNil)
+    | false => AP (CAppU ((c, (BNum 0), (BNum n))::nil) (H c (Num 0))) (AP (CAppU ((c, (BNum 0), (BNum n))::nil) (CU c (Num c) (X c (Num c)))) PNil)
     (* | false => AP (CAppU ((c, (BNum 0), (BVar n 0))::nil) (SQIR.CNOT 1 0)) (AP (CAppU ((c, (BNum 0), (BVar n 0))::nil) (SQIR.H c (Num 0))) PNil) *)
     end
 | Decode c m => match is_class m with 
-    | true => CU c (Num c) (X c (Num c))
-    | false => AP (CMeas c ((c, (BNum 0), (BVar n 0))::nil)) PNil
+    | true => AP (CAppU ((c, (BNum 0), (BNum n))::nil) (H c (Num 0))) (AP (CAppU ((c, (BNum 0), (BNum n))::nil) (CU c (Num c) (X c (Num c)))) PNil)
+    | false => AP (CMeas c ((c, (BNum 0), (BNum n))::nil)) PNil
     end
 end.
 
