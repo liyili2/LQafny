@@ -86,6 +86,7 @@ Inductive exp := SKIP (x:var) (a:aexp) | X (x:var) (a:aexp)
         | QFT (x:var) (b:nat) (* H on x ; CR gates on everything within (size - b). *)
         | RQFT (x:var) (b:nat)
        (* | H (p:posi) *)
+        | H (x:var) (a:aexp)
         | Seq (s1:exp) (s2:exp).
 
 Inductive type := Phi (b:nat) | Nor.
