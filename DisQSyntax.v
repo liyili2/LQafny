@@ -27,10 +27,11 @@ Inductive ktypeName := QTN | QCN.
 
 Inductive qtype := EN.
 
-Inductive bound := BVar (v:var) (n:nat) | BNum (n:nat).
+Inductive bound := BNum (n:nat).
 
-Definition simple_bound (b:bound) :=
+(* Definition simple_bound (b:bound) :=
    match b with BNum n => True | BVar x n => False end.
+*)
 
 Definition range : Set := var * bound * bound.
 
