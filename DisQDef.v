@@ -29,7 +29,7 @@ Check exp.
    a decision procedure to determine if a range is in another one. *)
 Inductive simple_ses : locus -> Prop :=
     simple_ses_empty : simple_ses nil
-  | simple_ses_many :  forall a x y l, simple_bound x -> simple_bound y -> simple_ses l -> simple_ses ((a,x,y)::l).
+  | simple_ses_many :  forall a x y l, simple_ses l -> simple_ses ((a,x,y)::l).
 
 
 Inductive ses_eq : locus -> locus -> Prop :=
@@ -55,9 +55,7 @@ Inductive ses_sub : locus -> locus -> Prop :=
 Definition in_range (r1 r2:range) :=
   match r1 with (x,BNum a,BNum b) => 
     match r2 with (y,BNum c, BNum d) => ((x = y) /\ (c <= a) /\ (b <= d))
-                  | _ => False
     end
-              | _ => False
   end.
 
 Inductive ses_dis_aux : range -> locus -> Prop := 
@@ -86,9 +84,7 @@ Definition join_two_ses (a:(var * bound * bound)) (b:(var*bound*bound)) :=
                             else if n2 <? m2 then Some (x,BNum m1,BNum m2)
                             else Some (x,BNum m1,BNum n2))
             else None
-            | _ => None
      end
-          | _ => None
    end.
 
 Fixpoint dom {A:Type} (l: list (locus * A)) :=
@@ -144,7 +140,6 @@ Fixpoint get_core_ses (l:locus) :=
       match get_core_ses al with None => None
                            | Some xl => Some ((x,n,m)::xl)
       end
-            | _ => None
    end.
 
 Definition ses_len (l:locus) := match get_core_ses l with None => None | Some xl => Some (ses_len_aux xl) end.
@@ -153,15 +148,14 @@ Fixpoint gses_len_aux (l:list ((var * nat * nat) * var)) :=
    match l with nil => 0 | ((x,l,h),a)::xl => (h - l) + gses_len_aux xl end. 
 
 Fixpoint gget_core_ses (l:glocus) :=
-   match l with [] => Some nil
+   match l with [] => nil
            | ((x,BNum n, BNum m),l)::al => 
-      match gget_core_ses al with None => None
-                           | Some xl => Some (((x,n,m),l)::xl)
+      match gget_core_ses al with nil => nil
+                           | xl => (((x,n,m),l)::xl)
       end
-            | _ => None
    end.
 
-Definition gses_len (l:glocus) := match gget_core_ses l with None => None | Some xl => Some (gses_len_aux xl) end.
+Definition gses_len (l:glocus) := match gget_core_ses l with nil => 0 | xl => (gses_len_aux xl) end.
 
 Axiom app_length_same : forall l1 l2 l3 l4 n, ses_len l1 = Some n 
    -> ses_len l3 = Some n -> l1++l2 = l3 ++ l4 -> l1 = l3 /\ l2 = l4.
@@ -170,7 +164,7 @@ Lemma get_core_ses_app: forall l l' l1 l1', get_core_ses l = Some l' -> get_core
      -> get_core_ses (l++l1) = Some (l'++l1').
 Proof.
   induction l;intros;simpl in *. inv H. simpl in *. easy.
-  destruct a. destruct p. destruct b0. easy. destruct b. easy.
+  destruct a. destruct p. destruct b0. destruct b.
   destruct (get_core_ses l) eqn:eq1; try easy. inv H. rewrite (IHl l0 l1 l1'); try easy.
 Qed.
 
@@ -577,8 +571,10 @@ Fixpoint subst_bexp (a:bexp) (x:var) (n:nat) :=
               | BNeg b => BNeg (subst_bexp b x n)
     end.
 
+
 Definition subst_bound (b:bound) (x:var) (n:nat) :=
-   match b with (BVar y m) => if x =? y then BNum (n+m) else (BVar y m) | BNum m => BNum m end.
+   match b with BNum m => BNum m end.
+
 
 Definition subst_range (r:range) (x:var) (n:nat) := 
    match r with (a,b,c) => (a,subst_bound b x n,subst_bound c x n) end.
@@ -749,30 +745,24 @@ Fixpoint gen_qubits (x:var) (l n:nat) :=
   match n with 0 => nil | S m => (x,l+m)::(gen_qubits x l m) end.
 
 Definition gen_qubit_range (r:range) :=
-  match r with  (x,BNum l,BNum h) => Some (gen_qubits x l (h-l)) | _ => None end.
+  match r with  (x,BNum l,BNum h) => (gen_qubits x l (h-l)) end.
 
 Fixpoint gen_qubit_ses (s:locus) :=
-   match s with nil => Some nil | x::xl =>
-     match gen_qubit_ses xl with None => None
-                               | Some al => 
-           match gen_qubit_range x with None => None
-                                  | Some a => Some (a++al)
+   match s with nil => nil | x::xl =>
+     match gen_qubit_ses xl with  al => 
+           match gen_qubit_range x with a => (a++al)
            end
       end
     end.
 
 Definition sub_qubits (s1 s2: locus) : Prop :=
-    match gen_qubit_ses s1 with None => False
-          | Some al =>
-     match gen_qubit_ses s2 with None => False
-            | Some bl => (forall x, In x al -> In x bl)
+    match gen_qubit_ses s1 with al =>
+     match gen_qubit_ses s2 with bl => (forall x, In x al -> In x bl)
      end
     end.
 
 Definition dis_qubits (s1 s2: locus) : Prop :=
-    match gen_qubit_ses s1 with None => False
-          | Some al =>
-     match gen_qubit_ses s2 with None => False
-            | Some bl => (Lists.ListSet.set_inter posi_eq_dec al bl = nil)
+    match gen_qubit_ses s1 with al =>
+     match gen_qubit_ses s2 with bl => (Lists.ListSet.set_inter posi_eq_dec al bl = nil)
      end
     end.

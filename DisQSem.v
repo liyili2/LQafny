@@ -38,8 +38,8 @@ Fixpoint compile_range_state (n st i:nat) (x:var) (b: rz_val) (f:posi -> val) :=
 Fixpoint compile_ses_state' (i:nat) (l:locus) (b:rz_val) :=
    match l with nil => (fun _ => nval false allfalse)
            | ((x,BNum l,BNum r)::xl) => compile_range_state (r-l) l i x b (compile_ses_state' (i+(r-l)) xl b)
-           | (_::xl) => compile_ses_state' i xl b
    end.
+
 Definition compile_ses_state (l:locus) (b:rz_val) := compile_ses_state' 0 l b.
 
 Fixpoint turn_oqasm_range (rmax n st i:nat) (x:var) (f:posi -> val) (r:rz_val) (b: rz_val) : option (rz_val * rz_val) :=
@@ -58,8 +58,8 @@ Fixpoint turn_oqasm_ses' (rmax i:nat) (l:locus) (f:posi -> val) (b:rz_val) :=
                match turn_oqasm_ses' rmax (i+(r-l)) xl f b with None => None
                | Some (ra,ba) => turn_oqasm_range rmax (r-l) l i x f ra ba
                end
-           | _ => None
    end.
+
 Definition turn_oqasm_ses rmax (l:locus) (f:posi -> val) b  := turn_oqasm_ses' rmax 0 l f b.
 
 Definition cover_n (f:rz_val) (n:nat) := fun i => if i <? n then false else f i.
@@ -259,7 +259,7 @@ Inductive m_step {rmax:nat}
              m_step aenv s (((LockMemb (DP (Send x a) P) m1), l1)::((LockMemb (DP (Recv x y) Q) m2), l2)::cfg) 
              (1%R, None) (l1::[l2]) s (((Memb (P::m1)), l1)::((Memb (Q::m2)), l2)::cfg)
   | move_step : forall aenv s a l lp P P' r n n' m v va lv lc fc fca cfg, n = (length lp)+1 -> 
-               gses_len a = Some n' -> gses_len l = Some m -> same_l a lc -> mut_state 0 n' m v fc
+               gses_len a = n' -> gses_len l =  m -> same_l a lc -> mut_state 0 n' m v fc
                -> @p_step rmax aenv [(cut_l a,fc)] P (r,lv) [(cut_l a,va)] P' -> mut_state 0 m n' va fca ->
             m_step aenv ((a++l, v)::s) ((Memb (P::lp),lc)::cfg) ((r / INR n)%R, lv) [lc] ((a++l, fc)::s) ((Memb (P'::lp), lc)::cfg)
   | newvar_step : forall aenv s m n x lc cfg,
