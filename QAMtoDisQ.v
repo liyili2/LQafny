@@ -35,6 +35,19 @@ Definition ActionTranslation (a: QAM.action) (n: nat): (DisQSyntax.process)
     end
 end.
 
+(*Translate processes first
+be smart about maybe changing the syntax a bit
+how are you going to link action translation vs process translation
+actions to processes; what should we translate QAM processes to?*)
+
+Check [].
+Definition SubProcessTranslation (p: QAM.subprocess): (DisQSyntax.process)
+:= match p with
+| Nil => PNil
+| 
+end.
+
+
 Fixpoint MembraneTranslation (m: QAM.memb) : (DisQSyntax.process)
 := match m with 
 | CtxM r phi =>
