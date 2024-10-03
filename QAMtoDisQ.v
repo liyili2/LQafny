@@ -44,7 +44,9 @@ Check [].
 Definition SubProcessTranslation (p: QAM.subprocess): (DisQSyntax.process)
 := match p with
 | Nil => PNil
-| 
+| AR a r => AP (ActionTranslation a) (SubProcessTranslation r)
+| Choice =>
+| Rept => 
 end.
 
 
