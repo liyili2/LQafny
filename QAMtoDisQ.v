@@ -19,19 +19,20 @@ Parameter cmess_translated: cmess -> aexp.
 Local Open Scope nat_scope.
 
 Check [].
-Definition ActionTranslation (a: QAM.action) (n: nat): (DisQSyntax.process)
+Parameter memoryLoc : nat.
+Definition ActionTranslation (a: QAM.action) (n: nat) (b: DisQSyntax.process): (DisQSyntax.process)
 := match a with
-| CSend cc cm => DP (Send cc (cmess_translated cm)) PNil
-| CcRecv cc x => DP (Recv cc x) PNil
-| CqRecv qc x => DP (Recv qc x) PNil
+| CSend cc cm => DP (Send cc (cmess_translated cm)) b
+| CcRecv cc x => DP (Recv cc x) b
+| CqRecv qc x => DP (Recv qc x) b
 | Encode c m => match is_class m with 
-    | true => AP (CAppU ((c, (BNum 0), (BNum n))::nil) (X c (Num 0))) (AP (CAppU ((c, (BNum 0), (BNum n))::nil) (RZ 1 c (Num 0))) PNil)
-    | false => AP (CAppU ((c, (BNum 0), (BNum n))::nil) (H c (Num 0))) (AP (CAppU ((c, (BNum 0), (BNum n))::nil) (CU c (Num c) (X c (Num c)))) PNil)
+    | true => AP (CAppU ((c, (BNum 0), (BNum n))::nil) (X c (Num 0))) (AP (CAppU ((c, (BNum 0), (BNum n))::nil) (RZ 1 c (Num 0))) b)
+    | false => AP (CAppU ((c, (BNum 0), (BNum n))::nil) (H c (Num 0))) (AP (CAppU ((c, (BNum 0), (BNum n))::nil) (CU c (Num c) (X c (Num c)))) b)
     (* | false => AP (CAppU ((c, (BNum 0), (BVar n 0))::nil) (SQIR.CNOT 1 0)) (AP (CAppU ((c, (BNum 0), (BVar n 0))::nil) (SQIR.H c (Num 0))) PNil) *)
     end
 | Decode c m => match is_class m with 
-    | true => AP (CAppU ((c, (BNum 0), (BNum n))::nil) (H c (Num 0))) (AP (CAppU ((c, (BNum 0), (BNum n))::nil) (CU c (Num c) (X c (Num c)))) PNil)
-    | false => AP (CMeas c ((c, (BNum 0), (BNum n))::nil)) PNil
+    | true => AP (CAppU ((c, (BNum 0), (BNum n))::nil) (H c (Num 0))) (AP (CAppU ((c, (BNum 0), (BNum n))::nil) (CU c (Num c) (X c (Num c)))) b)
+    | false => AP (CMeas c ((c, (BNum 0), (BNum n))::nil)) b
     end
 end.
 
@@ -41,14 +42,18 @@ how are you going to link action translation vs process translation
 actions to processes; what should we translate QAM processes to?*)
 
 Check [].
-Definition SubProcessTranslation (p: QAM.subprocess): (DisQSyntax.process)
+
+Parameter rand: DisQSyntax.process -> bool.
+
+
+(* Definition HelperToExtractProcess (a: QAM.action) :=  *)
+Fixpoint SubProcessTranslation (p: QAM.subprocess): (DisQSyntax.process)
 := match p with
 | Nil => PNil
-| AR a r => AP (ActionTranslation a) (SubProcessTranslation r)
-| Choice =>
-| Rept => 
+| AR a r => (ActionTranslation a memoryLoc (SubProcessTranslation r)) 
+| Choice p r => if rand(SubProcessTranslation p) then SubProcessTranslation p else SubProcessTranslation r
+| Rept r => SubProcessTranslation r
 end.
-
 
 Fixpoint MembraneTranslation (m: QAM.memb) : (DisQSyntax.process)
 := match m with 
