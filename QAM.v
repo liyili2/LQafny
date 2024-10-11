@@ -69,7 +69,17 @@ Inductive memb := CtxM (r: rmemb) (phi: contexts) | ALock (r: subprocess) (t: me
 
 Definition config := list memb.
 
+(*notes on memb: 
+CtxM is 
+ALock is
+ActM is
+lines in QAM.v are modifiable
+1) airlock membrane
+2) normal membrane, list of molecules, molecules have states or processes
+consider try pairing a state with a membrane
+alpha.mu does represent entanglement; two entangled particles can be represented as one item
 
+*)
 
 (***      Semantics   ***)
 (** Free Channel **)

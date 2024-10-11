@@ -45,8 +45,8 @@ Check [].
 
 Parameter rand: DisQSyntax.process -> bool.
 
-
 (* Definition HelperToExtractProcess (a: QAM.action) :=  *)
+(* assume parameter function to generate a quantum state or quantum molecules, or for compilint states*)
 Fixpoint SubProcessTranslation (p: QAM.subprocess): (DisQSyntax.process)
 := match p with
 | Nil => PNil
@@ -55,13 +55,13 @@ Fixpoint SubProcessTranslation (p: QAM.subprocess): (DisQSyntax.process)
 | Rept r => SubProcessTranslation r
 end.
 
-Fixpoint MembraneTranslation (m: QAM.memb) : (DisQSyntax.process)
+Fixpoint MembraneTranslation (m: QAM.memb) : (DisQSyntax.memb)
 := match m with 
-| CtxM r phi =>
-| ALock r t =>
-| ActM p c Q =>
+| CtxM r phi => 
+| ALock r t => LockMemb (SubProcessTranslation r) (MembraneTranslation t)
+| ActM p c Q => 
 end.
 
-Fixpoint ConfigTranslation (q: config) : (DisQSyntax.process)
+(* Fixpoint ConfigTranslation (q: config) : (DisQSyntax.process)
 | match m with 
-| a::b => 
+| a::b =>  *)

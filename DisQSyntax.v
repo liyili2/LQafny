@@ -115,6 +115,13 @@ Inductive memb := Memb (lp: list process)
                  | NewCMemb (x: var) (n: nat) (m: memb)
                  | NewVMemb (x: var) (n: nat) (m: memb).
 
+ (*notes on memb: 
+Memb is normal membrane
+LockMemb is airlock membrane
+MewCMemb is for creating a new channel
+NewVMemb is for creating a new variable
+ *)                
+
 (** Configuration **)
 Definition config : Type := list (memb * var).
 
