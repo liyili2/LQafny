@@ -118,7 +118,7 @@ Inductive memb := Memb (lp: list process)
  (*notes on memb: 
 Memb is normal membrane
 LockMemb is airlock membrane
-MewCMemb is for creating a new channel
+NewCMemb is for creating a new channel
 NewVMemb is for creating a new variable
  *)                
 

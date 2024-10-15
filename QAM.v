@@ -61,7 +61,13 @@ Inductive subprocess := Nil | AR (a: action) (r: subprocess) | Choice (p: subpro
 
 Definition processPair: Type := (list chan_n) * subprocess.
 
-Definition rmemb := list subprocess.
+Definition membItems: Type := ((chan_n * mess_n) % type) | subprocess.
+
+(* Definition rmemb := list subprocess. *)
+
+(* Coercion StateIsInMemb : ((chan_n * mess_n) % type) >-> membItems. *)
+
+Definition rmemb := list membItems. 
 
 Definition membraneSet := list processPair.
 
@@ -70,9 +76,9 @@ Inductive memb := CtxM (r: rmemb) (phi: contexts) | ALock (r: subprocess) (t: me
 Definition config := list memb.
 
 (*notes on memb: 
-CtxM is 
-ALock is
-ActM is
+CtxM is context membrane
+ALock is airlock membrane
+ActM is action membrane
 lines in QAM.v are modifiable
 1) airlock membrane
 2) normal membrane, list of molecules, molecules have states or processes
