@@ -14,7 +14,7 @@ public class DistributedShorsAlgorithm {
     public static void main(String[] args) {
         DistributedShorsAlgorithm algorithm = new DistributedShorsAlgorithm();
         int N = 1234567899; // Example with N = 1234567899
-        System.out.println("Shor's Algorithm:");
+        System.out.println("Dstributed Shor's Algorithm:");
         System.out.println("Prime factors for "+N+": ");
         algorithm.factorize(N);
     }

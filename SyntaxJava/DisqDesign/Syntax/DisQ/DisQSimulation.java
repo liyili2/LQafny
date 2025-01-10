@@ -11,17 +11,11 @@ public class DisQSimulation {
      * Inner class representing a quantum configuration with state, gates, probability, and measurement results.
      */
     static class Configuration {
-        QuantumState1 phi;              // Quantum state
-        List<String> gates;             // List of gate operations
-        double probability;             // Probability
-        String measurementResult;       // Measurement result
+        QuantumState1 phi;  // Quantum state
+        List<String> gates;  // List of gate operations
+        double probability;  // Accumulated probability
+        String measurementResult;  // Measurement result
 
-        /**
-         * Constructor to initialize a configuration with quantum state, gates, and probability.
-         * @param phi The quantum state.
-         * @param gates List of gate operations.
-         * @param probability Probability of the configuration.
-         */
         Configuration(QuantumState1 phi, List<String> gates, double probability) {
             this.phi = phi;
             this.gates = gates;
@@ -29,48 +23,24 @@ public class DisQSimulation {
             this.measurementResult = null; // Initialize measurement result as null
         }
 
-        /**
-         * Copy constructor for creating a new Configuration based on an existing one.
-         * @param config Existing Configuration to copy.
-         */
-        Configuration(Configuration config) {
-            this.phi = new QuantumState1();
-            this.phi.setStateVector(new HashMap<>(config.phi.getStateVector()));
-            this.gates = new ArrayList<>(config.gates);
-            this.probability = config.probability;
-            this.measurementResult = config.measurementResult;
-        }
-
-        /**
-         * Apply the gates to the quantum state.
-         */
         void applyGates() {
             for (String gate : gates) {
                 switch (gate) {
                     case "Hadamard":
-                        phi.applyHadamardToQubit(0); // Applying Hadamard to the first qubit
+                        phi.applyHadamardToQubit(0);
                         break;
                     case "CNot":
-                        phi.applyControlledXToQubit(0, 1); // Applying CNot with control on the first qubit and target on the second qubit
+                        phi.applyControlledXToQubit(0, 1);
                         break;
-                    // Add other gates as needed
+                    // Add additional gates if needed
                 }
             }
         }
 
-        /**
-         * Measure a specific qubit in the quantum state.
-         * @param qubitIndex Index of the qubit to measure.
-         */
         void measureQubit(int qubitIndex) {
-            measurementResult = phi.measureQubit(qubitIndex); // Store measurement result
+            measurementResult = phi.measureQubit(qubitIndex);
         }
 
-        /**
-         * Override equals method to compare Configuration objects.
-         * @param o Object to compare.
-         * @return True if objects are equal, false otherwise.
-         */
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -79,13 +49,9 @@ public class DisQSimulation {
             return Double.compare(that.probability, probability) == 0 &&
                     Objects.equals(phi, that.phi) &&
                     Objects.equals(gates, that.gates) &&
-                    Objects.equals(measurementResult, that.measurementResult); // Compare measurement results
+                    Objects.equals(measurementResult, that.measurementResult);
         }
 
-        /**
-         * Override hashCode method.
-         * @return Hash code of the Configuration object.
-         */
         @Override
         public int hashCode() {
             return Objects.hash(phi, gates, probability, measurementResult);
@@ -93,68 +59,22 @@ public class DisQSimulation {
     }
 
     /**
-     * Main method demonstrating quantum simulation and equivalence checking.
-     * @param args Command-line arguments (not used).
+     * Method for checking equivalence between sequential and distributed systems using DisQ observable simulation.
+     * @param sequential Set of configurations for the sequential system.
+     * @param distributed Set of configurations for the distributed system.
+     * @return True if systems are not equivalent, false otherwise.
      */
-    public static void main(String[] args) {
-        // Example setup of quantum states G and H
-        QuantumState1 stateG = new QuantumState1();
-        QuantumState1 stateH = new QuantumState1();
-
-        // Add initial qubits and gates for states G and H
-        stateG.addQubit(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane1", 0.5);
-        stateG.addQubit(new Locus(1), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane1", 0.5);
-        stateG.addQubit(new Locus(2), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane1", 0.5);
-        stateG.addQubit(new Locus(3), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane1", 0.5);
-
-        stateH.addQubit(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane2", 0.5);
-        stateH.addQubit(new Locus(1), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane2", 0.5);
-        stateH.addQubit(new Locus(2), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane2", 0.5);
-        stateH.addQubit(new Locus(3), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane2", 0.5);
-
-        stateG.printStateVector();
-        stateH.printStateVector();
-
-        // Create configurations for G and H
-        Configuration configG = new Configuration(stateG, Arrays.asList("Hadamard", "CNot"), 0.5);
-        Configuration configH = new Configuration(stateH, Arrays.asList("Hadamard", "CNot"), 0.5);
-
-        // Apply gates to configurations G and H
-        configG.applyGates();
-        configH.applyGates();
-
-        // Measure qubits in configurations G and H
-        configG.measureQubit(2);
-        configH.measureQubit(2);
-
-        // Create sets of configurations G and H for equivalence checking
-        Set<Configuration> setG = new HashSet<>(Collections.singleton(configG));
-        Set<Configuration> setH = new HashSet<>(Collections.singleton(configH));
-
-        // Check if configurations G and H are not simulation equivalent
-        boolean result = notSim(setG, setH);
-
-        // Print simulation result
-        System.out.println("Not Simulation result: " + result);
-    }
-
-    /**
-     * Function to check if sets of configurations G and H are not simulation equivalent.
-     * @param G Set of configurations G.
-     * @param H Set of configurations H.
-     * @return True if G and H are not simulation equivalent, false otherwise.
-     */
-    private static boolean notSim(Set<Configuration> G, Set<Configuration> H) {
-        for (Configuration configG : G) {
+    public static boolean notSim(Set<Configuration> sequential, Set<Configuration> distributed) {
+        for (Configuration configSeq : sequential) {
             boolean matchFound = false;
-            for (Configuration configH : H) {
-                if (transitionsMatch(configG, configH)) {
+            for (Configuration configDist : distributed) {
+                if (transitionsMatch(configSeq, configDist)) {
                     matchFound = true;
                     break;
                 }
             }
             if (!matchFound) {
-                return true;
+                return true;  // No matching configuration found in distributed system for a sequential configuration
             }
         }
         return false;
@@ -162,9 +82,9 @@ public class DisQSimulation {
 
     /**
      * Helper function to compare transitions between two configurations.
-     * @param g Configuration G.
-     * @param h Configuration H.
-     * @return True if transitions between G and H match, false otherwise.
+     * @param g Configuration for sequential system.
+     * @param h Configuration for distributed system.
+     * @return True if transitions match, false otherwise.
      */
     private static boolean transitionsMatch(Configuration g, Configuration h) {
         if (!g.gates.equals(h.gates) || Double.compare(g.probability, h.probability) != 0) {
@@ -182,21 +102,49 @@ public class DisQSimulation {
             Pair<Complex, String> pairG = entryG.getValue();
             Pair<Complex, String> pairH = stateVectorH.get(entryG.getKey());
 
-            if (pairH == null || !compareComplex(pairG.getKey(), pairH.getKey()) ) {
+            if (pairH == null || !compareComplex(pairG.getKey(), pairH.getKey())) {
                 return false;
             }
         }
 
-        return Objects.equals(g.measurementResult, h.measurementResult); // Compare measurement results
+        return Objects.equals(g.measurementResult, h.measurementResult);
     }
 
     /**
      * Helper function to compare complex numbers.
      * @param a Complex number A.
      * @param b Complex number B.
-     * @return True if complex numbers A and B are equal, false otherwise.
+     * @return True if complex numbers are equal, false otherwise.
      */
     private static boolean compareComplex(Complex a, Complex b) {
-        return Double.compare(a.getReal(), b.getReal()) == 0;
+        return Double.compare(a.getReal(), b.getReal()) == 0 && Double.compare(a.getImag(), b.getImag()) == 0;
+    }
+
+    public static void main(String[] args) {
+        // Setup for Sequential System (G)
+        QuantumState1 sequentialState = new QuantumState1();
+        sequentialState.addQubit(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membraneSeq", 1);
+        sequentialState.addQubit(new Locus(1), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membraneSeq", 1);
+        
+        Configuration configSeq = new Configuration(sequentialState, Arrays.asList("Hadamard", "CNot"), 0.5);
+        configSeq.applyGates();
+        configSeq.measureQubit(0);
+        
+        Set<Configuration> setSequential = new HashSet<>(Collections.singleton(configSeq));
+        
+        // Setup for Distributed System (H)
+        QuantumState1 distributedState = new QuantumState1();
+        distributedState.addQubit(new Locus(0), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane1", 1);
+        distributedState.addQubit(new Locus(1), new Qubit(new Complex(1, 0), new Complex(0, 0)), "membrane2", 1);
+        
+        Configuration configDist = new Configuration(distributedState, Arrays.asList("Hadamard", "CNot"), 0.5);
+        configDist.applyGates();
+        configDist.measureQubit(1);
+        
+        Set<Configuration> setDistributed = new HashSet<>(Collections.singleton(configDist));
+        
+        // Check if sequential and distributed systems are not simulation equivalent
+        boolean result = notSim(setSequential, setDistributed);
+        System.out.println("Sequential and Distributed systems are not equivalent: " + result);
     }
 }
